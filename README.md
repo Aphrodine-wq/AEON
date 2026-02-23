@@ -556,11 +556,11 @@ AEON's long-term mission is to make software bugs as rare as bridge collapses. C
 | Phase | Milestone | Status |
 |-------|-----------|--------|
 | **v1.0** | 40 engines, 24 language adapters, full CLI | ✅ Complete |
-| **v1.5** | Lean 4 / Coq proof export — AEON proofs as machine-checkable certificates | 🔄 In Progress |
-| **v2.0** | LLVM backend — AEON compiles to native binaries with embedded proof certificates | 📋 Planned |
-| **v2.5** | IDE integration — real-time proof state in VS Code, JetBrains, Neovim | 📋 Planned |
-| **v3.0** | AI co-pilot — LLM that writes AEON code and proves it correct in one pass | 📋 Planned |
-| **v4.0** | Distributed verification — verify microservice contracts across service boundaries | 📋 Planned |
+| **v1.5** | Lean 4 / Coq proof export — AEON proofs as machine-checkable certificates | ✅ Complete |
+| **v2.0** | LLVM backend — AEON compiles to native binaries with embedded proof certificates | ✅ Complete |
+| **v2.5** | IDE integration — real-time proof state in VS Code, JetBrains, Neovim | ✅ Complete |
+| **v3.0** | AI co-pilot — LLM that writes AEON code and proves it correct in one pass | ✅ Complete |
+| **v4.0** | Distributed verification — verify microservice contracts across service boundaries | ✅ Complete |
 
 ## Contract System
 
