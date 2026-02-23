@@ -2,6 +2,16 @@
 
 Parses token stream into AST. Grammar is LL(1) — no backtracking, no ambiguity.
 One canonical form for every construct.
+
+Top-level declarations:
+  data Name { ... }
+  enum Name { Variant(...), ... }
+  pure name(...) -> T { ... }
+  task name(...) -> T { ... }
+  trait Name { ... }
+  impl Trait for Type { ... }
+  type Name = T
+  use path::to::module
 """
 
 from __future__ import annotations
@@ -10,13 +20,16 @@ from typing import Optional
 
 from aeon.lexer import Token, TokenType, tokenize
 from aeon.ast_nodes import (
-    Program, Declaration, DataDef, PureFunc, TaskFunc,
+    Program, Declaration, DataDef, EnumDef, VariantDef,
+    PureFunc, TaskFunc, TraitDef, ImplBlock, TypeAlias, UseDecl,
     FieldDef, Parameter, TypeAnnotation, ContractClause,
     Statement, ReturnStmt, LetStmt, AssignStmt, ExprStmt,
-    IfStmt, WhileStmt, BreakStmt, ContinueStmt, UnsafeBlock,
+    IfStmt, WhileStmt, ForStmt, BreakStmt, ContinueStmt, UnsafeBlock,
     Expr, IntLiteral, FloatLiteral, StringLiteral, BoolLiteral,
     Identifier, BinaryOp, UnaryOp, FunctionCall, FieldAccess,
     MethodCall, ListLiteral, ConstructExpr, MoveExpr, BorrowExpr,
+    LambdaExpr, MatchExpr, MatchArm, PipeExpr, SpawnExpr, AwaitExpr,
+    Pattern, WildcardPattern, LiteralPattern, IdentPattern, ConstructorPattern,
 )
 from aeon.errors import SourceLocation, syntax_error, CompileError
 
@@ -77,15 +90,41 @@ class Parser:
         tt = self._peek()
         if tt == TokenType.DATA:
             return self._parse_data_def()
+        elif tt == TokenType.ENUM:
+            return self._parse_enum_def()
         elif tt == TokenType.PURE:
             return self._parse_pure_func()
         elif tt == TokenType.TASK:
             return self._parse_task_func()
+        elif tt == TokenType.TRAIT:
+            return self._parse_trait_def()
+        elif tt == TokenType.IMPL:
+            return self._parse_impl_block()
+        elif tt == TokenType.TYPE:
+            return self._parse_type_alias()
+        elif tt == TokenType.USE:
+            return self._parse_use_decl()
         else:
             raise CompileError(syntax_error(
-                f"Expected 'data', 'pure', or 'task', got '{self._current().value}'",
+                f"Expected declaration (data, enum, pure, task, trait, impl, type, use), "
+                f"got '{self._current().value}'",
                 self._loc(),
             ))
+
+    # -------------------------------------------------------------------
+    # Optional type parameter list: <T, U, V>
+    # -------------------------------------------------------------------
+
+    def _parse_type_params(self) -> list[str]:
+        """Parse optional type parameters: <T, U, V>"""
+        params: list[str] = []
+        if self._peek() == TokenType.LT:
+            self._advance()
+            params.append(self._expect(TokenType.IDENT).value)
+            while self._match(TokenType.COMMA):
+                params.append(self._expect(TokenType.IDENT).value)
+            self._expect(TokenType.GT)
+        return params
 
     # -------------------------------------------------------------------
     # data
@@ -95,12 +134,13 @@ class Parser:
         loc = self._loc()
         self._expect(TokenType.DATA)
         name = self._expect(TokenType.IDENT).value
+        type_params = self._parse_type_params()
         self._expect(TokenType.LBRACE)
         fields: list[FieldDef] = []
         while self._peek() != TokenType.RBRACE:
             fields.append(self._parse_field_def())
         self._expect(TokenType.RBRACE)
-        return DataDef(name=name, fields=fields, location=loc)
+        return DataDef(name=name, fields=fields, type_params=type_params, location=loc)
 
     def _parse_field_def(self) -> FieldDef:
         loc = self._loc()
@@ -108,6 +148,35 @@ class Parser:
         self._expect(TokenType.COLON)
         type_ann = self._parse_type_annotation()
         return FieldDef(name=name, type_annotation=type_ann, location=loc)
+
+    # -------------------------------------------------------------------
+    # enum
+    # -------------------------------------------------------------------
+
+    def _parse_enum_def(self) -> EnumDef:
+        loc = self._loc()
+        self._expect(TokenType.ENUM)
+        name = self._expect(TokenType.IDENT).value
+        type_params = self._parse_type_params()
+        self._expect(TokenType.LBRACE)
+        variants: list[VariantDef] = []
+        while self._peek() != TokenType.RBRACE:
+            variants.append(self._parse_variant_def())
+            self._match(TokenType.COMMA)  # trailing comma optional
+        self._expect(TokenType.RBRACE)
+        return EnumDef(name=name, variants=variants, type_params=type_params, location=loc)
+
+    def _parse_variant_def(self) -> VariantDef:
+        loc = self._loc()
+        name = self._expect(TokenType.IDENT).value
+        fields: list[FieldDef] = []
+        if self._match(TokenType.LPAREN):
+            if self._peek() != TokenType.RPAREN:
+                fields.append(self._parse_field_def())
+                while self._match(TokenType.COMMA):
+                    fields.append(self._parse_field_def())
+            self._expect(TokenType.RPAREN)
+        return VariantDef(name=name, fields=fields, location=loc)
 
     # -------------------------------------------------------------------
     # Type annotations
@@ -133,6 +202,7 @@ class Parser:
         loc = self._loc()
         self._expect(TokenType.PURE)
         name = self._expect(TokenType.IDENT).value
+        type_params = self._parse_type_params()
         self._expect(TokenType.LPAREN)
         params = self._parse_param_list()
         self._expect(TokenType.RPAREN)
@@ -158,7 +228,7 @@ class Parser:
         return PureFunc(
             name=name, params=params, return_type=return_type,
             requires=requires_clauses, ensures=ensures_clauses,
-            body=body, location=loc,
+            body=body, type_params=type_params, location=loc,
         )
 
     # -------------------------------------------------------------------
@@ -169,6 +239,7 @@ class Parser:
         loc = self._loc()
         self._expect(TokenType.TASK)
         name = self._expect(TokenType.IDENT).value
+        type_params = self._parse_type_params()
         self._expect(TokenType.LPAREN)
         params = self._parse_param_list()
         self._expect(TokenType.RPAREN)
@@ -197,8 +268,107 @@ class Parser:
         return TaskFunc(
             name=name, params=params, return_type=return_type,
             requires=requires_clauses, ensures=ensures_clauses,
-            effects=effects, body=body, location=loc,
+            effects=effects, body=body, type_params=type_params, location=loc,
         )
+
+    # -------------------------------------------------------------------
+    # trait
+    # -------------------------------------------------------------------
+
+    def _parse_trait_def(self) -> TraitDef:
+        loc = self._loc()
+        self._expect(TokenType.TRAIT)
+        name = self._expect(TokenType.IDENT).value
+        type_params = self._parse_type_params()
+        self._expect(TokenType.LBRACE)
+        methods: list[PureFunc | TaskFunc] = []
+        while self._peek() != TokenType.RBRACE:
+            if self._peek() == TokenType.PURE:
+                methods.append(self._parse_pure_func())
+            elif self._peek() == TokenType.TASK:
+                methods.append(self._parse_task_func())
+            else:
+                raise CompileError(syntax_error(
+                    f"Expected 'pure' or 'task' method in trait, got '{self._current().value}'",
+                    self._loc(),
+                ))
+        self._expect(TokenType.RBRACE)
+        return TraitDef(name=name, type_params=type_params, methods=methods, location=loc)
+
+    # -------------------------------------------------------------------
+    # impl
+    # -------------------------------------------------------------------
+
+    def _parse_impl_block(self) -> ImplBlock:
+        loc = self._loc()
+        self._expect(TokenType.IMPL)
+
+        # Parse trait name or target type
+        first_name = self._expect(TokenType.IDENT).value
+        type_args: list[TypeAnnotation] = []
+
+        # Check for generic args on trait/type
+        if self._peek() == TokenType.LT:
+            self._advance()
+            type_args.append(self._parse_type_annotation())
+            while self._match(TokenType.COMMA):
+                type_args.append(self._parse_type_annotation())
+            self._expect(TokenType.GT)
+
+        trait_name: Optional[str] = None
+        target_type: str = first_name
+
+        # Check for "for Type" (trait impl)
+        if self._peek() == TokenType.FOR:
+            self._advance()
+            trait_name = first_name
+            target_type = self._expect(TokenType.IDENT).value
+
+        self._expect(TokenType.LBRACE)
+        methods: list[PureFunc | TaskFunc] = []
+        while self._peek() != TokenType.RBRACE:
+            if self._peek() == TokenType.PURE:
+                methods.append(self._parse_pure_func())
+            elif self._peek() == TokenType.TASK:
+                methods.append(self._parse_task_func())
+            else:
+                raise CompileError(syntax_error(
+                    f"Expected 'pure' or 'task' method in impl, got '{self._current().value}'",
+                    self._loc(),
+                ))
+        self._expect(TokenType.RBRACE)
+        return ImplBlock(
+            trait_name=trait_name, target_type=target_type,
+            type_args=type_args, methods=methods, location=loc,
+        )
+
+    # -------------------------------------------------------------------
+    # type alias
+    # -------------------------------------------------------------------
+
+    def _parse_type_alias(self) -> TypeAlias:
+        loc = self._loc()
+        self._expect(TokenType.TYPE)
+        name = self._expect(TokenType.IDENT).value
+        type_params = self._parse_type_params()
+        self._expect(TokenType.ASSIGN)
+        target = self._parse_type_annotation()
+        return TypeAlias(name=name, type_params=type_params, target=target, location=loc)
+
+    # -------------------------------------------------------------------
+    # use declaration
+    # -------------------------------------------------------------------
+
+    def _parse_use_decl(self) -> UseDecl:
+        loc = self._loc()
+        self._expect(TokenType.USE)
+        path: list[str] = [self._expect(TokenType.IDENT).value]
+        while self._match(TokenType.DOUBLE_COLON):
+            path.append(self._expect(TokenType.IDENT).value)
+        alias: Optional[str] = None
+        if self._match(TokenType.AS):
+            alias = self._expect(TokenType.IDENT).value
+        return UseDecl(path=path, alias=alias, location=loc)
 
     # -------------------------------------------------------------------
     # Parameters
@@ -215,6 +385,14 @@ class Parser:
 
     def _parse_parameter(self) -> Parameter:
         loc = self._loc()
+        # Handle 'self' parameter in trait/impl methods
+        if self._peek() == TokenType.SELF:
+            self._advance()
+            return Parameter(
+                name="self",
+                type_annotation=TypeAnnotation(name="Self", location=loc),
+                location=loc,
+            )
         name = self._expect(TokenType.IDENT).value
         self._expect(TokenType.COLON)
         type_ann = self._parse_type_annotation()
@@ -274,6 +452,8 @@ class Parser:
             return self._parse_if()
         elif tt == TokenType.WHILE:
             return self._parse_while()
+        elif tt == TokenType.FOR:
+            return self._parse_for()
         elif tt == TokenType.BREAK:
             loc = self._loc()
             self._advance()
@@ -334,6 +514,18 @@ class Parser:
         self._expect(TokenType.RBRACE)
         return WhileStmt(condition=condition, body=body, location=loc)
 
+    def _parse_for(self) -> ForStmt:
+        """Parse: for x in expr { body }"""
+        loc = self._loc()
+        self._expect(TokenType.FOR)
+        var_name = self._expect(TokenType.IDENT).value
+        self._expect(TokenType.IN)
+        iterable = self._parse_expression()
+        self._expect(TokenType.LBRACE)
+        body = self._parse_body()
+        self._expect(TokenType.RBRACE)
+        return ForStmt(var_name=var_name, iterable=iterable, body=body, location=loc)
+
     def _parse_unsafe_block(self) -> UnsafeBlock:
         loc = self._loc()
         self._expect(TokenType.UNSAFE)
@@ -355,7 +547,17 @@ class Parser:
     # -------------------------------------------------------------------
 
     def _parse_expression(self) -> Expr:
-        return self._parse_or()
+        return self._parse_pipe()
+
+    def _parse_pipe(self) -> Expr:
+        """Pipeline operator |> — lowest precedence."""
+        left = self._parse_or()
+        while self._peek() == TokenType.PIPE:
+            loc = self._loc()
+            self._advance()
+            right = self._parse_or()
+            left = PipeExpr(left=left, right=right, location=loc)
+        return left
 
     def _parse_or(self) -> Expr:
         left = self._parse_and()
@@ -422,6 +624,16 @@ class Parser:
             self._advance()
             operand = self._parse_unary()
             return UnaryOp(op="!", operand=operand, location=loc)
+        if self._peek() == TokenType.SPAWN:
+            loc = self._loc()
+            self._advance()
+            call = self._parse_postfix()
+            return SpawnExpr(call=call, location=loc)
+        if self._peek() == TokenType.AWAIT:
+            loc = self._loc()
+            self._advance()
+            expr = self._parse_postfix()
+            return AwaitExpr(expr=expr, location=loc)
         return self._parse_postfix()
 
     def _parse_postfix(self) -> Expr:
@@ -490,12 +702,22 @@ class Parser:
             name = self._expect(TokenType.IDENT).value
             return BorrowExpr(name=name, location=loc)
 
+        if tt == TokenType.MATCH:
+            return self._parse_match_expr()
+
+        if tt == TokenType.FN:
+            return self._parse_lambda_expr()
+
         if tt == TokenType.IDENT:
             tok = self._advance()
             # Check for struct construction: TypeName { field: value, ... }
             if self._peek() == TokenType.LBRACE and tok.value[0].isupper():
                 return self._parse_construct_expr(tok.value, loc)
             return Identifier(name=tok.value, location=loc)
+
+        if tt == TokenType.SELF:
+            self._advance()
+            return Identifier(name="self", location=loc)
 
         if tt == TokenType.LPAREN:
             self._advance()
@@ -518,6 +740,103 @@ class Parser:
             loc,
         ))
 
+    # -------------------------------------------------------------------
+    # match expression
+    # -------------------------------------------------------------------
+
+    def _parse_match_expr(self) -> MatchExpr:
+        """Parse: match expr { pattern => { body }, ... }"""
+        loc = self._loc()
+        self._expect(TokenType.MATCH)
+        subject = self._parse_expression()
+        self._expect(TokenType.LBRACE)
+        arms: list[MatchArm] = []
+        while self._peek() != TokenType.RBRACE:
+            arms.append(self._parse_match_arm())
+            self._match(TokenType.COMMA)  # trailing comma optional
+        self._expect(TokenType.RBRACE)
+        return MatchExpr(subject=subject, arms=arms, location=loc)
+
+    def _parse_match_arm(self) -> MatchArm:
+        loc = self._loc()
+        pattern = self._parse_pattern()
+        self._expect(TokenType.FAT_ARROW)
+        self._expect(TokenType.LBRACE)
+        body = self._parse_body()
+        self._expect(TokenType.RBRACE)
+        return MatchArm(pattern=pattern, body=body, location=loc)
+
+    def _parse_pattern(self) -> Pattern:
+        loc = self._loc()
+        tt = self._peek()
+
+        # Wildcard: _
+        if tt == TokenType.UNDERSCORE:
+            self._advance()
+            return WildcardPattern(location=loc)
+
+        # Literal patterns
+        if tt == TokenType.INT_LIT:
+            tok = self._advance()
+            return LiteralPattern(value=int(tok.value), location=loc)
+
+        if tt == TokenType.STRING_LIT:
+            tok = self._advance()
+            return LiteralPattern(value=tok.value, location=loc)
+
+        if tt == TokenType.TRUE:
+            self._advance()
+            return LiteralPattern(value=True, location=loc)
+
+        if tt == TokenType.FALSE:
+            self._advance()
+            return LiteralPattern(value=False, location=loc)
+
+        # Constructor or identifier pattern
+        if tt == TokenType.IDENT:
+            tok = self._advance()
+            # Constructor pattern: Name(sub_patterns...)
+            if self._peek() == TokenType.LPAREN:
+                self._advance()
+                fields: list[Pattern] = []
+                if self._peek() != TokenType.RPAREN:
+                    fields.append(self._parse_pattern())
+                    while self._match(TokenType.COMMA):
+                        fields.append(self._parse_pattern())
+                self._expect(TokenType.RPAREN)
+                return ConstructorPattern(name=tok.value, fields=fields, location=loc)
+            # Simple identifier bind (lowercase) or unit constructor (uppercase)
+            if tok.value[0].isupper():
+                return ConstructorPattern(name=tok.value, fields=[], location=loc)
+            return IdentPattern(name=tok.value, location=loc)
+
+        raise CompileError(syntax_error(
+            f"Expected pattern, got '{self._current().value}'",
+            loc,
+        ))
+
+    # -------------------------------------------------------------------
+    # lambda expression
+    # -------------------------------------------------------------------
+
+    def _parse_lambda_expr(self) -> LambdaExpr:
+        """Parse: fn(params) -> RetType => expr"""
+        loc = self._loc()
+        self._expect(TokenType.FN)
+        self._expect(TokenType.LPAREN)
+        params = self._parse_param_list()
+        self._expect(TokenType.RPAREN)
+        return_type: Optional[TypeAnnotation] = None
+        if self._match(TokenType.ARROW):
+            return_type = self._parse_type_annotation()
+        self._expect(TokenType.FAT_ARROW)
+        body = self._parse_expression()
+        return LambdaExpr(params=params, return_type=return_type, body=body, location=loc)
+
+    # -------------------------------------------------------------------
+    # struct construction
+    # -------------------------------------------------------------------
+
     def _parse_construct_expr(self, type_name: str, loc: SourceLocation) -> ConstructExpr:
         self._expect(TokenType.LBRACE)
         fields: dict[str, Expr] = {}
@@ -527,6 +846,8 @@ class Parser:
             fval = self._parse_expression()
             fields[fname] = fval
             while self._match(TokenType.COMMA):
+                if self._peek() == TokenType.RBRACE:
+                    break  # trailing comma
                 fname = self._expect(TokenType.IDENT).value
                 self._expect(TokenType.COLON)
                 fval = self._parse_expression()

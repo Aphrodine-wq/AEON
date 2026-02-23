@@ -1,0 +1,112 @@
+// AEON — Pipelines and Lambda Expressions
+//
+// Demonstrates: pipeline operator (|>), lambda expressions (fn),
+// higher-order functions, and functional composition.
+
+// --- Higher-order pure functions ---
+
+pure apply(x: Int, f: Int) -> Int {
+    // Apply a transformation to a value
+    return x + f
+}
+
+pure double(x: Int) -> Int {
+    ensures: result == x * 2
+    return x * 2
+}
+
+pure square(x: Int) -> Int {
+    ensures: result == x * x
+    return x * x
+}
+
+pure negate(x: Int) -> Int {
+    ensures: result == 0 - x
+    return 0 - x
+}
+
+pure identity(x: Int) -> Int {
+    ensures: result == x
+    return x
+}
+
+// --- Pipeline examples ---
+// The |> operator passes the left side as the first argument
+// to the function on the right.
+
+pure transformValue(x: Int) -> Int {
+    // x |> double |> square  means  square(double(x))
+    return x |> double |> square
+}
+
+pure processScore(raw: Int) -> Int {
+    requires: raw >= 0
+    requires: raw <= 100
+    // Clamp, scale, and offset
+    return raw |> double |> identity
+}
+
+// --- Lambda expressions ---
+
+pure applyLambda(x: Int) -> Int {
+    let inc = fn(n: Int) -> Int => n + 1
+    return inc(x)
+}
+
+pure applyTwice(x: Int) -> Int {
+    let dbl = fn(n: Int) -> Int => n * 2
+    return dbl(dbl(x))
+}
+
+// --- For loops with collections ---
+
+pure sumList(xs: List<Int>) -> Int {
+    let mut total: Int = 0
+    for x in xs {
+        total = total + x
+    }
+    return total
+}
+
+pure countPositive(xs: List<Int>) -> Int {
+    ensures: result >= 0
+    let mut count: Int = 0
+    for x in xs {
+        if x > 0 {
+            count = count + 1
+        }
+    }
+    return count
+}
+
+// --- Combining everything ---
+
+pure fibonacci(n: Int) -> Int {
+    requires: n >= 0
+    if n <= 1 { return n }
+    let mut a: Int = 0
+    let mut b: Int = 1
+    let mut i: Int = 2
+    while i <= n {
+        let temp: Int = a + b
+        a = b
+        b = temp
+        i = i + 1
+    }
+    return b
+}
+
+// GCD via Euclidean algorithm — verified with contracts
+pure gcd(a: Int, b: Int) -> Int {
+    requires: a > 0
+    requires: b > 0
+    ensures:  result > 0
+    let mut x: Int = a
+    let mut y: Int = b
+    while y != 0 {
+        let temp: Int = y
+        y = x % y
+        x = temp
+    }
+    return x
+}

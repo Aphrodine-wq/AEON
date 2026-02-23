@@ -1,8 +1,8 @@
 """AEON AST Node definitions.
 
-Three top-level constructs: data, pure, task.
+Top-level constructs: data, enum, pure, task, trait, impl, type, use.
 Contracts (requires/ensures/effects) on every function.
-Expressions and statements for function bodies.
+Pattern matching, algebraic effects, pipelines, lambdas.
 """
 
 from __future__ import annotations
@@ -28,6 +28,50 @@ class TypeAnnotation:
             args = ", ".join(str(a) for a in self.generic_args)
             return f"{self.name}<{args}>"
         return self.name
+
+
+# ---------------------------------------------------------------------------
+# Patterns (for match expressions)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Pattern:
+    """Base class for patterns."""
+    location: Optional[SourceLocation] = None
+
+
+@dataclass
+class WildcardPattern(Pattern):
+    """The _ pattern — matches anything."""
+    pass
+
+
+@dataclass
+class LiteralPattern(Pattern):
+    """Matches a literal value (Int, String, Bool)."""
+    value: Any = None
+
+
+@dataclass
+class IdentPattern(Pattern):
+    """Matches anything and binds to a name."""
+    name: str = ""
+
+
+@dataclass
+class ConstructorPattern(Pattern):
+    """Matches an enum variant:  Some(x)  |  None  |  Cons(head, tail)"""
+    name: str = ""
+    fields: list[Pattern] = field(default_factory=list)
+
+
+@dataclass
+class MatchArm:
+    """A single arm of a match expression."""
+    pattern: Pattern = field(default_factory=Pattern)
+    guard: Optional[Expr] = None
+    body: list[Statement] = field(default_factory=list)
+    location: Optional[SourceLocation] = None
 
 
 # ---------------------------------------------------------------------------
@@ -130,6 +174,40 @@ class BorrowExpr(Expr):
     mutable: bool = False
 
 
+@dataclass
+class LambdaExpr(Expr):
+    """Lambda / anonymous function:  fn(x: Int, y: Int) -> Int => x + y"""
+    params: list[Parameter] = field(default_factory=list)
+    return_type: Optional[TypeAnnotation] = None
+    body: Expr = field(default_factory=Expr)
+
+
+@dataclass
+class MatchExpr(Expr):
+    """Pattern match expression:  match expr { Pat => body, ... }"""
+    subject: Expr = field(default_factory=Expr)
+    arms: list[MatchArm] = field(default_factory=list)
+
+
+@dataclass
+class PipeExpr(Expr):
+    """Pipeline expression:  expr |> fn"""
+    left: Expr = field(default_factory=Expr)
+    right: Expr = field(default_factory=Expr)
+
+
+@dataclass
+class SpawnExpr(Expr):
+    """Spawn a concurrent task:  spawn taskFn(args)"""
+    call: Expr = field(default_factory=Expr)
+
+
+@dataclass
+class AwaitExpr(Expr):
+    """Await a spawned task:  await handle"""
+    expr: Expr = field(default_factory=Expr)
+
+
 # ---------------------------------------------------------------------------
 # Statements
 # ---------------------------------------------------------------------------
@@ -177,6 +255,14 @@ class WhileStmt(Statement):
 
 
 @dataclass
+class ForStmt(Statement):
+    """for x in collection { ... }"""
+    var_name: str = ""
+    iterable: Expr = field(default_factory=Expr)
+    body: list[Statement] = field(default_factory=list)
+
+
+@dataclass
 class BreakStmt(Statement):
     pass
 
@@ -215,6 +301,18 @@ class ContractClause:
 
 
 # ---------------------------------------------------------------------------
+# Enum Variant
+# ---------------------------------------------------------------------------
+
+@dataclass
+class VariantDef:
+    """A single variant of an enum: Cons(head: Int, tail: List<Int>) or None"""
+    name: str = ""
+    fields: list[FieldDef] = field(default_factory=list)
+    location: Optional[SourceLocation] = None
+
+
+# ---------------------------------------------------------------------------
 # Top-Level Declarations
 # ---------------------------------------------------------------------------
 
@@ -234,6 +332,15 @@ class FieldDef:
 class DataDef(Declaration):
     name: str = ""
     fields: list[FieldDef] = field(default_factory=list)
+    type_params: list[str] = field(default_factory=list)
+
+
+@dataclass
+class EnumDef(Declaration):
+    """enum Option<T> { Some(value: T), None }"""
+    name: str = ""
+    variants: list[VariantDef] = field(default_factory=list)
+    type_params: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -244,6 +351,7 @@ class PureFunc(Declaration):
     requires: list[ContractClause] = field(default_factory=list)
     ensures: list[ContractClause] = field(default_factory=list)
     body: list[Statement] = field(default_factory=list)
+    type_params: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -255,6 +363,39 @@ class TaskFunc(Declaration):
     ensures: list[ContractClause] = field(default_factory=list)
     effects: list[str] = field(default_factory=list)
     body: list[Statement] = field(default_factory=list)
+    type_params: list[str] = field(default_factory=list)
+
+
+@dataclass
+class TraitDef(Declaration):
+    """trait Eq<T> { pure eq(self, other: T) -> Bool }"""
+    name: str = ""
+    type_params: list[str] = field(default_factory=list)
+    methods: list[PureFunc | TaskFunc] = field(default_factory=list)
+
+
+@dataclass
+class ImplBlock(Declaration):
+    """impl Eq<Int> for Int { ... }  or  impl MyStruct { ... }"""
+    trait_name: Optional[str] = None
+    target_type: str = ""
+    type_args: list[TypeAnnotation] = field(default_factory=list)
+    methods: list[PureFunc | TaskFunc] = field(default_factory=list)
+
+
+@dataclass
+class TypeAlias(Declaration):
+    """type Name = Int"""
+    name: str = ""
+    type_params: list[str] = field(default_factory=list)
+    target: TypeAnnotation = field(default_factory=lambda: TypeAnnotation(name="Void"))
+
+
+@dataclass
+class UseDecl(Declaration):
+    """use std::collections::HashMap"""
+    path: list[str] = field(default_factory=list)
+    alias: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------

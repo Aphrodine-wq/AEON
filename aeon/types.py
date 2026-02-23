@@ -98,6 +98,24 @@ class ListType(AeonType):
         return False
 
 
+@dataclass(frozen=True)
+class EnumType(AeonType):
+    """An algebraic data type (sum type) with named variants."""
+    name: str = ""
+    variants: tuple[tuple[str, tuple[AeonType, ...]], ...] = ()
+
+    def __str__(self) -> str:
+        return self.name
+
+    def is_assignable_from(self, other: AeonType) -> bool:
+        if isinstance(other, EnumType):
+            return self.name == other.name
+        # A DataType with same name is also compatible (variant constructors)
+        if isinstance(other, DataType):
+            return self.name == other.name
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Built-in Types
 # ---------------------------------------------------------------------------

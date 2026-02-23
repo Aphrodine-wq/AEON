@@ -1,0 +1,101 @@
+// AEON — Algebraic Effects and Task Functions
+//
+// Demonstrates: effect tracking, task functions,
+// effect composition, and the pure/task boundary.
+
+// --- Data types ---
+
+data User {
+    id:    Int
+    name:  String
+    email: String
+}
+
+data LogEntry {
+    level:   String
+    message: String
+}
+
+data HttpResponse {
+    status: Int
+    body:   String
+}
+
+// --- Type aliases ---
+
+type UserId = Int
+type Timestamp = Int
+
+// --- Pure functions (zero effects, freely parallelizable) ---
+
+pure validateEmail(email: String) -> Bool {
+    // Pure validation — no I/O needed
+    return true
+}
+
+pure formatUser(user: User) -> String {
+    return user.name
+}
+
+pure parseUserId(raw: String) -> Int {
+    requires: raw != ""
+    return 0
+}
+
+// --- Task functions (declared effects) ---
+
+// Database effects
+task findUser(id: Int) -> User {
+    effects: [Database.Read]
+    return db.find(id)
+}
+
+task saveUser(user: User) -> Bool {
+    requires: validateEmail(user.email)
+    effects:  [Database.Write]
+    return db.insert(user)
+}
+
+// Network effects
+task fetchProfile(url: String) -> HttpResponse {
+    effects: [Network.Read]
+    return net.get(url)
+}
+
+// Composed effects — multiple effect types
+task createUserWithLog(name: String, email: String) -> User {
+    requires: validateEmail(email)
+    effects:  [Database.Write, Console.Write]
+
+    let user: User = User { id: 0, name: name, email: email }
+    let saved: Bool = saveUser(user)
+    print(formatUser(user))
+    return user
+}
+
+// File system effects
+task readConfig(path: String) -> String {
+    effects: [File.Read]
+    return file.read(path)
+}
+
+task writeLog(entry: LogEntry) -> Bool {
+    effects: [File.Write]
+    return file.write(entry.message)
+}
+
+// Effect composition — a task that uses database, network, and logging
+task syncUserProfile(userId: Int) -> Bool {
+    effects: [Database.Read, Database.Write, Network.Read, Console.Write]
+
+    let user: User = findUser(userId)
+    let profile: HttpResponse = fetchProfile(formatUser(user))
+
+    if profile.status == 200 {
+        print("Profile synced")
+        return true
+    } else {
+        print("Sync failed")
+        return false
+    }
+}

@@ -11,14 +11,17 @@ from typing import Optional
 import logging
 
 from aeon.ast_nodes import (
-    Program, Declaration, DataDef, PureFunc, TaskFunc,
+    Program, Declaration, DataDef, EnumDef, PureFunc, TaskFunc,
+    TraitDef, ImplBlock, TypeAlias, UseDecl,
     Parameter, TypeAnnotation,
     Expr, Identifier, IntLiteral, FloatLiteral, BoolLiteral, StringLiteral, ListLiteral,
     UnaryOp, BinaryOp, IfStmt, ReturnStmt, LetStmt, AssignStmt, ExprStmt,
     ConstructExpr, FieldAccess, MethodCall, FunctionCall, MoveExpr,
+    ForStmt, MatchExpr, LambdaExpr, PipeExpr, SpawnExpr, AwaitExpr,
 )
 from aeon.types import (
     AeonType, PrimitiveType, GenericType, DataType, FunctionType, ListType,
+    EnumType,
     INT, FLOAT, STRING, BOOL, VOID, UUID, EMAIL, USD, ERROR,
     TypeEnvironment, resolve_type_annotation,
     make_result_type, make_list_type,
@@ -143,6 +146,18 @@ class TypeChecker:
                     self._check_pure_func(decl)
                 elif isinstance(decl, TaskFunc):
                     self._check_task_func(decl)
+                elif isinstance(decl, TraitDef):
+                    for method in decl.methods:
+                        if isinstance(method, PureFunc):
+                            self._check_pure_func(method)
+                        elif isinstance(method, TaskFunc):
+                            self._check_task_func(method)
+                elif isinstance(decl, ImplBlock):
+                    for method in decl.methods:
+                        if isinstance(method, PureFunc):
+                            self._check_pure_func(method)
+                        elif isinstance(method, TaskFunc):
+                            self._check_task_func(method)
             except Exception as e:
                 # Recover from error and continue
                 if hasattr(decl, 'name'):
@@ -407,11 +422,21 @@ class TypeChecker:
         for decl in program.declarations:
             if isinstance(decl, DataDef):
                 self._register_data(decl)
+            elif isinstance(decl, EnumDef):
+                self._register_enum(decl)
             elif isinstance(decl, PureFunc):
                 self._register_func(decl, is_pure=True)
             elif isinstance(decl, TaskFunc):
                 self._register_func(decl, is_pure=False)
                 self._function_effects[decl.name] = decl.effects
+            elif isinstance(decl, TraitDef):
+                self._register_trait(decl)
+            elif isinstance(decl, ImplBlock):
+                self._register_impl(decl)
+            elif isinstance(decl, TypeAlias):
+                self._register_type_alias(decl)
+            elif isinstance(decl, UseDecl):
+                pass  # use declarations are resolved at module level
 
     def _register_data(self, data: DataDef) -> None:
         """Register a data type in the environment."""
@@ -444,6 +469,47 @@ class TypeChecker:
             effects=effects,
         )
         self.env.define_function(func.name, ft)
+
+    def _register_enum(self, enum: EnumDef) -> None:
+        """Register an enum type and its variant constructors."""
+        # Register the enum as a type
+        dt = DataType(name=enum.name, fields=())
+        self.env.define_type(enum.name, dt)
+        # Register each variant as a constructor function
+        for variant in enum.variants:
+            if variant.fields:
+                param_types = tuple(
+                    resolve_type_annotation(f.type_annotation, self.env)
+                    for f in variant.fields
+                )
+                ft = FunctionType(
+                    param_types=param_types,
+                    return_type=dt,
+                    is_pure=True,
+                )
+                self.env.define_function(variant.name, ft)
+            else:
+                # Unit variant — register as a variable of the enum type
+                self.env.define_variable(variant.name, dt)
+
+    def _register_trait(self, trait: TraitDef) -> None:
+        """Register trait method signatures."""
+        for method in trait.methods:
+            is_pure = isinstance(method, PureFunc)
+            self._register_func(method, is_pure=is_pure)
+
+    def _register_impl(self, impl: ImplBlock) -> None:
+        """Register impl block methods."""
+        for method in impl.methods:
+            is_pure = isinstance(method, PureFunc)
+            self._register_func(method, is_pure=is_pure)
+            if isinstance(method, TaskFunc):
+                self._function_effects[method.name] = method.effects
+
+    def _register_type_alias(self, alias: TypeAlias) -> None:
+        """Register a type alias."""
+        target_type = resolve_type_annotation(alias.target, self.env)
+        self.env.define_type(alias.name, target_type)
 
     # -------------------------------------------------------------------
     # Function body checking
@@ -517,6 +583,8 @@ class TypeChecker:
             self._check_if(stmt)
         elif isinstance(stmt, WhileStmt):
             self._check_while(stmt)
+        elif isinstance(stmt, ForStmt):
+            self._check_for(stmt)
         elif isinstance(stmt, UnsafeBlock):
             for s in stmt.body:
                 self._check_statement(s)
@@ -606,6 +674,20 @@ class TypeChecker:
                 location=stmt.location,
             ))
         child = self.env.child_scope()
+        saved = self.env
+        self.env = child
+        for s in stmt.body:
+            self._check_statement(s)
+        self.env = saved
+
+    def _check_for(self, stmt: ForStmt) -> None:
+        iter_type = self._infer_type(stmt.iterable)
+        child = self.env.child_scope()
+        # Infer element type from list type
+        elem_type = INT  # default
+        if iter_type and isinstance(iter_type, ListType):
+            elem_type = iter_type.element_type
+        child.define_variable(stmt.var_name, elem_type)
         saved = self.env
         self.env = child
         for s in stmt.body:
@@ -773,6 +855,31 @@ class TypeChecker:
             return None
         if isinstance(expr, MoveExpr):
             return self.env.lookup_variable(expr.name)
+        if isinstance(expr, MatchExpr):
+            self._infer_type(expr.subject)
+            for arm in expr.arms:
+                for s in arm.body:
+                    self._check_statement(s)
+            return None
+        if isinstance(expr, LambdaExpr):
+            param_types = tuple(
+                resolve_type_annotation(p.type_annotation, self.env)
+                for p in expr.params
+            )
+            ret = VOID
+            if expr.return_type:
+                ret = resolve_type_annotation(expr.return_type, self.env)
+            return FunctionType(param_types=param_types, return_type=ret, is_pure=True)
+        if isinstance(expr, PipeExpr):
+            left_type = self._infer_type(expr.left)
+            right_type = self._infer_type(expr.right)
+            if right_type and isinstance(right_type, FunctionType):
+                return right_type.return_type
+            return right_type
+        if isinstance(expr, SpawnExpr):
+            return self._infer_type(expr.call)
+        if isinstance(expr, AwaitExpr):
+            return self._infer_type(expr.expr)
         return None
 
     def _infer_method_call(self, expr: MethodCall, obj_type: AeonType) -> Optional[AeonType]:
