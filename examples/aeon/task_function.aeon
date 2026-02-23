@@ -1,0 +1,23 @@
+data User {
+  id:    UUID
+  email: Email
+  name:  String
+}
+
+task createUser(user: User) -> Bool {
+  requires: user.email.isValid()
+  ensures:  result == true
+  effects:  [Database.Write]
+  return db.insert(user)
+}
+
+task findUser(id: UUID) -> User {
+  effects: [Database.Read]
+  return db.find(id)
+}
+
+task updateUser(user: User) -> Bool {
+  requires: user.email.isValid()
+  effects:  [Database.Write, Database.Read]
+  return db.update(user)
+}

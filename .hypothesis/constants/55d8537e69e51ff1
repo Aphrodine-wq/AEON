@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/separation_logic.py
+# hypothesis_version: 6.141.1
+
+[' * ', '<sep>', 'Separation Logic', 'alloc', 'allocate', 'allocated_at', 'arc', 'arc_new', 'args', 'array', 'box', 'box_new', 'calloc', 'clone', 'close', 'create', 'dealloc', 'deallocate', 'delete', 'destroy', 'dispose', 'drop', 'emp', 'engine', 'free', 'list', 'list_seg', 'location', 'make', 'malloc', 'map', 'new', 'nil', 'none', 'null', 'nullptr', 'option', 'optional', 'pointer', 'points_to', 'ptr', 'rc', 'rc_new', 'realloc', 'ref', 'release', 'star', 'to_owned', 'tree', 'variable', 'vec', 'vec_new']

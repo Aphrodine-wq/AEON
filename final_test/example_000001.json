@@ -1,0 +1,12 @@
+{
+  "prompt": "Create a data type 'Vector_1' and a function 'abs_1' that operates on it",
+  "source_code": "data Vector_1 {\n    field_0: Int\n  field_1: Float\n}\n\npure abs_1(x: Vector_1) -> String {\n  return x.field_0.toString()\n}",
+  "ir_output": "{\n  \"module\": \"<stdin>\",\n  \"data_types\": [\n    {\n      \"name\": \"Vector_1\",\n      \"fields\": [\n        {\n          \"name\": \"field_0\",\n          \"type\": \"Int\"\n        },\n        {\n          \"name\": \"field_1\",\n          \"type\": \"Float\"\n        }\n      ]\n    }\n  ],\n  \"functions\": [\n    {\n      \"name\": \"abs_1\",\n      \"return_type\": \"String\",\n      \"is_pure\": true,\n      \"effects\": [],\n      \"contracts\": {},\n      \"params\": [\n        {\n          \"id\": 1,\n          \"op\": \"param\",\n          \"type\": \"Vector_1\",\n          \"label\": \"x\"\n        }\n      ],\n      \"nodes\": [\n        {\n          \"id\": 0,\n          \"op\": \"func_start\",\n          \"type\": \"Void\",\n          \"label\": \"abs_1\"\n        },\n        {\n          \"id\": 1,\n          \"op\": \"param\",\n          \"type\": \"Vector_1\",\n          \"label\": \"x\"\n        },\n        {\n          \"id\": 2,\n          \"op\": \"field_get\",\n          \"type\": \"Void\",\n          \"inputs\": [\n            1\n          ],\n          \"label\": \"field_0\"\n        },\n        {\n          \"id\": 3,\n          \"op\": \"method_call\",\n          \"type\": \"Void\",\n          \"inputs\": [\n            2\n          ],\n          \"label\": \"toString\"\n        },\n        {\n          \"id\": 4,\n          \"op\": \"return\",\n          \"type\": \"Void\",\n          \"inputs\": [\n            3\n          ]\n        },\n        {\n          \"id\": 5,\n          \"op\": \"func_end\",\n          \"type\": \"Void\",\n          \"label\": \"abs_1\"\n        }\n      ]\n    }\n  ]\n}",
+  "llvm_output": null,
+  "errors": [],
+  "metadata": {
+    "type": "mixed",
+    "complexity": "medium",
+    "declarations": 2
+  }
+}

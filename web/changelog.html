@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON Changelog — Release Notes</title>
+    <meta name="description" content="AEON release history. See what's new, what's fixed, and what's changed in each version.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .changelog-hero {
+            padding: calc(var(--nav-height) + 4rem) 2rem 4rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .changelog-hero h1 {
+            font-size: clamp(2.25rem, 5vw, 3.5rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+        .changelog-hero h1 .gradient {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #74b9ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .changelog-hero p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .changelog-content {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 2rem 6rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="index.html" class="nav-logo">AEON<span>.</span></a>
+        <button class="mobile-toggle" onclick="toggleMobile()">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="nav-dropdown">
+                <a href="docs.html">Docs</a>
+                <div class="nav-dropdown-menu">
+                    <a href="docs.html">Documentation</a>
+                    <a href="tutorials.html">Tutorials</a>
+                    <a href="api-reference.html">API Reference</a>
+                    <a href="benchmarks.html">Benchmarks</a>
+                    <a href="changelog.html" class="active">Changelog</a>
+                </div>
+            </li>
+            <li><a href="examples.html">Examples</a></li>
+            <li><a href="index.html#install">Install</a></li>
+            <li><button class="nav-search-btn search-trigger" onclick="openAeonSearch()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search <kbd>&#8984;K</kbd></button></li>
+            <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="nav-cta">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <section class="changelog-hero">
+        <h1><span class="gradient">Changelog</span></h1>
+        <p>Release history for AEON. See what's new, what's fixed, and what's changed.</p>
+    </section>
+
+    <div class="changelog-content">
+        <div class="timeline">
+
+            <div class="timeline-entry major">
+                <div class="timeline-date">February 22, 2026</div>
+                <div class="timeline-version">v1.1.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>AEON 1.1 &mdash; 30+ Engines, 5 New Detection Categories</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> <strong>API Contract Verification</strong> &mdash; missing input validation, unchecked returns, use-after-close</li>
+                        <li><span class="timeline-tag new">New</span> <strong>Numeric Safety Analysis</strong> &mdash; integer overflow/underflow, lossy coercions, float == pitfalls</li>
+                        <li><span class="timeline-tag new">New</span> <strong>Null/Undefined Safety</strong> &mdash; null dereference, missing null checks, unsafe optional unwrap</li>
+                        <li><span class="timeline-tag new">New</span> <strong>Error Handling Verification</strong> &mdash; swallowed exceptions, missing error propagation, cleanup gaps</li>
+                        <li><span class="timeline-tag new">New</span> <strong>Dead Code Detection</strong> &mdash; unreachable code, unused variables/params, duplicate branches</li>
+                        <li><span class="timeline-tag improve">Improved</span> Symbolic Execution: array bounds checking, format string detection, integer overflow</li>
+                        <li><span class="timeline-tag improve">Improved</span> Taint Analysis: log injection, header injection, template injection, open redirect</li>
+                        <li><span class="timeline-tag improve">Improved</span> Concurrency: thread-unsafe collection detection, missing atomic/volatile</li>
+                        <li><span class="timeline-tag improve">Improved</span> Separation Logic: buffer overflow, uninitialized memory reads, unsafe buffer ops</li>
+                        <li><span class="timeline-tag improve">Improved</span> Website redesigned for clarity &mdash; plain-English explanations throughout</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry major">
+                <div class="timeline-date">February 20, 2026</div>
+                <div class="timeline-version">v1.0.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>AEON 1.0 &mdash; Production Release</strong></p>
+                    <ul>
+                        <li>All 25 verification engines stable and production-ready</li>
+                        <li>14 language adapters (Python, Java, JS, TS, Go, Rust, C, C++, Ruby, Swift, Kotlin, PHP, Scala, Dart)</li>
+                        <li>VS Code extension with inline diagnostics, CodeLens, and quick fixes</li>
+                        <li>SARIF 2.1.0 output for GitHub Code Scanning integration</li>
+                        <li>Baseline / diff mode for incremental adoption</li>
+                        <li>Parallel scanning with configurable worker count</li>
+                        <li>REST API server for programmatic verification</li>
+                        <li>Comprehensive documentation site with tutorials and examples</li>
+                        <li>Docker image, Homebrew tap, npm wrapper, Scoop bucket</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">February 15, 2026</div>
+                <div class="timeline-version">v0.9.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <span class="timeline-tag improve">Improved</span> <strong>Release Candidate</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> Bounded Model Checking engine (Clarke et al. 1986)</li>
+                        <li><span class="timeline-tag new">New</span> Shape Analysis engine (Sagiv et al. 2002)</li>
+                        <li><span class="timeline-tag improve">Improved</span> Symbolic execution now uses KLEE-style path prioritization</li>
+                        <li><span class="timeline-tag improve">Improved</span> Abstract interpretation: added delayed widening (3 iterations)</li>
+                        <li><span class="timeline-tag fix">Fixed</span> False positive in taint analysis for parameterized queries</li>
+                        <li><span class="timeline-tag fix">Fixed</span> Z3 timeout handling now properly reports AEON-W008</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">February 8, 2026</div>
+                <div class="timeline-version">v0.8.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Multi-Language Expansion</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> Added 8 new language adapters: Ruby, Swift, Kotlin, PHP, Scala, Dart, C, C++</li>
+                        <li><span class="timeline-tag new">New</span> Universal contract syntax via comment annotations (<code>@requires</code>, <code>@ensures</code>)</li>
+                        <li><span class="timeline-tag new">New</span> Auto-detection of language from file extension</li>
+                        <li><span class="timeline-tag improve">Improved</span> Java adapter now uses <code>javalang</code> for full AST parsing</li>
+                        <li><span class="timeline-tag fix">Fixed</span> JavaScript arrow function parsing in regex adapter</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">January 28, 2026</div>
+                <div class="timeline-version">v0.7.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Enterprise Features</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> <code>aeon scan</code> command for directory-wide scanning</li>
+                        <li><span class="timeline-tag new">New</span> SARIF 2.1.0 output format</li>
+                        <li><span class="timeline-tag new">New</span> Baseline / diff mode for incremental adoption</li>
+                        <li><span class="timeline-tag new">New</span> Parallel scanning with <code>--parallel --workers N</code></li>
+                        <li><span class="timeline-tag new">New</span> GitHub Actions workflow template</li>
+                        <li><span class="timeline-tag new">New</span> Docker image and docker-compose.yml</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">January 15, 2026</div>
+                <div class="timeline-version">v0.6.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Security Engines</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> Taint Analysis engine &mdash; SQL injection, XSS, command injection detection</li>
+                        <li><span class="timeline-tag new">New</span> Concurrency Verification &mdash; data race, deadlock, atomicity violation detection</li>
+                        <li><span class="timeline-tag new">New</span> Separation Logic &mdash; use-after-free, double-free, memory leak detection</li>
+                        <li><span class="timeline-tag improve">Improved</span> Information flow now auto-labels variables from naming patterns</li>
+                        <li><span class="timeline-tag fix">Fixed</span> Hoare logic loop invariant inference for nested loops</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">January 2, 2026</div>
+                <div class="timeline-version">v0.5.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Advanced Type Engines</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> Dependent Types / Curry-Howard engine</li>
+                        <li><span class="timeline-tag new">New</span> Certified Compilation verification</li>
+                        <li><span class="timeline-tag new">New</span> Category-Theoretic Semantics engine</li>
+                        <li><span class="timeline-tag new">New</span> VS Code extension (inline diagnostics, CodeLens)</li>
+                        <li><span class="timeline-tag improve">Improved</span> Liquid types now infer refinement predicates from usage</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">December 15, 2025</div>
+                <div class="timeline-version">v0.4.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Core Verification Engines</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> Symbolic Execution engine (King 1976, KLEE 2008)</li>
+                        <li><span class="timeline-tag new">New</span> Hoare Logic / wp-calculus with Houdini invariant inference</li>
+                        <li><span class="timeline-tag new">New</span> Information Flow / Noninterference analysis</li>
+                        <li><span class="timeline-tag new">New</span> Liquid Types / Refinement type inference</li>
+                        <li><span class="timeline-tag new">New</span> Algebraic Effects verification</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">December 1, 2025</div>
+                <div class="timeline-version">v0.3.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Multi-Language Support</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> Python, Java, JavaScript, TypeScript, Go, Rust adapters</li>
+                        <li><span class="timeline-tag new">New</span> Contract extraction from docstrings, Javadoc, JSDoc</li>
+                        <li><span class="timeline-tag new">New</span> REST API server (<code>python -m aeon.api_server</code>)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry">
+                <div class="timeline-date">November 15, 2025</div>
+                <div class="timeline-version">v0.2.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Compiler Foundation</strong></p>
+                    <ul>
+                        <li><span class="timeline-tag new">New</span> Three-pass compiler: Prove &rarr; Flatten &rarr; Emit</li>
+                        <li><span class="timeline-tag new">New</span> Abstract Interpretation engine (Cousot 1977)</li>
+                        <li><span class="timeline-tag new">New</span> Size-Change Termination engine (Lee et al. 2001)</li>
+                        <li><span class="timeline-tag new">New</span> Z3-backed contract verification</li>
+                        <li><span class="timeline-tag new">New</span> Ownership and borrow checker</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-entry major">
+                <div class="timeline-date">November 1, 2025</div>
+                <div class="timeline-version">v0.1.0</div>
+                <div class="timeline-body">
+                    <p><span class="timeline-tag new">New</span> <strong>Initial Release</strong></p>
+                    <ul>
+                        <li>AEON native language: <code>pure</code>, <code>task</code>, <code>data</code> primitives</li>
+                        <li>Lexer, parser, AST, type system</li>
+                        <li>Basic contract system (requires / ensures)</li>
+                        <li>CLI: <code>aeon check</code></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo">AEON<span>.</span></div>
+                <p>Formal verification for the languages you already use. 30+ engines. 14 languages.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="index.html#demo">Live Demo</a></li>
+                    <li><a href="index.html#engines">Engines</a></li>
+                    <li><a href="index.html#install">Installation</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <ul>
+                    <li><a href="docs.html">Documentation</a></li>
+                    <li><a href="tutorials.html">Tutorials</a></li>
+                    <li><a href="examples.html">Examples</a></li>
+                    <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                    <li><a href="changelog.html">Changelog</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 AEON Project</span>
+            <span>Built with mathematical certainty</span>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/copy.js"></script>
+</body>
+</html>

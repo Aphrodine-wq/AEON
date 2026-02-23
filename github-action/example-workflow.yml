@@ -1,0 +1,69 @@
+# .github/workflows/aeon-verify.yml
+# Add this to your repo to verify Python code on every PR
+
+name: AEON Verify
+
+on:
+  pull_request:
+    paths:
+      - '**.py'
+  push:
+    branches: [main]
+    paths:
+      - '**.py'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    name: AEON Verification
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AEON Verify
+        uses: your-org/aeon-verify@v1
+        with:
+          path: '**/*.py'
+          deep-verify: 'true'
+          fail-on-errors: 'true'
+
+      # Optional: Comment on PR with results
+      - name: Comment Results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('${{ runner.temp }}/aeon-report.json', 'utf8'));
+            
+            let body = '## AEON Verification Report\n\n';
+            
+            if (report.all_verified) {
+              body += '### ✅ All files verified\n\n';
+            } else {
+              body += `### ❌ ${report.total_errors} error(s) found\n\n`;
+            }
+            
+            body += `| Metric | Value |\n|--------|-------|\n`;
+            body += `| Files analyzed | ${report.files.length} |\n`;
+            body += `| Functions | ${report.total_functions} |\n`;
+            body += `| Errors | ${report.total_errors} |\n`;
+            body += `| Warnings | ${report.total_warnings} |\n`;
+            body += `| Time | ${report.elapsed_seconds}s |\n\n`;
+            
+            for (const file of report.files) {
+              if (!file.verified && file.errors.length > 0) {
+                body += `#### ❌ \`${file.file}\`\n`;
+                for (const err of file.errors) {
+                  body += `- ${err.message}\n`;
+                }
+                body += '\n';
+              }
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

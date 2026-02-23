@@ -1,0 +1,13 @@
+{
+  "prompt": "Create a recursive pure function 'add_0' with parameters a: Float, b: Float",
+  "source_code": "pure add_0(a: Float, b: Float) -> Float {\n  return 0\n}",
+  "ir_output": "{\n  \"module\": \"<stdin>\",\n  \"data_types\": [],\n  \"functions\": [\n    {\n      \"name\": \"add_0\",\n      \"return_type\": \"Float\",\n      \"is_pure\": true,\n      \"effects\": [],\n      \"contracts\": {},\n      \"params\": [\n        {\n          \"id\": 1,\n          \"op\": \"param\",\n          \"type\": \"Float\",\n          \"label\": \"a\"\n        },\n        {\n          \"id\": 2,\n          \"op\": \"param\",\n          \"type\": \"Float\",\n          \"label\": \"b\"\n        }\n      ],\n      \"nodes\": [\n        {\n          \"id\": 0,\n          \"op\": \"func_start\",\n          \"type\": \"Void\",\n          \"label\": \"add_0\"\n        },\n        {\n          \"id\": 1,\n          \"op\": \"param\",\n          \"type\": \"Float\",\n          \"label\": \"a\"\n        },\n        {\n          \"id\": 2,\n          \"op\": \"param\",\n          \"type\": \"Float\",\n          \"label\": \"b\"\n        },\n        {\n          \"id\": 3,\n          \"op\": \"const_int\",\n          \"type\": \"Int\",\n          \"value\": 0\n        },\n        {\n          \"id\": 4,\n          \"op\": \"return\",\n          \"type\": \"Void\",\n          \"inputs\": [\n            3\n          ]\n        },\n        {\n          \"id\": 5,\n          \"op\": \"func_end\",\n          \"type\": \"Void\",\n          \"label\": \"add_0\"\n        }\n      ]\n    }\n  ]\n}",
+  "llvm_output": "; ModuleID = \"<stdin>\"\ntarget triple = \"x86_64-apple-darwin24.6.0\"\ntarget datalayout = \"\"\n\ndefine double @\"add_0\"(double %\"a\", double %\"b\") readonly\n{\nentry:\n  %\".4\" = sitofp i64 0 to double\n  ret double %\".4\"\n}\n",
+  "errors": [],
+  "metadata": {
+    "type": "pure_function",
+    "complexity": "simple",
+    "has_contracts": false,
+    "body_type": "recursive"
+  }
+}

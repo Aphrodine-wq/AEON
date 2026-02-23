@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/verification_context.py
+# hypothesis_version: 6.141.1
+
+['(and ', ')', '+∞', '-inf', '-∞', 'PUBLIC', 'engine', 'function', 'inf', 'interval_facts', 'location', 'nonneg_vars', 'nonzero_vars', 'obligations_proved', 'positive_vars', 'proof_obligations', 'proved_vcs', 'proven_termination', 'security_labels', 'vc', 'witness', 'witnesses']

@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON Documentation</title>
+    <meta name="description" content="Comprehensive documentation for AEON — the AI-native formal verification tool for 14+ languages.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ── Docs Layout ─────────────────────────── */
+        .docs-wrapper {
+            display: flex;
+            min-height: 100vh;
+            padding-top: var(--nav-height);
+        }
+
+        /* Sidebar */
+        .docs-sidebar {
+            position: fixed;
+            top: var(--nav-height);
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 2rem 0;
+            z-index: 50;
+        }
+        .docs-sidebar::-webkit-scrollbar { width: 4px; }
+        .docs-sidebar::-webkit-scrollbar-track { background: transparent; }
+        .docs-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .sidebar-section {
+            margin-bottom: 1.5rem;
+        }
+        .sidebar-section h4 {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .sidebar-section a {
+            display: block;
+            padding: 0.35rem 1.5rem 0.35rem 1.75rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.15s, background 0.15s;
+            border-left: 2px solid transparent;
+        }
+        .sidebar-section a:hover {
+            color: var(--text);
+            background: #1a1a2e;
+        }
+        .sidebar-section a.active {
+            color: var(--accent-light);
+            border-left-color: var(--accent);
+            background: #1c1a30;
+        }
+        .sidebar-section a.sub {
+            padding-left: 2.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* Main content */
+        .docs-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 3rem 4rem;
+            max-width: 900px;
+        }
+
+        .docs-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            line-height: 1.15;
+        }
+        .docs-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 4rem;
+            margin-bottom: 1rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .docs-content h2:first-of-type {
+            border-top: none;
+            margin-top: 2rem;
+            padding-top: 0;
+        }
+        .docs-content h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent-light);
+        }
+        .docs-content h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .docs-content p {
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            line-height: 1.75;
+            font-size: 0.95rem;
+        }
+        .docs-content ul, .docs-content ol {
+            color: var(--text-dim);
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.75;
+        }
+        .docs-content li { margin-bottom: 0.35rem; }
+        .docs-content strong { color: var(--text); }
+        .docs-content code {
+            background: var(--bg-code);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+        }
+        .docs-content pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+        .docs-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            color: inherit;
+        }
+
+        .docs-content .callout {
+            border-left: 3px solid var(--accent);
+            background: #1c1a30;
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+        .docs-content .callout p { margin-bottom: 0; color: var(--text); }
+        .docs-content .callout.warning {
+            border-left-color: var(--yellow);
+            background: #2a2510;
+        }
+        .docs-content .callout.success {
+            border-left-color: var(--green);
+            background: #0a2a15;
+        }
+
+        .docs-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.88rem;
+        }
+        .docs-content th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.82rem;
+        }
+        .docs-content td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .docs-content td code {
+            font-size: 0.78rem;
+        }
+
+        /* Mobile sidebar toggle */
+        .docs-mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        @media (max-width: 900px) {
+            .docs-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .docs-sidebar.open { transform: translateX(0); }
+            .docs-content { margin-left: 0; padding: 2rem 1.5rem; }
+            .docs-mobile-toggle { display: flex; align-items: center; justify-content: center; }
+        }
+
+        .engine-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .engine-card h4 {
+            margin-top: 0;
+            color: var(--text);
+        }
+        .engine-card p { font-size: 0.88rem; margin-bottom: 0.5rem; }
+        .engine-card .engine-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.78rem;
+        }
+        .engine-card .engine-meta span {
+            padding: 0.2rem 0.6rem;
+            background: #1a1a2e;
+            border-radius: 6px;
+            color: var(--accent-light);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="index.html" class="nav-logo">AEON<span>.</span></a>
+        <button class="mobile-toggle" onclick="toggleMobile()">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="nav-dropdown">
+                <a href="docs.html" class="active">Docs</a>
+                <div class="nav-dropdown-menu">
+                    <a href="docs.html">Documentation</a>
+                    <a href="tutorials.html">Tutorials</a>
+                    <a href="api-reference.html">API Reference</a>
+                    <a href="benchmarks.html">Benchmarks</a>
+                    <a href="changelog.html">Changelog</a>
+                </div>
+            </li>
+            <li><a href="examples.html">Examples</a></li>
+            <li><a href="index.html#install">Install</a></li>
+            <li><button class="nav-search-btn search-trigger" onclick="openAeonSearch()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search <kbd>&#8984;K</kbd></button></li>
+            <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="nav-cta">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <div class="docs-wrapper">
+        <!-- Sidebar -->
+        <aside class="docs-sidebar" id="docs-sidebar">
+            <div class="sidebar-section">
+                <h4>Getting Started</h4>
+                <a href="#what-is-aeon">What is AEON?</a>
+                <a href="#installation" class="sub">Installation</a>
+                <a href="#first-verification" class="sub">Your First Verification</a>
+                <a href="#configuration" class="sub">Configuration</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Core Concepts</h4>
+                <a href="#three-primitives">Three Primitives</a>
+                <a href="#contracts">Contract System</a>
+                <a href="#effect-system">Effect System</a>
+                <a href="#ownership">Ownership &amp; Borrowing</a>
+                <a href="#security-labels">Security Labels</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Verification Engines</h4>
+                <a href="#engines">Overview (30+ Engines)</a>
+                <a href="#engine-symbolic" class="sub">Symbolic Execution</a>
+                <a href="#engine-abstract" class="sub">Abstract Interpretation</a>
+                <a href="#engine-termination" class="sub">Termination Analysis</a>
+                <a href="#engine-hoare" class="sub">Hoare Logic</a>
+                <a href="#engine-infoflow" class="sub">Information Flow</a>
+                <a href="#engine-liquid" class="sub">Liquid Types</a>
+                <a href="#engine-effects" class="sub">Algebraic Effects</a>
+                <a href="#engine-dependent" class="sub">Dependent Types</a>
+                <a href="#engine-taint" class="sub">Taint Analysis</a>
+                <a href="#engine-separation" class="sub">Separation Logic</a>
+                <a href="#engine-concurrency" class="sub">Concurrency</a>
+                <a href="#engine-model" class="sub">Model Checking</a>
+                <a href="#engine-shape" class="sub">Shape Analysis</a>
+                <a href="#engine-certified" class="sub">Certified Compilation</a>
+                <a href="#engine-category" class="sub">Category Semantics</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Multi-Language</h4>
+                <a href="#languages">Supported Languages</a>
+                <a href="#lang-contracts" class="sub">Contract Syntax</a>
+                <a href="#lang-adapters" class="sub">How Adapters Work</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>CLI Reference</h4>
+                <a href="#cli">Commands</a>
+                <a href="#cli-check" class="sub">aeon check</a>
+                <a href="#cli-scan" class="sub">aeon scan</a>
+                <a href="#cli-watch" class="sub">aeon watch</a>
+                <a href="#cli-flags" class="sub">All Flags</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Enterprise</h4>
+                <a href="#enterprise">Enterprise Guide</a>
+                <a href="#ci-cd" class="sub">CI/CD Integration</a>
+                <a href="#sarif" class="sub">SARIF Output</a>
+                <a href="#baseline" class="sub">Baseline Mode</a>
+                <a href="#parallel" class="sub">Parallel Scanning</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>API &amp; Extensions</h4>
+                <a href="#api">REST API</a>
+                <a href="#python-sdk" class="sub">Python SDK</a>
+                <a href="#vscode-ext" class="sub">VS Code Extension</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Advanced</h4>
+                <a href="#advanced-config">Advanced Configuration</a>
+                <a href="#custom-adapters">Writing Custom Adapters</a>
+                <a href="#migration">Migration Guides</a>
+                <a href="#migrate-eslint" class="sub">From ESLint</a>
+                <a href="#migrate-mypy" class="sub">From mypy</a>
+                <a href="#migrate-semgrep" class="sub">From Semgrep / CodeQL</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Use Cases</h4>
+                <a href="#usecases">Industry Use Cases</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Architecture</h4>
+                <a href="#architecture">Compiler Pipeline</a>
+                <a href="#project-structure" class="sub">Project Structure</a>
+            </div>
+            <div class="sidebar-section">
+                <h4>Reference</h4>
+                <a href="#error-reference">Error Reference</a>
+                <a href="#troubleshooting">Troubleshooting</a>
+                <a href="#glossary">Glossary</a>
+                <a href="#faq">FAQ</a>
+                <a href="#papers">Academic Papers</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="docs-content">
+
+            <!-- ═══════════ GETTING STARTED ═══════════ -->
+            <h1 id="what-is-aeon">AEON Documentation</h1>
+            <p>AEON is an AI-native programming language and compiler that provides <strong>formal verification</strong> for code written in 14+ languages. Using 30+ peer-reviewed verification engines backed by 44 academic papers, AEON mathematically proves your code is correct &mdash; catching bugs that tests, linters, and code review miss.</p>
+
+            <div class="callout">
+                <p><strong>Key insight:</strong> Tests check that your code works for specific inputs. AEON proves it works for <em>all</em> inputs.</p>
+            </div>
+
+            <h3>What AEON catches</h3>
+            <ul>
+                <li><strong>Division by zero</strong> &mdash; even when the divisor comes from user input</li>
+                <li><strong>Infinite loops</strong> &mdash; functions that never terminate</li>
+                <li><strong>Security leaks</strong> &mdash; secrets flowing to public outputs</li>
+                <li><strong>SQL injection, XSS, command injection</strong> &mdash; tainted data reaching sinks</li>
+                <li><strong>Race conditions &amp; deadlocks</strong> &mdash; in concurrent code</li>
+                <li><strong>Buffer overflows &amp; use-after-free</strong> &mdash; memory safety violations</li>
+                <li><strong>Contract violations</strong> &mdash; broken preconditions and postconditions</li>
+                <li><strong>Integer overflow</strong> &mdash; arithmetic that exceeds type bounds</li>
+            </ul>
+
+            <h2 id="installation">Installation</h2>
+            <p>AEON can be installed via multiple package managers. Choose the one that fits your workflow.</p>
+
+            <h3>pip (all platforms)</h3>
+<pre><code>pip install aeon-lang</code></pre>
+
+            <h3>Homebrew (macOS &amp; Linux)</h3>
+<pre><code>brew tap aeon-lang/tap
+brew install aeon</code></pre>
+
+            <h3>Linux / macOS (one-liner)</h3>
+<pre><code>curl -fsSL https://raw.githubusercontent.com/aeon-lang/aeon/main/install.sh | bash</code></pre>
+
+            <h3>Windows</h3>
+<pre><code># PowerShell
+irm https://raw.githubusercontent.com/aeon-lang/aeon/main/install.ps1 | iex
+
+# Or via Scoop
+scoop bucket add aeon https://github.com/aeon-lang/scoop-aeon
+scoop install aeon</code></pre>
+
+            <h3>Docker</h3>
+<pre><code>docker run -v $(pwd):/workspace aeon-lang/aeon \
+  aeon check /workspace/your_code.py --deep-verify</code></pre>
+
+            <h3>npm / npx</h3>
+<pre><code>npx aeon-verify check app.ts --deep-verify</code></pre>
+
+            <h3>From source</h3>
+<pre><code>git clone https://github.com/aeon-lang/aeon.git
+cd aeon && pip install -e .</code></pre>
+
+            <h2 id="first-verification">Your First Verification</h2>
+            <p>Create a file called <code>example.py</code>:</p>
+<pre><code>def average(numbers: list, count: int) -> float:
+    return sum(numbers) / count</code></pre>
+            <p>Run AEON:</p>
+<pre><code>aeon check example.py --deep-verify</code></pre>
+            <p>AEON will report:</p>
+<pre><code>&#10007; 2 bug(s) found
+  &#9888; Division by zero possible (line 2)
+    Engine: Abstract Interpretation (Cousot 1977)
+    divisor_range: (-&#8734;, +&#8734;) includes 0
+  &#9888; Symbolic Execution: division by zero reachable
+    Counterexample: count = 0
+    Fix: add requires count != 0</code></pre>
+
+            <p>Fix the code by adding a contract:</p>
+<pre><code>def average(numbers: list, count: int) -> float:
+    """
+    Requires: count != 0
+    """
+    return sum(numbers) / count</code></pre>
+            <p>Run again:</p>
+<pre><code>aeon check example.py --deep-verify
+&#10003; VERIFIED: 1 function, 0 classes &mdash; no bugs found</code></pre>
+
+            <h2 id="configuration">Configuration</h2>
+            <p>Create a <code>.aeonrc.yml</code> file in your project root to configure AEON:</p>
+<pre><code># .aeonrc.yml
+version: 1
+
+# Default analysis flags
+analysis:
+  deep_verify: true
+  parallel: true
+  workers: 4
+
+# File patterns to include/exclude
+include:
+  - "src/**/*.py"
+  - "lib/**/*.ts"
+exclude:
+  - "**/test_*.py"
+  - "**/node_modules/**"
+
+# Output format
+output:
+  format: text    # text | json | sarif
+  verbose: false
+
+# Security labels for information flow
+security:
+  labels:
+    - name: PUBLIC
+      level: 0
+    - name: INTERNAL
+      level: 1
+    - name: SECRET
+      level: 2
+    - name: TOP_SECRET
+      level: 3</code></pre>
+
+
+            <!-- ═══════════ CORE CONCEPTS ═══════════ -->
+            <h2 id="three-primitives">Three Primitives</h2>
+            <p>AEON's native language uses only three primitives. Every program is built from these:</p>
+
+            <table>
+                <thead>
+                    <tr><th>Primitive</th><th>Meaning</th><th>Category Theory</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>pure</code></td>
+                        <td>A function with no side effects. Compiler can freely parallelize, memoize, or reorder.</td>
+                        <td>Morphism in a Cartesian Closed Category</td>
+                    </tr>
+                    <tr>
+                        <td><code>task</code></td>
+                        <td>A function with declared algebraic effects (I/O, DB, Network).</td>
+                        <td>Kleisli morphism in a graded monad</td>
+                    </tr>
+                    <tr>
+                        <td><code>data</code></td>
+                        <td>An immutable type definition with named fields.</td>
+                        <td>Initial algebra of a polynomial functor</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Example: pure function</h4>
+<pre><code>pure add(a: Int, b: Int) -> Int {
+  ensures: result == a + b
+  return a + b
+}</code></pre>
+
+            <h4>Example: task function</h4>
+<pre><code>task createUser(user: User) -> Bool {
+  requires: user.email.isValid()
+  effects:  [Database.Write]
+  return db.insert(user)
+}</code></pre>
+
+            <h4>Example: data type</h4>
+<pre><code>data User {
+  id:    UUID
+  email: Email
+  name:  String
+}</code></pre>
+
+            <h2 id="contracts">Contract System</h2>
+            <p>Every function can carry a formal contract that AEON verifies at compile time using both Z3 SMT solver and Hoare logic.</p>
+
+            <h3>Contract keywords</h3>
+            <table>
+                <thead><tr><th>Keyword</th><th>Meaning</th></tr></thead>
+                <tbody>
+                    <tr><td><code>requires</code></td><td>Precondition &mdash; what must be true when the function is called</td></tr>
+                    <tr><td><code>ensures</code></td><td>Postcondition &mdash; what is guaranteed when the function returns</td></tr>
+                    <tr><td><code>effects</code></td><td>Declared side effects (AEON-native only)</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Contracts in Python (docstrings)</h3>
+<pre><code>def safe_divide(a: int, b: int) -> int:
+    """
+    Requires: b != 0
+    Ensures:  result == a // b
+    """
+    return a // b</code></pre>
+
+            <h3>Contracts in Java (Javadoc)</h3>
+<pre><code>/**
+ * @requires b != 0
+ * @ensures result == a / b
+ */
+public int divide(int a, int b) {
+    return a / b;
+}</code></pre>
+
+            <h3>Contracts in other languages</h3>
+            <p>Use comment annotations: <code>// @requires</code>, <code>/// @requires</code>, <code># @requires</code>, or <code>/* @requires */</code> depending on the language's comment style.</p>
+
+            <h2 id="effect-system">Effect System</h2>
+            <p>AEON tracks side effects as a mathematical lattice using algebraic effects with row polymorphism (Plotkin &amp; Pretnar, ESOP 2009). Effects are declared on <code>task</code> functions.</p>
+
+            <h3>Available effects</h3>
+<pre><code>Database.Read     Database.Write
+Network.Read      Network.Write
+FileSystem.Read   FileSystem.Write
+Console.Write     Random
+Time              Crypto</code></pre>
+
+            <p>AEON automatically detects when effects commute and can be parallelized. Non-commuting effects are sequenced.</p>
+
+            <h2 id="ownership">Ownership &amp; Borrowing</h2>
+            <p>AEON enforces an ownership model inspired by Rust:</p>
+            <ul>
+                <li>Each value has exactly <strong>one owner</strong> at any time</li>
+                <li>When the owner goes out of scope, the value is dropped</li>
+                <li><strong>Borrowing</strong> allows temporary references without transferring ownership</li>
+                <li>The borrow checker prevents <strong>use-after-move</strong> and <strong>dangling references</strong></li>
+            </ul>
+
+            <h2 id="security-labels">Security Labels</h2>
+            <p>AEON's information flow analysis uses a security lattice to prevent data leaks:</p>
+<pre><code>PUBLIC &le; INTERNAL &le; SECRET &le; TOP_SECRET</code></pre>
+            <p>Data labeled <code>SECRET</code> cannot flow to a <code>PUBLIC</code> output. AEON catches both explicit flows (<code>x_public = y_secret</code>) and implicit flows (<code>if (secret) { x_public = 1 }</code>).</p>
+
+
+            <!-- ═══════════ VERIFICATION ENGINES ═══════════ -->
+            <h2 id="engines">Verification Engines</h2>
+            <p>AEON integrates 30+ peer-reviewed formal verification engines. Each can be activated individually via CLI flags or all at once with <code>--deep-verify</code>.</p>
+
+            <div class="engine-card" id="engine-symbolic">
+                <h4>1. Symbolic Execution</h4>
+                <p>Explores every feasible execution path by treating variables as symbolic values. Forks at each branch, accumulates path conditions, and checks them with Z3. Generates concrete counterexamples for every bug found.</p>
+                <div class="engine-meta">
+                    <span>--symbolic</span>
+                    <span>King, CACM 1976</span>
+                    <span>KLEE, OSDI 2008</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Symbolic Execution Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Instead of running your code with concrete values like <code>x = 5</code>, symbolic execution treats inputs as symbolic variables (<code>x = &alpha;</code>). At each branch (<code>if &alpha; > 0</code>), the engine forks into two paths: one where <code>&alpha; > 0</code> and one where <code>&alpha; &le; 0</code>. Each path accumulates a <em>path condition</em> &mdash; a conjunction of constraints. When a path reaches a potential bug (division, array access, assertion), the path condition is sent to Z3 to check satisfiability. If SAT, Z3 produces a concrete input that triggers the bug.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Division by zero reachable on any feasible path</li>
+                            <li>Assertion violations with concrete counterexamples</li>
+                            <li>Null pointer dereferences</li>
+                            <li>Array out-of-bounds access</li>
+                            <li>Contract violations (requires/ensures)</li>
+                        </ul>
+                        <p><strong>Example output:</strong></p>
+<pre><code>&#10007; Symbolic Execution: division by zero is reachable
+  Path condition: count == 0 &and; len(numbers) >= 0
+  Counterexample: count = 0, numbers = []
+  Fix: add requires count != 0</code></pre>
+                        <p><strong>Configuration:</strong></p>
+<pre><code># .aeonrc.yml
+analysis:
+  symbolic:
+    max_depth: 50          # Max path exploration depth
+    timeout_per_path: 5s   # Z3 timeout per path
+    max_paths: 10000       # Cap on total paths explored</code></pre>
+                        <p><strong>Limitations:</strong> Path explosion in programs with many branches or loops. Mitigated by bounded exploration and heuristic path prioritization. Cannot reason about external library calls unless stubs are provided.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-abstract">
+                <h4>2. Abstract Interpretation</h4>
+                <p>Analyzes programs using abstract domains (intervals, signs, congruences) connected to concrete semantics via Galois connections. Uses widening for convergence and narrowing for precision. Detects division by zero, overflow, and bound violations.</p>
+                <div class="engine-meta">
+                    <span>--abstract-interp</span>
+                    <span>Cousot &amp; Cousot, POPL 1977</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Abstract Interpretation Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Abstract interpretation approximates all possible runtime values using <em>abstract domains</em>. The interval domain tracks <code>[lo, hi]</code> bounds for each variable. For example, after <code>x = input()</code>, x has range <code>(-&infin;, +&infin;)</code>. After <code>if x > 0</code>, the true branch narrows to <code>[1, +&infin;)</code>. A Galois connection <code>(&alpha;, &gamma;)</code> formally links concrete and abstract semantics, guaranteeing soundness: if the abstract analysis says "no division by zero," then no concrete execution can divide by zero.</p>
+                        <p><strong>Abstract domains used by AEON:</strong></p>
+                        <ul>
+                            <li><strong>Interval domain</strong> &mdash; tracks numeric ranges <code>[lo, hi]</code></li>
+                            <li><strong>Sign domain</strong> &mdash; tracks <code>{negative, zero, positive}</code></li>
+                            <li><strong>Congruence domain</strong> &mdash; tracks <code>x &equiv; a (mod n)</code></li>
+                            <li><strong>Nullness domain</strong> &mdash; tracks <code>{null, non-null, maybe-null}</code></li>
+                        </ul>
+                        <p><strong>Widening &amp; narrowing:</strong> Loops require <em>widening</em> to force convergence (jumping to &infin; bounds) followed by <em>narrowing</em> to recover precision. AEON uses delayed widening (iterate 3 times before widening) for better results.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Division by zero (divisor range includes 0)</li>
+                            <li>Integer overflow (value exceeds type bounds)</li>
+                            <li>Array index out of bounds</li>
+                            <li>Unreachable code detection</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Over-approximation can produce false positives. The interval domain cannot track relationships between variables (e.g., <code>x &lt; y</code>). For relational properties, use Hoare Logic or Symbolic Execution.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-termination">
+                <h4>3. Size-Change Termination</h4>
+                <p>Decides termination by building size-change graphs at call sites and computing transitive closures. By Ramsey's theorem, any infinite call sequence produces an idempotent graph &mdash; if every such graph has a strict decrease, the program terminates. Sound and complete for size-change termination.</p>
+                <div class="engine-meta">
+                    <span>--size-change</span>
+                    <span>Lee, Jones, Ben-Amram, POPL 2001</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Size-Change Termination Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> For each function call <code>f(a, b) &rarr; f(a-1, b)</code>, AEON builds a <em>size-change graph</em> with edges showing how parameters change: <code>a' &lt; a</code> (strict decrease), <code>b' &le; b</code> (non-increase). The transitive closure of all call-graph compositions is computed. By Ramsey's theorem, any infinite call sequence must contain a repeated (idempotent) graph. If every idempotent graph has at least one strict decrease on the diagonal, termination is guaranteed.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Infinite recursion with no base case</li>
+                            <li>Mutual recursion that never terminates</li>
+                            <li>Loops where the variant never decreases</li>
+                            <li>Subtle non-termination in accumulator patterns</li>
+                        </ul>
+                        <p><strong>Example:</strong></p>
+<pre><code># TERMINATES: x strictly decreases each call
+def countdown(x: int) -> int:
+    if x <= 0: return 0
+    return countdown(x - 1)
+
+# DOES NOT TERMINATE: no argument decreases
+def infinite(x: int) -> int:
+    return infinite(x)</code></pre>
+                        <p><strong>Limitations:</strong> Cannot prove termination for programs that require ranking functions over complex data structures (e.g., termination depending on list length). For those cases, manual <code>decreases</code> annotations can be added.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-hoare">
+                <h4>4. Hoare Logic / wp-Calculus</h4>
+                <p>Mechanically verifies function contracts by computing weakest preconditions backward from postconditions. Verification conditions are discharged to Z3. Loop invariants are inferred using Houdini's algorithm.</p>
+                <div class="engine-meta">
+                    <span>--hoare</span>
+                    <span>Dijkstra 1975</span>
+                    <span>Hoare 1969</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Hoare Logic Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> A <em>Hoare triple</em> <code>{P} S {Q}</code> states: "if precondition P holds before executing statement S, then postcondition Q holds after." AEON works <em>backward</em> from the postcondition using Dijkstra's <em>weakest precondition</em> (wp) calculus. For example, <code>wp(x := e, Q) = Q[e/x]</code>. The generated verification conditions (VCs) are SMT formulas sent to Z3.</p>
+                        <p><strong>Inference rules:</strong></p>
+<pre><code>Assignment:  {Q[e/x]} x := e {Q}
+Sequence:    {P} S1 {R}, {R} S2 {Q}  &rArr;  {P} S1;S2 {Q}
+Conditional: {P&and;B} S1 {Q}, {P&and;&not;B} S2 {Q}  &rArr;  {P} if B then S1 else S2 {Q}
+Loop:        {I&and;B} S {I}  &rArr;  {I} while B do S {I&and;&not;B}</code></pre>
+                        <p><strong>Loop invariant inference:</strong> AEON uses Houdini's algorithm: start with all candidate invariants (derived from contracts and program variables), then iteratively remove candidates that are violated by any loop iteration, until a fixed point is reached.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Contract violations &mdash; ensures clause not implied by function body</li>
+                            <li>Precondition insufficiency &mdash; requires clause too weak</li>
+                            <li>Loop invariant violations</li>
+                            <li>Off-by-one errors in loop bounds</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Requires contracts (requires/ensures) to be meaningful. Without contracts, Hoare logic has nothing to verify. Loop invariant inference may time out on complex loops with many variables.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-infoflow">
+                <h4>5. Information Flow / Noninterference</h4>
+                <p>Security type system proving that secret inputs cannot influence public outputs. Detects explicit flows, implicit flows (via branches), and termination channels. Uses a configurable security lattice.</p>
+                <div class="engine-meta">
+                    <span>--info-flow</span>
+                    <span>Volpano, Smith, Irvine, JCS 1996</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Information Flow Analysis Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Every variable is assigned a <em>security label</em> from a lattice (e.g., <code>PUBLIC &le; INTERNAL &le; SECRET &le; TOP_SECRET</code>). The type system enforces <em>noninterference</em>: changing a SECRET input cannot change any PUBLIC output. This is checked by propagating labels through assignments, branches, and function calls.</p>
+                        <p><strong>Flow types detected:</strong></p>
+                        <ul>
+                            <li><strong>Explicit flow:</strong> <code>public_var = secret_var</code> &mdash; direct assignment</li>
+                            <li><strong>Implicit flow:</strong> <code>if (secret) { public_var = 1 }</code> &mdash; the branch condition leaks information</li>
+                            <li><strong>Termination channel:</strong> <code>while (secret) { ... }</code> &mdash; whether the loop terminates reveals information</li>
+                        </ul>
+                        <p><strong>Example:</strong></p>
+<pre><code># VIOLATION: SECRET flows to PUBLIC
+SECRET_KEY = "sk_live_abc"  # label: SECRET
+
+def public_endpoint(user_id):
+    return {"key": SECRET_KEY}  # ERROR: SECRET &rarr; PUBLIC
+
+# FIX: don't include secrets in public output
+def public_endpoint_safe(user_id):
+    return {"id": user_id}  # OK: PUBLIC &rarr; PUBLIC</code></pre>
+                        <p><strong>Configuration:</strong> Define custom security lattices in <code>.aeonrc.yml</code>. Labels can be applied via comments (<code># @label SECRET</code>) or inferred from variable names and patterns (e.g., variables named <code>*_key</code>, <code>*_secret</code>, <code>*_password</code> are automatically labeled SECRET).</p>
+                        <p><strong>Limitations:</strong> Conservative analysis &mdash; may flag intentional declassification (e.g., hashing a password). Use <code># @declassify</code> annotations to mark intentional information release.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-liquid">
+                <h4>6. Liquid Types</h4>
+                <p>Refinement types that annotate base types with logical predicates (e.g., <code>{v: Int | v >= 0}</code>). Predicates are verified by SMT. Inference uses predicate abstraction with CEGAR.</p>
+                <div class="engine-meta">
+                    <span>--refinement-types</span>
+                    <span>Rondon, Kawaguchi, Jhala, PLDI 2008</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Liquid Types Work</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Liquid types extend base types with logical predicates drawn from a fixed set of qualifiers. For example, <code>{v: Int | v &gt; 0}</code> refines <code>Int</code> to positive integers. Subtyping reduces to SMT validity: <code>{v: Int | v &gt; 0} &lt;: {v: Int | v &ge; 0}</code> iff <code>&forall;v. v &gt; 0 &rArr; v &ge; 0</code>. Type inference uses predicate abstraction: candidate refinements are drawn from the qualifier set, and counterexample-guided abstraction refinement (CEGAR) iterates until a solution is found or a bug is confirmed.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Type-level contract violations (return type doesn't match ensures clause)</li>
+                            <li>Refinement mismatches across function boundaries</li>
+                            <li>Automatic inference of preconditions from usage patterns</li>
+                        </ul>
+                        <p><strong>Example:</strong></p>
+<pre><code># AEON infers: x has type {v: Int | v != 0}
+def safe_reciprocal(x: int) -> float:
+    """Requires: x != 0"""
+    return 1.0 / x  # Liquid type: divisor is {v | v != 0} &#10003;</code></pre>
+                        <p><strong>Limitations:</strong> Inference is limited to the qualifier set. Complex properties requiring quantifier alternation are beyond the scope of liquid types.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-effects">
+                <h4>7. Algebraic Effects</h4>
+                <p>Tracks side effects as a bounded lattice with row polymorphism. Automatically detects parallelization opportunities when effects commute. Effect handlers use delimited continuations.</p>
+                <div class="engine-meta">
+                    <span>--algebraic-effects</span>
+                    <span>Plotkin &amp; Pretnar, ESOP 2009</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Algebraic Effects Work</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Effects are organized in a bounded lattice: <code>&perp; &le; {Database.Read} &le; {Database.Read, Database.Write} &le; &top;</code>. Each <code>task</code> function declares its effects. AEON checks that: (1) a function only performs declared effects, (2) callers have at least the effects of the callee, and (3) pure functions perform zero effects. Row polymorphism allows generic effect handling.</p>
+                        <p><strong>Parallelization:</strong> When two effects <em>commute</em> (e.g., two <code>Database.Read</code> operations), AEON can safely parallelize them. Non-commuting effects (e.g., <code>Database.Write</code> followed by <code>Database.Read</code> of the same data) are sequenced.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Undeclared side effects in task functions</li>
+                            <li>Side effects in pure functions (should have zero effects)</li>
+                            <li>Effect leaks across module boundaries</li>
+                            <li>Missed parallelization opportunities</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Effect tracking in multi-language mode is approximate &mdash; AEON infers effects from code patterns rather than declarations for non-AEON languages.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-dependent">
+                <h4>8. Dependent Types / Curry-Howard</h4>
+                <p>Full Pi types where return types depend on input values. Via the Curry-Howard correspondence, types are propositions and programs are proofs. Includes bidirectional type checking, normalization, and universe hierarchy.</p>
+                <div class="engine-meta">
+                    <span>--dependent-types</span>
+                    <span>Martin-L&ouml;f 1984</span>
+                    <span>Coquand &amp; Huet 1988</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Dependent Types Work</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> In a dependent type system, types can mention values. A Pi type <code>&Pi;(n: Nat). Vec(n)</code> describes a function that takes a natural number <code>n</code> and returns a vector of exactly length <code>n</code>. Via the <em>Curry-Howard correspondence</em>, this type is also a logical proposition: "for all n, there exists a vector of length n." A well-typed program is simultaneously a proof of its type.</p>
+                        <p><strong>Key concepts:</strong></p>
+                        <ul>
+                            <li><strong>Pi types</strong> &mdash; dependent function types: return type depends on input value</li>
+                            <li><strong>Sigma types</strong> &mdash; dependent pairs: second component's type depends on first's value</li>
+                            <li><strong>Universe hierarchy</strong> &mdash; <code>Type₀ : Type₁ : Type₂ : ...</code> prevents paradoxes</li>
+                            <li><strong>Bidirectional checking</strong> &mdash; combines type inference (bottom-up) and type checking (top-down)</li>
+                        </ul>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Length mismatches in array/list operations</li>
+                            <li>Protocol violations (state machine type mismatches)</li>
+                            <li>Dimensional analysis errors (meters vs. seconds)</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Type checking dependent types is undecidable in general. AEON uses normalization with fuel limits and falls back to SMT for complex cases.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-taint">
+                <h4>9. Taint Analysis</h4>
+                <p>Tracks untrusted data from sources (HTTP params, user input) to sinks (SQL queries, HTML output, OS commands). Detects SQL injection, XSS, command injection, path traversal, and SSRF.</p>
+                <div class="engine-meta">
+                    <span>--taint</span>
+                    <span>Schwartz et al., IEEE S&amp;P 2010</span>
+                    <span>Tripp et al., PLDI 2009</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Taint Analysis Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Taint analysis tracks data from <em>sources</em> (untrusted inputs) through the program to <em>sinks</em> (security-sensitive operations). Data is marked "tainted" at sources. Taint propagates through assignments, function calls, and string operations. If tainted data reaches a sink without passing through a <em>sanitizer</em>, AEON reports a vulnerability.</p>
+                        <p><strong>Source &rarr; Sink pairs:</strong></p>
+                        <table>
+                            <thead><tr><th>Source</th><th>Sink</th><th>Vulnerability</th></tr></thead>
+                            <tbody>
+                                <tr><td>HTTP parameter</td><td>SQL query string</td><td>SQL Injection</td></tr>
+                                <tr><td>User input</td><td>HTML output</td><td>Cross-Site Scripting (XSS)</td></tr>
+                                <tr><td>User input</td><td><code>os.system()</code></td><td>Command Injection</td></tr>
+                                <tr><td>User input</td><td>File path</td><td>Path Traversal</td></tr>
+                                <tr><td>User input</td><td>HTTP request URL</td><td>SSRF</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Sanitizers:</strong> Functions that neutralize taint. For SQL, parameterized queries are sanitizers. For XSS, HTML escaping functions are sanitizers. Custom sanitizers can be declared in <code>.aeonrc.yml</code>.</p>
+                        <p><strong>Example:</strong></p>
+<pre><code># BUG: SQL injection — username flows unsanitized to query
+def login(username, password):
+    query = f"SELECT * FROM users WHERE name = '{username}'"
+    # &#10007; TAINT: user_input &rarr; sql_query (no sanitizer)
+
+# FIX: parameterized query
+def login_safe(username, password):
+    query = "SELECT * FROM users WHERE name = ?"
+    params = (username,)  # &#10003; sanitized via parameterization</code></pre>
+                        <p><strong>Limitations:</strong> Static taint analysis cannot track taint through opaque third-party library calls. AEON treats unknown library returns as conservatively tainted.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-separation">
+                <h4>10. Separation Logic</h4>
+                <p>Heap safety verification using spatial reasoning. The separating conjunction (P * Q) proves disjoint heap ownership. The frame rule enables modular reasoning. Detects use-after-free, double-free, and memory leaks.</p>
+                <div class="engine-meta">
+                    <span>--separation-logic</span>
+                    <span>Reynolds, LICS 2002</span>
+                    <span>O'Hearn, POPL 2019</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Separation Logic Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Separation logic extends Hoare logic with the <em>separating conjunction</em> <code>P * Q</code>, which asserts that P and Q hold on <em>disjoint</em> regions of the heap. The <em>frame rule</em> allows modular reasoning: if <code>{P} C {Q}</code> is valid and C doesn't touch the heap region described by R, then <code>{P * R} C {Q * R}</code> is also valid. This enables verifying each function in isolation.</p>
+                        <p><strong>Key connectives:</strong></p>
+                        <ul>
+                            <li><code>x &mapsto; v</code> &mdash; heap cell at address x contains value v</li>
+                            <li><code>P * Q</code> &mdash; P and Q hold on disjoint heap regions</li>
+                            <li><code>P -* Q</code> &mdash; magic wand: if P is added to the heap, Q holds</li>
+                            <li><code>emp</code> &mdash; the empty heap</li>
+                        </ul>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Use-after-free &mdash; accessing memory after deallocation</li>
+                            <li>Double-free &mdash; deallocating the same memory twice</li>
+                            <li>Memory leaks &mdash; allocated memory never freed</li>
+                            <li>Dangling pointers &mdash; pointers to freed memory</li>
+                            <li>Buffer overflows &mdash; writing beyond allocated bounds</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Most relevant for C, C++, and Rust code. For garbage-collected languages (Python, Java, JS), separation logic focuses on resource management (file handles, connections) rather than raw memory.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-concurrency">
+                <h4>11. Concurrency Verification</h4>
+                <p>Detects data races using lockset analysis (Eraser), deadlocks via lock-order graph cycles, and atomicity violations. Uses happens-before partial ordering for sound race detection.</p>
+                <div class="engine-meta">
+                    <span>--concurrency</span>
+                    <span>Owicki &amp; Gries 1976</span>
+                    <span>Flanagan &amp; Godefroid, POPL 2005</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Concurrency Verification Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> AEON uses three complementary techniques: (1) <em>Lockset analysis</em> (Eraser algorithm) tracks which locks protect each shared variable &mdash; if the lockset becomes empty, a race is possible. (2) <em>Lock-order graphs</em> detect deadlocks by finding cycles in the partial order of lock acquisitions. (3) <em>Happens-before analysis</em> uses Lamport's partial ordering to determine whether two accesses to the same variable are ordered &mdash; unordered concurrent writes constitute a data race.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Data races &mdash; concurrent unsynchronized access to shared state</li>
+                            <li>Deadlocks &mdash; circular lock dependencies</li>
+                            <li>Atomicity violations &mdash; operations that should be atomic but aren't</li>
+                            <li>Lock ordering violations &mdash; acquiring locks in inconsistent order</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Static concurrency analysis is inherently conservative. AEON may report false positives for thread-safe patterns it doesn't recognize (e.g., custom lock-free algorithms). Use <code># @thread-safe</code> annotations to suppress known false positives.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-model">
+                <h4>12. Bounded Model Checking</h4>
+                <p>Exhaustive state-space exploration with bounded loop unrolling. Encodes programs as SAT/SMT formulas. Verifies temporal properties (safety, liveness, reachability) and generates counterexample traces.</p>
+                <div class="engine-meta">
+                    <span>--model-check</span>
+                    <span>Clarke et al., TOPLAS 1986</span>
+                    <span>Biere et al., TACAS 1999</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Bounded Model Checking Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> The program is unrolled up to a bound <code>k</code> (e.g., loops run at most k iterations). The unrolled program is encoded as a propositional formula and checked by a SAT/SMT solver. If a property violation exists within the bound, the solver produces a concrete counterexample trace (a sequence of states leading to the bug). Safety properties are checked as invariants over all reachable states; liveness properties verify that something good eventually happens.</p>
+                        <p><strong>Properties verified:</strong></p>
+                        <ul>
+                            <li><strong>Safety</strong> &mdash; "bad things never happen" (no assertion violation reachable)</li>
+                            <li><strong>Reachability</strong> &mdash; "can state X be reached?" (bug hunting)</li>
+                            <li><strong>Invariants</strong> &mdash; "property P holds in every reachable state"</li>
+                            <li><strong>Bounded liveness</strong> &mdash; "good things happen within k steps"</li>
+                        </ul>
+                        <p><strong>Configuration:</strong></p>
+<pre><code># .aeonrc.yml
+analysis:
+  model_check:
+    bound: 20            # Loop unrolling bound
+    timeout: 30s         # SAT solver timeout</code></pre>
+                        <p><strong>Limitations:</strong> Bounded &mdash; can only find bugs within the unrolling bound. Increasing the bound exponentially increases the formula size. For unbounded verification, combine with abstract interpretation or Hoare logic.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-shape">
+                <h4>13. Shape Analysis</h4>
+                <p>Verifies linked data structures using 3-valued logic (Kleene). Canonical abstraction merges nodes into summary nodes. Checks list acyclicity, tree balance, no null traversal, and no sharing violations.</p>
+                <div class="engine-meta">
+                    <span>--shape</span>
+                    <span>Sagiv, Reps, Wilhelm, TOPLAS 2002</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Shape Analysis Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Shape analysis represents heap structures using <em>3-valued logical structures</em> where each predicate can be true, false, or <em>unknown</em> (1/2). Canonical abstraction merges concrete heap nodes that are indistinguishable by the tracked predicates into <em>summary nodes</em>. This provides a finite abstraction of potentially infinite heaps. The analysis verifies structural invariants by checking predicates over the abstract heap.</p>
+                        <p><strong>What it catches:</strong></p>
+                        <ul>
+                            <li>Linked list invariant violations (cycles in acyclic lists, broken links)</li>
+                            <li>Tree invariant violations (unbalanced BST, broken parent pointers)</li>
+                            <li>Null pointer traversal (following null <code>next</code> pointers)</li>
+                            <li>Sharing violations (unexpected aliasing in tree structures)</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Most useful for code that manipulates explicit pointer-based data structures (linked lists, trees, graphs). Less applicable to high-level languages that use built-in collections.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-certified">
+                <h4>14. Certified Compilation</h4>
+                <p>CompCert-style simulation proofs verify each compiler pass preserves semantics. Forward simulation, invariant tracking, and translation validation compose into end-to-end correctness.</p>
+                <div class="engine-meta">
+                    <span>--certified</span>
+                    <span>Leroy, CACM 2009</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Certified Compilation Works</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> AEON's compiler has three passes (Prove &rarr; Flatten &rarr; Emit). Certified compilation verifies that each pass preserves program semantics using <em>forward simulation relations</em>: if the source program takes a step, the target program takes a corresponding step. These simulation proofs compose transitively, providing end-to-end correctness: the compiled binary behaves exactly as the source code specifies.</p>
+                        <p><strong>Compiler passes verified:</strong></p>
+                        <ul>
+                            <li><strong>Pass 1 (Prove)</strong> &mdash; type checking and analysis preserve AST structure</li>
+                            <li><strong>Pass 2 (Flatten)</strong> &mdash; AST &rarr; flat IR preserves evaluation semantics</li>
+                            <li><strong>Pass 3 (Emit)</strong> &mdash; flat IR &rarr; LLVM IR preserves operational behavior</li>
+                        </ul>
+                        <p><strong>What it guarantees:</strong> If your source code is verified correct, the compiled binary is also correct. No miscompilation bugs. This is the same approach used by CompCert, the only formally verified production C compiler.</p>
+                        <p><strong>Limitations:</strong> Only applies to AEON-native code compiled through the full pipeline. Multi-language verification verifies source code only, not compiled output.</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="engine-card" id="engine-category">
+                <h4>15. Category-Theoretic Semantics</h4>
+                <p>Every AEON program has a denotational meaning: pure functions are CCC morphisms, tasks are Kleisli arrows in a graded monad, data types are initial algebras. Functor law verification proves compiler correctness.</p>
+                <div class="engine-meta">
+                    <span>--category</span>
+                    <span>Moggi, Info. &amp; Comp. 1991</span>
+                </div>
+                <details class="collapsible" style="margin-top:1rem;">
+                    <summary>Deep Dive: How Category-Theoretic Semantics Work</summary>
+                    <div class="details-content">
+                        <p><strong>Algorithm overview:</strong> Category theory provides the mathematical foundation for AEON's type system and semantics. Every language construct has a precise categorical meaning:</p>
+                        <ul>
+                            <li><strong><code>pure</code> functions</strong> are morphisms in a Cartesian Closed Category (CCC). Composition is associative; identity morphisms exist. This justifies compiler optimizations like inlining and reordering.</li>
+                            <li><strong><code>task</code> functions</strong> are Kleisli arrows in a graded monad (Moggi 1991). The monad tracks effects; the grading corresponds to the effect lattice. Monad laws guarantee sequential composition is well-defined.</li>
+                            <li><strong><code>data</code> types</strong> are initial algebras of polynomial functors. This gives a principled theory of structural recursion: any function over a <code>data</code> type can be expressed as a fold (catamorphism).</li>
+                        </ul>
+                        <p><strong>What it verifies:</strong></p>
+                        <ul>
+                            <li>Functor law verification &mdash; <code>map id = id</code> and <code>map (f . g) = map f . map g</code></li>
+                            <li>Monad law verification &mdash; left/right unit and associativity</li>
+                            <li>Naturality conditions &mdash; transformations commute with functors</li>
+                        </ul>
+                        <p><strong>Limitations:</strong> Category-theoretic checks are most meaningful for AEON-native code. For multi-language verification, these checks are not applied.</p>
+                    </div>
+                </details>
+            </div>
+
+
+            <!-- ═══════════ MULTI-LANGUAGE ═══════════ -->
+            <h2 id="languages">Supported Languages</h2>
+            <p>AEON auto-detects language from the file extension and applies the appropriate adapter.</p>
+
+            <table>
+                <thead><tr><th>Language</th><th>Extensions</th><th>Adapter</th></tr></thead>
+                <tbody>
+                    <tr><td>Python</td><td><code>.py</code></td><td>Built-in <code>ast</code> module</td></tr>
+                    <tr><td>Java</td><td><code>.java</code></td><td><code>javalang</code></td></tr>
+                    <tr><td>JavaScript</td><td><code>.js</code>, <code>.jsx</code>, <code>.mjs</code></td><td>Regex-based</td></tr>
+                    <tr><td>TypeScript</td><td><code>.ts</code>, <code>.tsx</code></td><td>Regex-based</td></tr>
+                    <tr><td>Go</td><td><code>.go</code></td><td>Regex-based</td></tr>
+                    <tr><td>Rust</td><td><code>.rs</code></td><td>Regex-based</td></tr>
+                    <tr><td>C</td><td><code>.c</code>, <code>.h</code></td><td>Regex-based</td></tr>
+                    <tr><td>C++</td><td><code>.cpp</code>, <code>.hpp</code>, <code>.cc</code></td><td>Regex-based</td></tr>
+                    <tr><td>Ruby</td><td><code>.rb</code></td><td>Regex-based</td></tr>
+                    <tr><td>Swift</td><td><code>.swift</code></td><td>Regex-based</td></tr>
+                    <tr><td>Kotlin</td><td><code>.kt</code>, <code>.kts</code></td><td>Regex-based</td></tr>
+                    <tr><td>PHP</td><td><code>.php</code></td><td>Regex-based</td></tr>
+                    <tr><td>Scala</td><td><code>.scala</code></td><td>Regex-based</td></tr>
+                    <tr><td>Dart</td><td><code>.dart</code></td><td>Regex-based</td></tr>
+                </tbody>
+            </table>
+
+            <h3 id="lang-contracts">Contract Syntax by Language</h3>
+            <table>
+                <thead><tr><th>Language</th><th>Contract Syntax</th></tr></thead>
+                <tbody>
+                    <tr><td>Python</td><td><code>"""Requires: x &gt; 0"""</code> in docstrings</td></tr>
+                    <tr><td>Java</td><td><code>/** @requires x &gt; 0 */</code> in Javadoc</td></tr>
+                    <tr><td>JS / TS</td><td><code>/** @requires x !== 0 */</code> in JSDoc</td></tr>
+                    <tr><td>Go</td><td><code>// @requires x &gt; 0</code></td></tr>
+                    <tr><td>Rust</td><td><code>/// @requires x &gt; 0</code></td></tr>
+                    <tr><td>C / C++</td><td><code>/* @requires x &gt; 0 */</code></td></tr>
+                    <tr><td>Ruby</td><td><code># @requires x &gt; 0</code></td></tr>
+                    <tr><td>Swift</td><td><code>/// @requires x &gt; 0</code></td></tr>
+                    <tr><td>Kotlin</td><td><code>// @requires x &gt; 0</code></td></tr>
+                    <tr><td>PHP</td><td><code>/** @requires $x &gt; 0 */</code></td></tr>
+                    <tr><td>Scala</td><td><code>// @requires x &gt; 0</code></td></tr>
+                    <tr><td>Dart</td><td><code>/// @requires x &gt; 0</code></td></tr>
+                </tbody>
+            </table>
+
+            <h3 id="lang-adapters">How Adapters Work</h3>
+            <p>Each language adapter parses source code into AEON's universal AST representation. Python uses the built-in <code>ast</code> module for high-fidelity parsing. Java uses <code>javalang</code>. All other languages use robust regex-based parsing that extracts function signatures, class definitions, and contract annotations.</p>
+<pre><code>from aeon.adapters.language_adapter import verify
+
+result = verify("fn add(a: i32, b: i32) -> i32 { a + b }", language="rust")
+print(result.summary)
+# &#10003; VERIFIED (Rust): 1 function, 0 classes &mdash; no bugs found</code></pre>
+
+
+            <!-- ═══════════ CLI REFERENCE ═══════════ -->
+            <h2 id="cli">CLI Reference</h2>
+
+            <h3 id="cli-check">aeon check</h3>
+            <p>Verify a single file. Language is auto-detected from extension.</p>
+<pre><code>aeon check &lt;file&gt; [flags]
+
+# Examples:
+aeon check payment.py --deep-verify
+aeon check Main.java --symbolic --taint
+aeon check server.go --hoare --abstract-interp</code></pre>
+
+            <h3 id="cli-scan">aeon scan</h3>
+            <p>Scan an entire directory recursively. Supports parallel execution and SARIF output.</p>
+<pre><code>aeon scan &lt;dir&gt; [flags]
+
+# Examples:
+aeon scan src/ --deep-verify
+aeon scan src/ --deep-verify --parallel --workers 8
+aeon scan src/ --format sarif &gt; results.sarif
+aeon scan src/ --baseline .aeon-baseline.json</code></pre>
+
+            <h3 id="cli-watch">aeon watch</h3>
+            <p>Watch a directory and re-verify on file changes. Debounced to avoid excessive reruns.</p>
+<pre><code>aeon watch &lt;dir&gt; [flags]
+
+# Examples:
+aeon watch src/ --deep-verify
+aeon watch . --parallel</code></pre>
+
+            <h3 id="cli-flags">All Flags</h3>
+            <table>
+                <thead><tr><th>Flag</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>--deep-verify</code></td><td>Enable all 30+ analysis engines</td></tr>
+                    <tr><td><code>--verify</code></td><td>Z3 contract verification only</td></tr>
+                    <tr><td><code>--refinement-types</code></td><td>Liquid type inference (PLDI 2008)</td></tr>
+                    <tr><td><code>--abstract-interp</code></td><td>Abstract interpretation (POPL 1977)</td></tr>
+                    <tr><td><code>--size-change</code></td><td>Size-change termination (POPL 2001)</td></tr>
+                    <tr><td><code>--hoare</code></td><td>Hoare logic / wp-calculus</td></tr>
+                    <tr><td><code>--algebraic-effects</code></td><td>Effect algebra (ESOP 2009)</td></tr>
+                    <tr><td><code>--category</code></td><td>Category-theoretic semantics</td></tr>
+                    <tr><td><code>--info-flow</code></td><td>Information flow / noninterference</td></tr>
+                    <tr><td><code>--dependent-types</code></td><td>Dependent types / Curry-Howard</td></tr>
+                    <tr><td><code>--certified</code></td><td>Certified compilation (CompCert)</td></tr>
+                    <tr><td><code>--symbolic</code></td><td>Symbolic execution</td></tr>
+                    <tr><td><code>--separation-logic</code></td><td>Separation logic / heap safety</td></tr>
+                    <tr><td><code>--taint</code></td><td>Taint analysis / injection detection</td></tr>
+                    <tr><td><code>--concurrency</code></td><td>Concurrency / race detection</td></tr>
+                    <tr><td><code>--shape</code></td><td>Shape analysis for data structures</td></tr>
+                    <tr><td><code>--model-check</code></td><td>Bounded model checking</td></tr>
+                    <tr><td><code>--parallel</code></td><td>Multiprocess parallel scanning</td></tr>
+                    <tr><td><code>--workers N</code></td><td>Number of parallel workers</td></tr>
+                    <tr><td><code>--format text|json|sarif</code></td><td>Output format</td></tr>
+                    <tr><td><code>--baseline &lt;file&gt;</code></td><td>Baseline file for diff mode</td></tr>
+                    <tr><td><code>--create-baseline</code></td><td>Create baseline from current results</td></tr>
+                </tbody>
+            </table>
+
+
+            <!-- ═══════════ ENTERPRISE ═══════════ -->
+            <h2 id="enterprise">Enterprise Guide</h2>
+            <p>AEON is designed for enterprise adoption with features like incremental rollout, CI/CD integration, and industry-standard output formats.</p>
+
+            <h3 id="ci-cd">CI/CD Integration</h3>
+            <h4>GitHub Actions</h4>
+<pre><code># .github/workflows/verify.yml
+name: AEON Verify
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install aeon-lang
+      - run: aeon scan src/ --deep-verify --format sarif > results.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif</code></pre>
+
+            <h4>GitLab CI</h4>
+<pre><code># .gitlab-ci.yml
+aeon-verify:
+  image: python:3.11
+  script:
+    - pip install aeon-lang
+    - aeon scan src/ --deep-verify --format json
+  artifacts:
+    reports:
+      codequality: aeon-results.json</code></pre>
+
+            <h3 id="sarif">SARIF Output</h3>
+            <p>AEON supports <strong>SARIF 2.1.0</strong> (Static Analysis Results Interchange Format) for integration with GitHub Code Scanning, Azure DevOps, and other tools.</p>
+<pre><code>aeon scan src/ --deep-verify --format sarif > results.sarif</code></pre>
+            <p>Upload the SARIF file to GitHub Code Scanning to see AEON findings as code annotations in pull requests.</p>
+
+            <h3 id="baseline">Baseline / Diff Mode</h3>
+            <p>For incremental adoption on large codebases, use baseline mode to only flag <em>new</em> issues:</p>
+<pre><code># Create a baseline of current issues
+aeon scan src/ --deep-verify --baseline .aeon-baseline.json --create-baseline
+
+# On subsequent runs, only new issues are reported
+aeon scan src/ --deep-verify --baseline .aeon-baseline.json</code></pre>
+
+            <h3 id="parallel">Parallel Scanning</h3>
+            <p>For large codebases, enable multiprocess parallel verification:</p>
+<pre><code>aeon scan src/ --deep-verify --parallel --workers 8</code></pre>
+            <p>AEON distributes files across worker processes. Each worker runs the full verification pipeline independently.</p>
+
+
+            <!-- ═══════════ API ═══════════ -->
+            <h2 id="api">REST API</h2>
+            <p>AEON exposes a REST API for programmatic verification. Start the server:</p>
+<pre><code>python -m aeon.api_server --port 8000</code></pre>
+
+            <h3>Endpoints</h3>
+            <table>
+                <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>POST</code></td><td><code>/verify/python</code></td><td>Verify Python source code</td></tr>
+                    <tr><td><code>POST</code></td><td><code>/verify/aeon</code></td><td>Verify AEON source code</td></tr>
+                    <tr><td><code>POST</code></td><td><code>/verify/{language}</code></td><td>Verify code in any supported language</td></tr>
+                    <tr><td><code>GET</code></td><td><code>/analyses</code></td><td>List available analysis engines</td></tr>
+                    <tr><td><code>GET</code></td><td><code>/health</code></td><td>Health check</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Example request</h3>
+<pre><code>curl -X POST http://localhost:8000/verify/python \
+  -H "Content-Type: application/json" \
+  -d '{"source": "def f(a: int, b: int) -> int:\n    return a / b"}'</code></pre>
+
+            <h3>Example response</h3>
+<pre><code>{
+  "verified": false,
+  "summary": "1 bug(s) found in 1 functions",
+  "functions_analyzed": 1,
+  "classes_analyzed": 0,
+  "errors": [
+    {
+      "message": "Division by zero possible",
+      "engine": "abstract_interpretation",
+      "line": 2,
+      "details": {
+        "failing_values": {"b": 0}
+      }
+    }
+  ]
+}</code></pre>
+
+            <h3 id="python-sdk">Python SDK</h3>
+<pre><code>from aeon.adapters.python_adapter import verify_python
+
+result = verify_python('''
+def average(numbers: list, count: int) -> float:
+    return sum(numbers) / count
+''')
+
+print(result.verified)   # False
+print(result.summary)    # "2 bug(s) found in 1 functions"
+print(result.errors)     # [{"message": "Division by zero possible", ...}]</code></pre>
+
+            <h3 id="vscode-ext">VS Code Extension</h3>
+            <p>The AEON Verify VS Code extension provides:</p>
+            <ul>
+                <li><strong>Inline diagnostics</strong> &mdash; bugs appear as red squiggles with engine attribution</li>
+                <li><strong>CodeLens</strong> &mdash; "Verify" button above every function</li>
+                <li><strong>Quick fixes</strong> &mdash; auto-insert <code>requires</code> guards</li>
+                <li><strong>Hover tooltips</strong> &mdash; see verification results inline</li>
+                <li><strong>Verify on save</strong> &mdash; debounced auto-verification</li>
+                <li><strong>Syntax highlighting</strong> &mdash; full TextMate grammar for .aeon files</li>
+            </ul>
+<pre><code># Install the extension
+cd vscode-extension
+npm install && npm run compile
+npx vsce package
+code --install-extension aeon-verify-0.5.0.vsix</code></pre>
+
+
+            <!-- ═══════════ ADVANCED ═══════════ -->
+            <h2 id="advanced-config">Advanced Configuration</h2>
+            <p>AEON's behavior can be fine-tuned through <code>.aeonrc.yml</code>, environment variables, and inline annotations. This section documents every available option.</p>
+
+            <h3>Complete .aeonrc.yml Reference</h3>
+<pre><code># .aeonrc.yml — Complete reference
+version: 1
+
+# ── Analysis Settings ──────────────────────────────
+analysis:
+  deep_verify: true          # Enable all 30+ engines (default: false)
+  parallel: true             # Multiprocess scanning (default: false)
+  workers: 4                 # Number of parallel workers (default: CPU count)
+  timeout: 30                # Global timeout in seconds per file (default: 30)
+  max_depth: 50              # Max symbolic execution depth (default: 50)
+  widening_delay: 3          # Abstract interp iterations before widening (default: 3)
+  model_check_bound: 20      # BMC loop unrolling bound (default: 20)
+
+# ── File Patterns ──────────────────────────────────
+include:
+  - "src/**/*.py"
+  - "lib/**/*.ts"
+  - "app/**/*.java"
+exclude:
+  - "**/test_*.py"
+  - "**/node_modules/**"
+  - "**/__pycache__/**"
+  - "**/vendor/**"
+  - "**/*.generated.*"
+
+# ── Output ─────────────────────────────────────────
+output:
+  format: text               # text | json | sarif (default: text)
+  verbose: false             # Show analysis details (default: false)
+  color: auto                # auto | always | never (default: auto)
+  show_engine: true          # Show which engine found each bug (default: true)
+  show_fix: true             # Show suggested fixes (default: true)
+
+# ── Security Labels ───────────────────────────────
+security:
+  labels:
+    - name: PUBLIC
+      level: 0
+    - name: INTERNAL
+      level: 1
+    - name: SECRET
+      level: 2
+    - name: TOP_SECRET
+      level: 3
+  auto_label: true           # Auto-label from variable names (default: true)
+  patterns:                  # Custom patterns for auto-labeling
+    SECRET:
+      - "*_key"
+      - "*_secret"
+      - "*_token"
+      - "password*"
+      - "api_key*"
+    INTERNAL:
+      - "*_internal"
+      - "*_private"
+
+# ── Taint Analysis ─────────────────────────────────
+taint:
+  custom_sources:            # Additional taint sources
+    - "flask.request.args"
+    - "django.http.QueryDict"
+  custom_sinks:              # Additional taint sinks
+    - "subprocess.call"
+    - "eval"
+  custom_sanitizers:         # Functions that neutralize taint
+    - "bleach.clean"
+    - "markupsafe.escape"
+
+# ── Suppressions ───────────────────────────────────
+suppress:
+  rules:                     # Suppress specific error codes globally
+    - "AEON-W003"            # Suppress undeclared effects warning
+  files:                     # Suppress all findings in specific files
+    - "legacy/**"</code></pre>
+
+            <h3>Environment Variables</h3>
+            <table>
+                <thead><tr><th>Variable</th><th>Description</th><th>Default</th></tr></thead>
+                <tbody>
+                    <tr><td><code>AEON_CONFIG</code></td><td>Path to config file</td><td><code>.aeonrc.yml</code></td></tr>
+                    <tr><td><code>AEON_PARALLEL</code></td><td>Enable parallel mode</td><td><code>false</code></td></tr>
+                    <tr><td><code>AEON_WORKERS</code></td><td>Number of workers</td><td>CPU count</td></tr>
+                    <tr><td><code>AEON_FORMAT</code></td><td>Output format</td><td><code>text</code></td></tr>
+                    <tr><td><code>AEON_VERBOSE</code></td><td>Verbose output</td><td><code>false</code></td></tr>
+                    <tr><td><code>AEON_TIMEOUT</code></td><td>Timeout per file (seconds)</td><td><code>30</code></td></tr>
+                    <tr><td><code>AEON_NO_COLOR</code></td><td>Disable colored output</td><td><code>false</code></td></tr>
+                </tbody>
+            </table>
+
+            <h3>Inline Suppression Annotations</h3>
+            <p>Suppress specific findings inline when you know they are false positives:</p>
+<pre><code># Python: suppress next line
+x = secret_value  # aeon-ignore: AEON-E005
+
+# Python: suppress specific engine
+data = get_input()  # aeon-ignore: taint
+
+# Java: suppress
+String query = buildQuery(input); // aeon-ignore: AEON-E012
+
+# Suppress entire function
+# aeon-ignore-next-function
+def legacy_handler(request):
+    ...</code></pre>
+
+            <h3>Per-Directory Overrides</h3>
+            <p>Place a <code>.aeonrc.yml</code> in any subdirectory to override settings for that directory tree. Child configs inherit from parent and override specific fields:</p>
+<pre><code># src/legacy/.aeonrc.yml — relaxed rules for legacy code
+analysis:
+  deep_verify: false         # Only basic checks for legacy
+suppress:
+  rules:
+    - "AEON-W001"            # Allow missing contracts in legacy</code></pre>
+
+
+            <h2 id="custom-adapters">Writing Custom Adapters</h2>
+            <p>AEON's multi-language support is powered by <em>language adapters</em> that translate source code into AEON's universal AST. You can write a custom adapter to add support for a new language.</p>
+
+            <h3>Adapter Interface</h3>
+            <p>Every adapter must implement the <code>LanguageAdapter</code> protocol:</p>
+<pre><code>from aeon.adapters.base import LanguageAdapter, AdapterResult
+
+class MyLanguageAdapter(LanguageAdapter):
+    """Adapter for MyLang (.mylang files)"""
+
+    # File extensions this adapter handles
+    extensions = ['.mylang', '.ml']
+
+    def parse(self, source: str) -> AdapterResult:
+        """Parse source code and extract functions, classes, contracts."""
+        functions = self._extract_functions(source)
+        classes = self._extract_classes(source)
+        contracts = self._extract_contracts(source)
+        return AdapterResult(
+            functions=functions,
+            classes=classes,
+            contracts=contracts,
+            language='mylang',
+        )
+
+    def _extract_functions(self, source: str) -> list:
+        """Extract function signatures and bodies."""
+        # Use regex or a parser library
+        ...
+
+    def _extract_classes(self, source: str) -> list:
+        """Extract class definitions."""
+        ...
+
+    def _extract_contracts(self, source: str) -> list:
+        """Extract contract annotations (requires/ensures)."""
+        # Look for comment patterns like:
+        #   // @requires x > 0
+        #   // @ensures result >= 0
+        ...</code></pre>
+
+            <h3>Registration</h3>
+            <p>Register your adapter in <code>aeon/adapters/__init__.py</code>:</p>
+<pre><code>from aeon.adapters.mylang_adapter import MyLanguageAdapter
+
+ADAPTERS = {
+    # ... existing adapters ...
+    'mylang': MyLanguageAdapter,
+}
+EXTENSION_MAP = {
+    # ... existing mappings ...
+    '.mylang': 'mylang',
+    '.ml': 'mylang',
+}</code></pre>
+
+            <h3>Testing Your Adapter</h3>
+<pre><code># Test with the verify function
+from aeon.adapters.language_adapter import verify
+
+result = verify("func add(a, b) { return a + b }", language="mylang")
+assert result.verified == True
+assert result.functions_analyzed == 1
+
+# Test contract extraction
+result = verify("""
+// @requires b != 0
+func divide(a, b) { return a / b }
+""", language="mylang")
+assert result.verified == True  # Contract should protect against div-by-zero</code></pre>
+
+            <h3>Contract Patterns</h3>
+            <p>Your adapter should recognize these contract patterns in your language's comment syntax:</p>
+            <table>
+                <thead><tr><th>Pattern</th><th>Meaning</th></tr></thead>
+                <tbody>
+                    <tr><td><code>@requires &lt;expr&gt;</code></td><td>Precondition that must hold when function is called</td></tr>
+                    <tr><td><code>@ensures &lt;expr&gt;</code></td><td>Postcondition guaranteed on return</td></tr>
+                    <tr><td><code>@invariant &lt;expr&gt;</code></td><td>Class/loop invariant</td></tr>
+                    <tr><td><code>@decreases &lt;expr&gt;</code></td><td>Termination variant (must decrease each iteration)</td></tr>
+                    <tr><td><code>@label &lt;name&gt;</code></td><td>Security label for information flow</td></tr>
+                </tbody>
+            </table>
+
+
+            <h2 id="migration">Migration Guides</h2>
+            <p>Already using another analysis tool? Here's how AEON compares and how to adopt it alongside your existing toolchain.</p>
+
+            <h3 id="migrate-eslint">From ESLint / TSLint</h3>
+            <div class="callout">
+                <p><strong>Key difference:</strong> ESLint enforces code <em>style</em> and catches <em>pattern-level</em> issues. AEON provides <em>mathematical proof</em> that your code is correct.</p>
+            </div>
+            <table>
+                <thead><tr><th>Capability</th><th>ESLint</th><th>AEON</th></tr></thead>
+                <tbody>
+                    <tr><td>Code style enforcement</td><td><strong>Yes</strong></td><td>No (not its purpose)</td></tr>
+                    <tr><td>Unused variable detection</td><td>Yes</td><td>Yes</td></tr>
+                    <tr><td>Division by zero proof</td><td>No</td><td><strong>Yes &mdash; mathematical proof</strong></td></tr>
+                    <tr><td>Infinite loop detection</td><td>No</td><td><strong>Yes &mdash; termination analysis</strong></td></tr>
+                    <tr><td>SQL injection detection</td><td>Pattern only</td><td><strong>Yes &mdash; taint tracking</strong></td></tr>
+                    <tr><td>All-path coverage</td><td>No</td><td><strong>Yes &mdash; symbolic execution</strong></td></tr>
+                    <tr><td>Contract verification</td><td>No</td><td><strong>Yes &mdash; SMT-backed</strong></td></tr>
+                </tbody>
+            </table>
+            <p><strong>Recommendation:</strong> Keep ESLint for style. Add AEON for correctness. They complement each other perfectly.</p>
+<pre><code># Run both in CI
+eslint src/ --fix
+aeon scan src/ --deep-verify --format sarif</code></pre>
+
+            <h3 id="migrate-mypy">From mypy / Pyright</h3>
+            <div class="callout">
+                <p><strong>Key difference:</strong> mypy checks <em>types</em>. AEON checks types <em>and</em> proves <em>runtime behavior</em> correct.</p>
+            </div>
+            <table>
+                <thead><tr><th>Capability</th><th>mypy</th><th>AEON</th></tr></thead>
+                <tbody>
+                    <tr><td>Type annotation checking</td><td><strong>Yes</strong></td><td>Yes</td></tr>
+                    <tr><td>Type inference</td><td>Yes</td><td>Yes (+ refinement types)</td></tr>
+                    <tr><td>Division by zero</td><td>No</td><td><strong>Yes</strong></td></tr>
+                    <tr><td>Value range analysis</td><td>No</td><td><strong>Yes &mdash; abstract interp</strong></td></tr>
+                    <tr><td>Contract verification</td><td>No</td><td><strong>Yes</strong></td></tr>
+                    <tr><td>Security analysis</td><td>No</td><td><strong>Yes &mdash; info flow + taint</strong></td></tr>
+                    <tr><td>Multi-language support</td><td>Python only</td><td><strong>14 languages</strong></td></tr>
+                </tbody>
+            </table>
+            <p><strong>Recommendation:</strong> Keep mypy for type checking. Add AEON for deeper verification. Your existing type annotations help AEON produce better results.</p>
+
+            <h3 id="migrate-semgrep">From Semgrep / CodeQL</h3>
+            <div class="callout">
+                <p><strong>Key difference:</strong> Semgrep and CodeQL match <em>patterns</em>. AEON provides <em>mathematical proof</em>. Pattern matching catches known bad patterns; formal verification catches <em>all</em> instances of a bug class.</p>
+            </div>
+            <table>
+                <thead><tr><th>Capability</th><th>Semgrep / CodeQL</th><th>AEON</th></tr></thead>
+                <tbody>
+                    <tr><td>Pattern-based detection</td><td><strong>Yes &mdash; extensive rules</strong></td><td>No (proof-based instead)</td></tr>
+                    <tr><td>Custom rules</td><td>Yes (YAML / QL)</td><td>Yes (contracts)</td></tr>
+                    <tr><td>SQL injection (all paths)</td><td>Pattern-based</td><td><strong>Proof-based &mdash; all paths</strong></td></tr>
+                    <tr><td>Mathematical correctness</td><td>No</td><td><strong>Yes &mdash; SMT proofs</strong></td></tr>
+                    <tr><td>False positive rate</td><td>Low (tuned rules)</td><td>Very low (mathematical)</td></tr>
+                    <tr><td>Contract verification</td><td>No</td><td><strong>Yes</strong></td></tr>
+                    <tr><td>Termination analysis</td><td>No</td><td><strong>Yes</strong></td></tr>
+                </tbody>
+            </table>
+            <p><strong>Recommendation:</strong> Use Semgrep/CodeQL for their extensive rule libraries. Add AEON for mathematical certainty on critical code paths. AEON's SARIF output integrates with the same CI/CD pipelines.</p>
+
+
+            <!-- ═══════════ USE CASES ═══════════ -->
+            <h2 id="usecases">Industry Use Cases</h2>
+
+            <h3>Financial Services</h3>
+            <p>Verify payment processing, interest calculations, and transaction ledgers. AEON proves no overflow, no rounding errors, no double-charges. Engines: <strong>Abstract Interpretation</strong>, <strong>Hoare Logic</strong>, <strong>Symbolic Execution</strong>.</p>
+<pre><code>def calculate_transaction_fee(amount: int, tier_volume: int) -> float:
+    """
+    Requires: amount > 0
+    Requires: tier_volume >= 0
+    Ensures:  result >= 0.0
+    Ensures:  result <= amount * 0.03
+    """
+    if tier_volume < 1000:
+        rate = 0.029
+    elif tier_volume < 10000:
+        rate = 0.025
+    else:
+        rate = 0.019
+    return round(amount * rate, 2)</code></pre>
+
+            <h3>Healthcare &amp; HIPAA</h3>
+            <p>Prove PHI never leaks to public endpoints. Verify dosage calculations stay within safe ranges. Ensure audit trail completeness. Engines: <strong>Information Flow</strong>, <strong>Contracts</strong>, <strong>Effect Algebra</strong>.</p>
+<pre><code>def get_patient_summary_safe(record: PatientRecord) -> dict:
+    """
+    Ensures: no PHI or RESTRICTED data in result
+    """
+    anonymized_id = hash(record.patient_id) % 1000000
+    return {"id": anonymized_id, "medication_count": len(record.medications)}</code></pre>
+
+            <h3>E-Commerce</h3>
+            <p>No overselling with concurrent inventory. Price calculations are always positive. Order pipelines handle all edge cases. Engines: <strong>Concurrency</strong>, <strong>Model Checking</strong>, <strong>Termination</strong>.</p>
+
+            <h3>Security-Critical Systems</h3>
+            <p>Detect SQL injection, XSS, command injection. Prove API keys never leak. Validate all user inputs on every path. Engines: <strong>Taint Analysis</strong>, <strong>Information Flow</strong>, <strong>Symbolic Execution</strong>.</p>
+
+            <h3>Data Pipelines</h3>
+            <p>ETL pipelines always terminate. Schema validators match data. Aggregations don't overflow on large datasets. Engines: <strong>Termination</strong>, <strong>Dependent Types</strong>, <strong>Abstract Interpretation</strong>.</p>
+
+            <p>See the <a href="examples.html" style="color: var(--accent-light);">Examples page</a> for complete, runnable code for each use case.</p>
+
+
+            <!-- ═══════════ ARCHITECTURE ═══════════ -->
+            <h2 id="architecture">Compiler Pipeline</h2>
+            <p>AEON uses a three-pass compiler design with 7 pluggable formal analysis modules:</p>
+            <ol>
+                <li><strong>Pass 1 &mdash; Prove:</strong> Type checking + ownership + effects + contracts + all 15 advanced analysis engines</li>
+                <li><strong>Pass 2 &mdash; Flatten:</strong> AST &rarr; typed flat IR (directed acyclic graph)</li>
+                <li><strong>Pass 3 &mdash; Emit:</strong> Flat IR &rarr; LLVM IR &rarr; native binary</li>
+            </ol>
+
+            <h3 id="project-structure">Project Structure</h3>
+<pre><code>aeon/
+&#9500;&#9472;&#9472; compiler/           # Core compiler pipeline
+&#9474;   &#9500;&#9472;&#9472; lexer.py         # Tokenizer
+&#9474;   &#9500;&#9472;&#9472; parser.py        # LL(1) recursive-descent parser
+&#9474;   &#9500;&#9472;&#9472; ast_nodes.py     # AST node definitions
+&#9474;   &#9500;&#9472;&#9472; types.py         # Type system
+&#9474;   &#9500;&#9472;&#9472; ir.py            # Flat IR data structures
+&#9474;   &#9500;&#9472;&#9472; pass1_prove.py   # Pass 1: all analysis passes
+&#9474;   &#9500;&#9472;&#9472; pass2_flatten.py # Pass 2: AST &rarr; flat IR
+&#9474;   &#9500;&#9472;&#9472; pass3_emit.py    # Pass 3: Flat IR &rarr; LLVM IR
+&#9474;   &#9500;&#9472;&#9472; contracts.py     # Contract verification (Z3)
+&#9474;   &#9500;&#9472;&#9472; ownership.py     # Ownership &amp; borrow checker
+&#9474;   &#9492;&#9472;&#9472; effects.py       # Simple effect checker
+&#9474;
+&#9500;&#9472;&#9472; engines/             # 15+ formal verification engines
+&#9474;   &#9500;&#9472;&#9472; symbolic_execution.py
+&#9474;   &#9500;&#9472;&#9472; abstract_interp.py
+&#9474;   &#9500;&#9472;&#9472; hoare.py
+&#9474;   &#9500;&#9472;&#9472; information_flow.py
+&#9474;   &#9500;&#9472;&#9472; taint_analysis.py
+&#9474;   &#9500;&#9472;&#9472; concurrency.py
+&#9474;   &#9492;&#9472;&#9472; ... (15 total)
+&#9474;
+&#9500;&#9472;&#9472; adapters/            # 14+ language adapters
+&#9474;   &#9500;&#9472;&#9472; python_adapter.py
+&#9474;   &#9500;&#9472;&#9472; java_adapter.py
+&#9474;   &#9500;&#9472;&#9472; js_adapter.py
+&#9474;   &#9492;&#9472;&#9472; ... (14 total)
+&#9474;
+&#9500;&#9472;&#9472; enterprise/          # Enterprise features
+&#9474;   &#9500;&#9472;&#9472; scanner.py       # Directory scanning
+&#9474;   &#9500;&#9472;&#9472; sarif.py         # SARIF 2.1.0 output
+&#9474;   &#9500;&#9472;&#9472; baseline.py      # Diff mode
+&#9474;   &#9492;&#9472;&#9472; parallel.py      # Multiprocess scanning
+&#9474;
+&#9492;&#9472;&#9472; ai/                  # AI integration
+    &#9500;&#9472;&#9472; ai_integration.py
+    &#9492;&#9472;&#9472; synthetic.py</code></pre>
+
+
+            <!-- ═══════════ ERROR REFERENCE ═══════════ -->
+            <h2 id="error-reference">Error Reference</h2>
+            <p>Every error and warning AEON can emit, organized by category. Use <code>aeon-ignore: CODE</code> to suppress specific findings inline.</p>
+
+            <h3>Errors (AEON-E*)</h3>
+            <table>
+                <thead><tr><th>Code</th><th>Message</th><th>Engine</th><th>Fix</th></tr></thead>
+                <tbody>
+                    <tr><td><code>AEON-E001</code></td><td>Division by zero possible</td><td>Abstract Interp, Symbolic</td><td>Add <code>requires divisor != 0</code></td></tr>
+                    <tr><td><code>AEON-E002</code></td><td>Function may not terminate</td><td>Size-Change Termination</td><td>Add a base case or decreasing argument</td></tr>
+                    <tr><td><code>AEON-E003</code></td><td>Contract violation: ensures clause not satisfied</td><td>Hoare Logic</td><td>Fix function body or relax postcondition</td></tr>
+                    <tr><td><code>AEON-E004</code></td><td>Contract violation: requires clause too weak</td><td>Hoare Logic</td><td>Strengthen precondition</td></tr>
+                    <tr><td><code>AEON-E005</code></td><td>Information flow violation: SECRET &rarr; PUBLIC</td><td>Info Flow</td><td>Remove secret from public output or add <code>@declassify</code></td></tr>
+                    <tr><td><code>AEON-E006</code></td><td>Tainted data reaches security sink</td><td>Taint Analysis</td><td>Add sanitizer or use parameterized query</td></tr>
+                    <tr><td><code>AEON-E007</code></td><td>SQL injection: user input in query string</td><td>Taint Analysis</td><td>Use parameterized queries</td></tr>
+                    <tr><td><code>AEON-E008</code></td><td>XSS: user input in HTML output</td><td>Taint Analysis</td><td>Use HTML escaping (e.g., <code>markupsafe.escape</code>)</td></tr>
+                    <tr><td><code>AEON-E009</code></td><td>Command injection: user input in OS command</td><td>Taint Analysis</td><td>Use allowlist validation, avoid <code>os.system</code></td></tr>
+                    <tr><td><code>AEON-E010</code></td><td>Data race: unsynchronized shared access</td><td>Concurrency</td><td>Add lock or use atomic operations</td></tr>
+                    <tr><td><code>AEON-E011</code></td><td>Deadlock: circular lock dependency</td><td>Concurrency</td><td>Establish consistent lock ordering</td></tr>
+                    <tr><td><code>AEON-E012</code></td><td>Use-after-free: accessing freed memory</td><td>Separation Logic</td><td>Remove access after deallocation</td></tr>
+                    <tr><td><code>AEON-E013</code></td><td>Double-free: deallocating freed memory</td><td>Separation Logic</td><td>Track ownership; free only once</td></tr>
+                    <tr><td><code>AEON-E014</code></td><td>Integer overflow possible</td><td>Abstract Interp</td><td>Add bounds check or use wider type</td></tr>
+                    <tr><td><code>AEON-E015</code></td><td>Null pointer dereference possible</td><td>Symbolic Exec</td><td>Add null check before access</td></tr>
+                    <tr><td><code>AEON-E016</code></td><td>Array index out of bounds</td><td>Abstract Interp</td><td>Add bounds check</td></tr>
+                    <tr><td><code>AEON-E017</code></td><td>Assertion reachable with failing input</td><td>Symbolic Exec</td><td>Fix logic or strengthen precondition</td></tr>
+                    <tr><td><code>AEON-E018</code></td><td>Path traversal: user input in file path</td><td>Taint Analysis</td><td>Sanitize path; reject <code>..</code> sequences</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Warnings (AEON-W*)</h3>
+            <table>
+                <thead><tr><th>Code</th><th>Message</th><th>Engine</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr><td><code>AEON-W001</code></td><td>Function has no contract</td><td>Hoare Logic</td><td>Add requires/ensures for better verification</td></tr>
+                    <tr><td><code>AEON-W002</code></td><td>Hardcoded secret detected</td><td>Info Flow</td><td>Move to environment variable or secrets manager</td></tr>
+                    <tr><td><code>AEON-W003</code></td><td>Undeclared side effects</td><td>Algebraic Effects</td><td>Add effects declaration (AEON native only)</td></tr>
+                    <tr><td><code>AEON-W004</code></td><td>Unreachable code detected</td><td>Abstract Interp</td><td>Remove dead code or fix logic</td></tr>
+                    <tr><td><code>AEON-W005</code></td><td>Loop invariant could not be inferred</td><td>Hoare Logic</td><td>Add manual <code>@invariant</code> annotation</td></tr>
+                    <tr><td><code>AEON-W006</code></td><td>Ownership violation: use after move</td><td>Ownership</td><td>Clone value or restructure ownership</td></tr>
+                    <tr><td><code>AEON-W007</code></td><td>Implicit flow: branch leaks information</td><td>Info Flow</td><td>Restructure to avoid secret-dependent branching</td></tr>
+                    <tr><td><code>AEON-W008</code></td><td>Z3 timeout: verification inconclusive</td><td>Multiple</td><td>Simplify logic or increase timeout</td></tr>
+                    <tr><td><code>AEON-W009</code></td><td>Functor/monad law violation</td><td>Category Semantics</td><td>Fix transformation to satisfy laws</td></tr>
+                    <tr><td><code>AEON-W010</code></td><td>Missing type annotation</td><td>Liquid Types</td><td>Add type annotations for better inference</td></tr>
+                </tbody>
+            </table>
+
+
+            <!-- ═══════════ TROUBLESHOOTING ═══════════ -->
+            <h2 id="troubleshooting">Troubleshooting</h2>
+            <p>Common issues and how to resolve them.</p>
+
+            <details class="collapsible">
+                <summary>AEON reports a bug but my code is correct (false positive)</summary>
+                <div class="details-content">
+                    <p>This can happen when AEON's analysis over-approximates. Steps to resolve:</p>
+                    <ol>
+                        <li><strong>Add a contract</strong> &mdash; if AEON doesn't know your preconditions, it assumes the worst. Adding <code>requires</code> clauses eliminates most false positives.</li>
+                        <li><strong>Check the engine</strong> &mdash; the error output shows which engine flagged the issue. Some engines are more conservative than others.</li>
+                        <li><strong>Use inline suppression</strong> &mdash; <code># aeon-ignore: AEON-EXXX</code> suppresses a known false positive.</li>
+                        <li><strong>Run with <code>--verbose</code></strong> &mdash; shows the analysis reasoning so you can understand why it flagged the issue.</li>
+                    </ol>
+<pre><code># Example: AEON flags division but you know x is always > 0
+def compute(x: int) -> float:
+    """Requires: x > 0"""    # Adding this contract fixes the false positive
+    return 100.0 / x</code></pre>
+                </div>
+            </details>
+
+            <details class="collapsible">
+                <summary>Z3 timeout / verification inconclusive (AEON-W008)</summary>
+                <div class="details-content">
+                    <p>Z3 has a default timeout of 5 seconds per verification condition. Complex functions with many paths or nested loops may hit this limit.</p>
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Increase timeout: <code>aeon check file.py --timeout 60</code></li>
+                        <li>Simplify the function (break into smaller functions)</li>
+                        <li>Add loop invariants to help the solver: <code># @invariant i >= 0 and i <= len(arr)</code></li>
+                        <li>Reduce symbolic execution depth in <code>.aeonrc.yml</code></li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="collapsible">
+                <summary>Installation fails / Python version issues</summary>
+                <div class="details-content">
+                    <p>AEON requires <strong>Python 3.10+</strong>. Common issues:</p>
+                    <ul>
+                        <li><strong>Wrong Python version:</strong> Run <code>python3 --version</code> to verify. Use <code>pyenv</code> to manage versions.</li>
+                        <li><strong>Z3 solver not found:</strong> AEON bundles Z3 via <code>z3-solver</code>. If installation fails, try: <code>pip install z3-solver</code> separately.</li>
+                        <li><strong>Virtual environment:</strong> Always use a venv: <code>python3 -m venv .venv && source .venv/bin/activate && pip install aeon-lang</code></li>
+                        <li><strong>M1/M2 Mac issues:</strong> Ensure you're using the ARM64 Python build: <code>file $(which python3)</code> should show <code>arm64</code>.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="collapsible">
+                <summary>AEON is slow on large files</summary>
+                <div class="details-content">
+                    <p>Performance tips for large codebases:</p>
+                    <ul>
+                        <li><strong>Use parallel mode:</strong> <code>aeon scan src/ --parallel --workers 8</code></li>
+                        <li><strong>Use baseline mode:</strong> Only verify changed files: <code>aeon scan src/ --baseline .aeon-baseline.json</code></li>
+                        <li><strong>Disable expensive engines:</strong> Instead of <code>--deep-verify</code>, enable only needed engines: <code>--symbolic --abstract-interp</code></li>
+                        <li><strong>Exclude test files:</strong> Configure in <code>.aeonrc.yml</code>: <code>exclude: ["**/test_*.py"]</code></li>
+                        <li><strong>Reduce bounds:</strong> Lower <code>model_check_bound</code> and <code>max_depth</code> in config</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="collapsible">
+                <summary>Multi-language: unsupported language or adapter error</summary>
+                <div class="details-content">
+                    <p>AEON currently supports 14 languages. If you get an adapter error:</p>
+                    <ul>
+                        <li><strong>Check file extension:</strong> AEON auto-detects language from the extension. Ensure it's a supported extension (see <a href="#languages" style="color:var(--accent-light);">Supported Languages</a>).</li>
+                        <li><strong>Force language:</strong> Use <code>aeon check file.txt --language python</code> to override detection.</li>
+                        <li><strong>Custom adapters:</strong> For unsupported languages, write a <a href="#custom-adapters" style="color:var(--accent-light);">custom adapter</a>.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="collapsible">
+                <summary>CI/CD integration: exit codes and SARIF upload issues</summary>
+                <div class="details-content">
+                    <p>AEON exit codes:</p>
+                    <ul>
+                        <li><code>0</code> &mdash; All files verified, no bugs found</li>
+                        <li><code>1</code> &mdash; Bugs found</li>
+                        <li><code>2</code> &mdash; Configuration error or invalid input</li>
+                        <li><code>3</code> &mdash; Internal error (please report as a GitHub issue)</li>
+                    </ul>
+                    <p>For SARIF upload issues, ensure you're using SARIF 2.1.0 format and the upload action matches your CI provider. See <a href="#ci-cd" style="color:var(--accent-light);">CI/CD Integration</a>.</p>
+                </div>
+            </details>
+
+
+            <!-- ═══════════ GLOSSARY ═══════════ -->
+            <h2 id="glossary">Glossary</h2>
+            <p>Key terms from formal verification, type theory, and program analysis used throughout AEON's documentation.</p>
+
+            <table>
+                <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>Abstract Interpretation</strong></td><td>A theory of sound approximation of program semantics using abstract domains connected via Galois connections.</td></tr>
+                    <tr><td><strong>Algebraic Effects</strong></td><td>A structured approach to side effects where effects are declared as operations and handled by effect handlers using delimited continuations.</td></tr>
+                    <tr><td><strong>Bounded Model Checking</strong></td><td>Verification technique that unrolls loops up to a bound k and encodes the program as a SAT/SMT formula to find bugs.</td></tr>
+                    <tr><td><strong>Cartesian Closed Category (CCC)</strong></td><td>A category with products and exponentials, providing the mathematical foundation for lambda calculus and pure function composition.</td></tr>
+                    <tr><td><strong>Completeness</strong></td><td>A verification system is complete if it can prove every true property. (Contrast with soundness.)</td></tr>
+                    <tr><td><strong>Counterexample</strong></td><td>A concrete input that demonstrates a bug. Symbolic execution generates counterexamples automatically.</td></tr>
+                    <tr><td><strong>Curry-Howard Correspondence</strong></td><td>The deep connection between types and propositions, programs and proofs. A well-typed program is a proof of its type.</td></tr>
+                    <tr><td><strong>Dependent Type</strong></td><td>A type that depends on a value. Example: <code>Vec(n)</code> is a vector of exactly length <code>n</code>.</td></tr>
+                    <tr><td><strong>Frame Rule</strong></td><td>A key rule in separation logic: if <code>{P} C {Q}</code> is valid and C doesn't affect heap region R, then <code>{P*R} C {Q*R}</code> is also valid.</td></tr>
+                    <tr><td><strong>Galois Connection</strong></td><td>A pair of functions <code>(&alpha;, &gamma;)</code> between concrete and abstract domains that guarantees soundness of abstract interpretation.</td></tr>
+                    <tr><td><strong>Graded Monad</strong></td><td>A monad indexed by a monoid (effect set). Used to track effects in AEON's type system.</td></tr>
+                    <tr><td><strong>Hoare Triple</strong></td><td><code>{P} S {Q}</code> &mdash; if precondition P holds before S executes, postcondition Q holds after.</td></tr>
+                    <tr><td><strong>Initial Algebra</strong></td><td>The minimal fixed point of a functor, providing a principled theory of recursive data types and structural recursion (folds).</td></tr>
+                    <tr><td><strong>Kleisli Arrow</strong></td><td>A morphism <code>a &rarr; M(b)</code> in a monad M. In AEON, task functions are Kleisli arrows in the effect monad.</td></tr>
+                    <tr><td><strong>Liquid Type</strong></td><td>A refinement type where the refinement predicate is drawn from a fixed set of qualifiers and verified by SMT.</td></tr>
+                    <tr><td><strong>Lockset Analysis</strong></td><td>Technique for detecting data races by tracking which locks protect each shared variable. Empty lockset = potential race.</td></tr>
+                    <tr><td><strong>Noninterference</strong></td><td>Security property: changing a secret input cannot change any public output. The formal foundation of information flow analysis.</td></tr>
+                    <tr><td><strong>Path Condition</strong></td><td>In symbolic execution, the conjunction of branch constraints accumulated along a particular execution path.</td></tr>
+                    <tr><td><strong>Postcondition</strong></td><td>A property guaranteed to hold when a function returns. Declared with <code>ensures</code> in AEON.</td></tr>
+                    <tr><td><strong>Precondition</strong></td><td>A property required to hold when a function is called. Declared with <code>requires</code> in AEON.</td></tr>
+                    <tr><td><strong>Refinement Type</strong></td><td>A type annotated with a logical predicate. Example: <code>{v: Int | v > 0}</code> means positive integers.</td></tr>
+                    <tr><td><strong>Row Polymorphism</strong></td><td>A form of polymorphism over record/effect rows, allowing generic handling of extensible records and effects.</td></tr>
+                    <tr><td><strong>SARIF</strong></td><td>Static Analysis Results Interchange Format &mdash; a JSON-based standard for expressing static analysis results (version 2.1.0).</td></tr>
+                    <tr><td><strong>Sanitizer</strong></td><td>A function that neutralizes tainted data, making it safe to use in a security-sensitive sink.</td></tr>
+                    <tr><td><strong>Separating Conjunction</strong></td><td><code>P * Q</code> in separation logic &mdash; asserts P and Q hold on disjoint heap regions.</td></tr>
+                    <tr><td><strong>SMT Solver</strong></td><td>Satisfiability Modulo Theories solver. AEON uses Z3 to check logical formulas involving integers, arrays, bitvectors, etc.</td></tr>
+                    <tr><td><strong>Soundness</strong></td><td>A verification system is sound if it never certifies a buggy program as correct. All of AEON's engines are sound.</td></tr>
+                    <tr><td><strong>Symbolic Execution</strong></td><td>Executing a program with symbolic rather than concrete inputs, exploring all feasible paths.</td></tr>
+                    <tr><td><strong>Taint</strong></td><td>A label attached to data from untrusted sources. Tainted data must be sanitized before reaching security-sensitive sinks.</td></tr>
+                    <tr><td><strong>Termination</strong></td><td>The property that a computation always finishes in finite time. Decidable for size-change programs.</td></tr>
+                    <tr><td><strong>Verification Condition (VC)</strong></td><td>A logical formula generated by Hoare logic that must be valid for the program to satisfy its contract.</td></tr>
+                    <tr><td><strong>Weakest Precondition</strong></td><td>The weakest condition on inputs that guarantees a postcondition holds. Computed by Dijkstra's wp-calculus.</td></tr>
+                    <tr><td><strong>Widening</strong></td><td>An operator in abstract interpretation that forces convergence of fixed-point iteration by over-approximating loop bounds.</td></tr>
+                </tbody>
+            </table>
+
+
+            <!-- ═══════════ FAQ ═══════════ -->
+            <h2 id="faq">FAQ</h2>
+
+            <h4>Do I need to learn the AEON language to use AEON?</h4>
+            <p>No. AEON verifies code written in Python, Java, JavaScript, TypeScript, Go, Rust, C, C++, Ruby, Swift, Kotlin, PHP, Scala, and Dart. You add contracts via comments or docstrings in your own language. The AEON native language is optional and used for writing new programs from scratch.</p>
+
+            <h4>Does AEON replace unit tests?</h4>
+            <p>AEON complements tests. Tests verify specific inputs; AEON proves properties hold for <em>all</em> inputs. Use both: tests for integration scenarios and AEON for mathematical guarantees.</p>
+
+            <h4>How fast is verification?</h4>
+            <p>Simple files verify in under a second. Complex files with <code>--deep-verify</code> typically take 1-5 seconds. Parallel mode scales linearly with cores. Incremental mode (baseline) only re-verifies changed files.</p>
+
+            <h4>Can I use AEON in CI/CD?</h4>
+            <p>Yes. AEON supports SARIF output for GitHub Code Scanning, JSON output for custom pipelines, and exit codes for pass/fail gating. See the <a href="#ci-cd" style="color:var(--accent-light);">CI/CD Integration</a> section.</p>
+
+            <h4>What does "formal verification" mean?</h4>
+            <p>Formal verification uses mathematical proofs (not heuristics) to guarantee properties of your code. If AEON says "verified," it means the property holds for every possible input &mdash; not just the ones you tested.</p>
+
+            <h4>Does AEON support monorepos?</h4>
+            <p>Yes. Use <code>aeon scan</code> with include/exclude patterns in <code>.aeonrc.yml</code> to target specific packages or directories within a monorepo.</p>
+
+            <h4>Is AEON open source?</h4>
+            <p>Yes. AEON is open source and available on <a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light);">GitHub</a>.</p>
+
+            <!-- ═══════════ PAPERS ═══════════ -->
+            <h2 id="papers">Academic Papers</h2>
+            <p>AEON implements algorithms from 28 peer-reviewed papers:</p>
+            <ol>
+                <li>Rondon, Kawaguchi, Jhala. <em>Liquid Types</em>. PLDI 2008.</li>
+                <li>Cousot, Cousot. <em>Abstract Interpretation</em>. POPL 1977.</li>
+                <li>Lee, Jones, Ben-Amram. <em>The Size-Change Principle for Program Termination</em>. POPL 2001.</li>
+                <li>Dijkstra. <em>Guarded Commands, Nondeterminacy and Formal Derivation of Programs</em>. CACM 1975.</li>
+                <li>Hoare. <em>An Axiomatic Basis for Computer Programming</em>. CACM 1969.</li>
+                <li>Plotkin, Pretnar. <em>Handlers of Algebraic Effects</em>. ESOP 2009.</li>
+                <li>Moggi. <em>Notions of Computation and Monads</em>. Info. &amp; Comp. 1991.</li>
+                <li>Volpano, Smith, Irvine. <em>A Sound Type System for Secure Flow Analysis</em>. JCS 1996.</li>
+                <li>Martin-L&ouml;f. <em>Intuitionistic Type Theory</em>. Bibliopolis 1984.</li>
+                <li>Coquand, Huet. <em>The Calculus of Constructions</em>. Info. &amp; Comp. 1988.</li>
+                <li>Leroy. <em>Formal Verification of a Realistic Compiler</em>. CACM 2009.</li>
+                <li>King. <em>Symbolic Execution and Program Testing</em>. CACM 1976.</li>
+                <li>Cadar, Dunbar, Engler. <em>KLEE</em>. OSDI 2008.</li>
+                <li>Flanagan, Leino. <em>Houdini, an Annotation Assistant for ESC/Java</em>. FME 2001.</li>
+                <li>Leijen. <em>Type Directed Compilation of Row-Typed Algebraic Effects</em>. POPL 2017.</li>
+                <li>Reynolds. <em>Separation Logic</em>. LICS 2002.</li>
+                <li>O'Hearn. <em>Incorrectness Logic</em>. POPL 2019.</li>
+                <li>Calcagno et al. <em>Compositional Shape Analysis by Means of Bi-Abduction</em>. JACM 2011.</li>
+                <li>Schwartz, Avgerinos, Brumley. <em>All You Ever Wanted to Know About Dynamic Taint Analysis</em>. IEEE S&amp;P 2010.</li>
+                <li>Tripp et al. <em>TAJ: Effective Taint Analysis of Web Applications</em>. PLDI 2009.</li>
+                <li>Arzt et al. <em>FlowDroid</em>. PLDI 2014.</li>
+                <li>Owicki, Gries. <em>An Axiomatic Proof Technique for Parallel Programs</em>. Acta Informatica 1976.</li>
+                <li>Flanagan, Godefroid. <em>Dynamic Partial-Order Reduction for Model Checking Software</em>. POPL 2005.</li>
+                <li>Savage et al. <em>Eraser: A Dynamic Data Race Detector</em>. ACM TOCS 1997.</li>
+                <li>Sagiv, Reps, Wilhelm. <em>Parametric Shape Analysis via 3-Valued Logic</em>. TOPLAS 2002.</li>
+                <li>Clarke, Emerson, Sistla. <em>Automatic Verification of Finite-State Concurrent Systems</em>. TOPLAS 1986.</li>
+                <li>Biere et al. <em>Symbolic Model Checking without BDDs</em>. TACAS/FMCAD 1999.</li>
+                <li>Jhala, Majumdar. <em>Software Model Checking</em>. ACM Computing Surveys 2009.</li>
+            </ol>
+
+            <!-- ═══════════ PREV/NEXT NAV ═══════════ -->
+            <div class="docs-nav-footer">
+                <a href="index.html" class="docs-nav-link prev">
+                    <span class="nav-label">&larr; Previous</span>
+                    <span class="nav-title">Home</span>
+                </a>
+                <a href="tutorials.html" class="docs-nav-link next">
+                    <span class="nav-label">Next &rarr;</span>
+                    <span class="nav-title">Tutorials</span>
+                </a>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Right-side Table of Contents -->
+    <nav class="docs-toc" id="docs-toc">
+        <h5>On This Page</h5>
+    </nav>
+
+    <!-- Mobile sidebar toggle -->
+    <button class="docs-mobile-toggle" onclick="document.getElementById('docs-sidebar').classList.toggle('open')">&#9776;</button>
+
+    <script src="js/main.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/copy.js"></script>
+    <script>
+        // Highlight current sidebar section on scroll
+        const sections = document.querySelectorAll('.docs-content h2[id], .docs-content h3[id], .docs-content h1[id]');
+        const sidebarLinks = document.querySelectorAll('.docs-sidebar a');
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    sidebarLinks.forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+                    });
+                    // Also update right-side ToC
+                    document.querySelectorAll('.docs-toc a').forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+                    });
+                }
+            });
+        }, { rootMargin: '-20% 0px -70% 0px' });
+
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // Build right-side ToC dynamically
+        (function() {
+            const toc = document.getElementById('docs-toc');
+            if (!toc) return;
+            const headings = document.querySelectorAll('.docs-content h2[id]');
+            headings.forEach(h => {
+                const a = document.createElement('a');
+                a.href = '#' + h.id;
+                a.textContent = h.textContent;
+                toc.appendChild(a);
+            });
+        })();
+    </script>
+</body>
+</html>

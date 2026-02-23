@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON Examples — Enterprise Use Cases</title>
+    <meta name="description" content="Real-world enterprise examples showing how AEON formally verifies financial, healthcare, e-commerce, security, and infrastructure code.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .examples-hero {
+            padding: calc(var(--nav-height) + 4rem) 2rem 4rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .examples-hero h1 {
+            font-size: clamp(2.25rem, 5vw, 3.5rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+        .examples-hero h1 .gradient {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #74b9ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .examples-hero p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .examples-filter {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding: 0 2rem;
+            margin-bottom: 3rem;
+        }
+        .filter-btn {
+            padding: 0.5rem 1.1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { border-color: var(--accent); }
+        .filter-btn.active {
+            border-color: var(--accent);
+            color: var(--accent-light);
+            background: #1c1a30;
+        }
+
+        .examples-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+        @media (max-width: 480px) {
+            .examples-grid { grid-template-columns: 1fr; }
+        }
+
+        .example-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .example-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+        .example-card-header {
+            padding: 1.5rem 1.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .example-card-icon {
+            width: 44px; height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #1a1a2e;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .example-card-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .example-card-header .industry {
+            font-size: 0.75rem;
+            color: var(--accent-light);
+            font-weight: 500;
+        }
+
+        .example-card-body {
+            padding: 1rem 1.5rem;
+        }
+        .example-card-body p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            line-height: 1.65;
+            margin-bottom: 0.75rem;
+        }
+
+        .example-card-engines {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-bottom: 1rem;
+        }
+        .engine-tag {
+            padding: 0.15rem 0.55rem;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: var(--accent-light);
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .example-card-code {
+            background: var(--bg-code);
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: var(--text);
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .example-card-code .kw { color: #c792ea; }
+        .example-card-code .fn { color: #82aaff; }
+        .example-card-code .ty { color: #ffcb6b; }
+        .example-card-code .str { color: #c3e88d; }
+        .example-card-code .cm { color: #546e7a; }
+        .example-card-code .op { color: #89ddff; }
+
+        .example-card-footer {
+            padding: 0.75rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .example-card-footer .file-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+        .example-card-footer .try-link {
+            font-size: 0.78rem;
+            color: var(--accent-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .example-card-footer .try-link:hover { color: var(--text); }
+
+        .aeon-examples-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem 6rem;
+            border-top: 1px solid var(--border);
+        }
+        .aeon-examples-section h2 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .aeon-examples-section > p {
+            text-align: center;
+            color: var(--text-dim);
+            margin-bottom: 2.5rem;
+        }
+        .aeon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+        .aeon-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: border-color 0.3s;
+        }
+        .aeon-card:hover { border-color: var(--accent); }
+        .aeon-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .aeon-card p { color: var(--text-dim); font-size: 0.82rem; line-height: 1.6; margin-bottom: 0.75rem; }
+        .aeon-card pre {
+            background: var(--bg-code);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="index.html" class="nav-logo">AEON<span>.</span></a>
+        <button class="mobile-toggle" onclick="toggleMobile()">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="nav-dropdown">
+                <a href="docs.html">Docs</a>
+                <div class="nav-dropdown-menu">
+                    <a href="docs.html">Documentation</a>
+                    <a href="tutorials.html">Tutorials</a>
+                    <a href="api-reference.html">API Reference</a>
+                    <a href="benchmarks.html">Benchmarks</a>
+                    <a href="changelog.html">Changelog</a>
+                </div>
+            </li>
+            <li><a href="examples.html" class="active">Examples</a></li>
+            <li><a href="index.html#install">Install</a></li>
+            <li><button class="nav-search-btn search-trigger" onclick="openAeonSearch()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search <kbd>&#8984;K</kbd></button></li>
+            <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="nav-cta">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="examples-hero">
+        <h1>Real-World <span class="gradient">Examples</span></h1>
+        <p>See how AEON catches bugs in real code. Each example shows the bug, which engine found it, and how to fix it.</p>
+    </section>
+
+    <!-- Filter -->
+    <div class="examples-filter">
+        <button class="filter-btn active" onclick="filterExamples('all', this)">All</button>
+        <button class="filter-btn" onclick="filterExamples('finance', this)">Finance</button>
+        <button class="filter-btn" onclick="filterExamples('healthcare', this)">Healthcare</button>
+        <button class="filter-btn" onclick="filterExamples('ecommerce', this)">E-Commerce</button>
+        <button class="filter-btn" onclick="filterExamples('security', this)">Security</button>
+        <button class="filter-btn" onclick="filterExamples('infrastructure', this)">Infrastructure</button>
+        <button class="filter-btn" onclick="filterExamples('data', this)">Data Pipelines</button>
+        <button class="filter-btn" onclick="filterExamples('algorithms', this)">Algorithms</button>
+    </div>
+
+    <!-- Examples Grid -->
+    <div class="examples-grid" id="examples-grid">
+
+        <!-- Finance: Payment Processing -->
+        <div class="example-card" data-category="finance">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128179;</div>
+                <div>
+                    <h3>Payment Processing</h3>
+                    <span class="industry">Financial Services</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>AEON catches division by zero in fee calculations, verifies payment contracts, and proves split payments always sum to the original total.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Abstract Interp</span>
+                    <span class="engine-tag">Hoare Logic</span>
+                    <span class="engine-tag">Symbolic Exec</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">split_payment</span>(total: <span class="ty">int</span>, num_parties: <span class="ty">int</span>) -> List[<span class="ty">int</span>]:
+    <span class="str">"""
+    Requires: total > 0
+    Requires: num_parties > 0
+    Ensures:  sum(result) == total
+    """</span>
+    base_amount = total // num_parties
+    remainder = total % num_parties
+    shares = [base_amount] * num_parties
+    <span class="kw">for</span> i <span class="kw">in</span> range(remainder):
+        shares[i] += <span class="ty">1</span>
+    <span class="kw">return</span> shares</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/finance/payment_processing.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Finance: Transaction Ledger -->
+        <div class="example-card" data-category="finance">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128210;</div>
+                <div>
+                    <h3>Transaction Ledger</h3>
+                    <span class="industry">Financial Services</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Verifies double-entry bookkeeping invariants: total debits always equal total credits. Proves balance transfers are atomic and correct.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Hoare Logic</span>
+                    <span class="engine-tag">Dependent Types</span>
+                    <span class="engine-tag">Abstract Interp</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">reconcile_ledger</span>(ledger: List[LedgerEntry]) -> Tuple[<span class="ty">bool</span>, <span class="ty">int</span>]:
+    <span class="str">"""
+    Ensures: result[0] == True implies result[1] == 0
+    """</span>
+    total_debits = <span class="ty">0</span>
+    total_credits = <span class="ty">0</span>
+    <span class="kw">for</span> entry <span class="kw">in</span> ledger:
+        total_debits += entry.amount
+        total_credits += entry.amount
+    difference = total_debits - total_credits
+    <span class="kw">return</span> (difference == <span class="ty">0</span>, difference)</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/finance/transaction_ledger.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Finance: Fraud Detection -->
+        <div class="example-card" data-category="finance">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128373;</div>
+                <div>
+                    <h3>Fraud Detection</h3>
+                    <span class="industry">Financial Services</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>AEON's information flow catches card numbers leaking into logs. Taint analysis tracks untrusted transaction data. Risk scoring stays in bounds.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Info Flow</span>
+                    <span class="engine-tag">Taint Analysis</span>
+                    <span class="engine-tag">Symbolic Exec</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="cm"># BUG: card_number (SECRET) leaks to log (PUBLIC)</span>
+<span class="kw">def</span> <span class="fn">log_transaction_for_review</span>(txn_id, amount, card_number, score):
+    <span class="kw">return</span> {
+        <span class="str">"card"</span>: card_number,  <span class="cm"># SECRET -> PUBLIC!</span>
+        <span class="str">"risk_score"</span>: score,
+    }
+
+<span class="cm"># FIX: mask the card number</span>
+<span class="kw">def</span> <span class="fn">log_transaction_safe</span>(txn_id, amount, card_number, score):
+    masked = <span class="str">"****-****-****-"</span> + card_number[-<span class="ty">4</span>:]
+    <span class="kw">return</span> {<span class="str">"card_masked"</span>: masked}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/finance/fraud_detection.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Healthcare: Patient Records -->
+        <div class="example-card" data-category="healthcare">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#127973;</div>
+                <div>
+                    <h3>Patient Records (HIPAA)</h3>
+                    <span class="industry">Healthcare</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Proves Protected Health Information never leaks to public endpoints. Enforces role-based access control and audit trail completeness.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Info Flow</span>
+                    <span class="engine-tag">Taint Analysis</span>
+                    <span class="engine-tag">Effect Algebra</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="cm"># BUG: PHI leaks to public API</span>
+<span class="kw">def</span> <span class="fn">get_patient_summary_unsafe</span>(record):
+    <span class="kw">return</span> {
+        <span class="str">"name"</span>: record.name,        <span class="cm"># PHI -> PUBLIC!</span>
+        <span class="str">"ssn"</span>: record.ssn,          <span class="cm"># RESTRICTED -> PUBLIC!</span>
+    }
+
+<span class="cm"># FIX: de-identify the data</span>
+<span class="kw">def</span> <span class="fn">get_patient_summary_safe</span>(record):
+    <span class="kw">return</span> {
+        <span class="str">"id"</span>: hash(record.patient_id) % <span class="ty">1000000</span>,
+        <span class="str">"medication_count"</span>: len(record.medications),
+    }</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/healthcare/patient_records.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Healthcare: Dosage Calculator -->
+        <div class="example-card" data-category="healthcare">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128138;</div>
+                <div>
+                    <h3>Dosage Calculator</h3>
+                    <span class="industry">Healthcare</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Contracts guarantee dosage stays within safe therapeutic ranges. Division-by-zero caught in dose splitting. Drug interaction risk correctly categorized.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Hoare Logic</span>
+                    <span class="engine-tag">Abstract Interp</span>
+                    <span class="engine-tag">Symbolic Exec</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">calculate_dosage_mg</span>(weight_kg, dose_per_kg, max_dose_mg):
+    <span class="str">"""
+    Requires: weight_kg > 0.0
+    Requires: dose_per_kg > 0.0
+    Requires: max_dose_mg > 0.0
+    Ensures:  result > 0.0
+    Ensures:  result <= max_dose_mg
+    """</span>
+    raw_dose = weight_kg * dose_per_kg
+    <span class="kw">return</span> min(raw_dose, max_dose_mg)</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/healthcare/dosage_calculator.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- E-Commerce: Inventory Manager -->
+        <div class="example-card" data-category="ecommerce">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128230;</div>
+                <div>
+                    <h3>Inventory Manager</h3>
+                    <span class="industry">E-Commerce</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Concurrency verification catches race conditions that cause overselling. Stock count is proven to never go negative. Reservation invariants maintained.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Concurrency</span>
+                    <span class="engine-tag">Model Checking</span>
+                    <span class="engine-tag">Contracts</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">reserve_stock</span>(item, amount):
+    <span class="str">"""
+    Requires: amount > 0
+    Ensures:  result is None or result.reserved <= result.quantity
+
+    AEON flags: without a lock, two threads could oversell.
+    """</span>
+    available = item.quantity - item.reserved
+    <span class="kw">if</span> available < amount:
+        <span class="kw">return</span> <span class="ty">None</span>
+    <span class="kw">return</span> InventoryItem(item.sku, item.quantity, item.reserved + amount)</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/ecommerce/inventory_manager.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- E-Commerce: Pricing Engine -->
+        <div class="example-card" data-category="ecommerce">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128176;</div>
+                <div>
+                    <h3>Pricing Engine</h3>
+                    <span class="industry">E-Commerce</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Price is always positive after discounts. Discount never exceeds 100%. Tax calculations are verified correct. Tiered pricing invariants hold.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Abstract Interp</span>
+                    <span class="engine-tag">Hoare Logic</span>
+                    <span class="engine-tag">Symbolic Exec</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">apply_discount</span>(price: <span class="ty">int</span>, discount_percent: <span class="ty">float</span>) -> <span class="ty">int</span>:
+    <span class="str">"""
+    Requires: price > 0
+    Requires: 0.0 <= discount_percent <= 100.0
+    Ensures:  result >= 0
+    Ensures:  result <= price
+    """</span>
+    discount_amount = int(price * (discount_percent / <span class="ty">100.0</span>))
+    <span class="kw">return</span> price - discount_amount</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/ecommerce/pricing_engine.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Security: Auth Service -->
+        <div class="example-card" data-category="security">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128274;</div>
+                <div>
+                    <h3>Authentication Service</h3>
+                    <span class="industry">Security</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Taint analysis detects SQL injection in login queries. Information flow catches password hashes leaking to API responses. Rate limiting contracts verified.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Taint Analysis</span>
+                    <span class="engine-tag">Info Flow</span>
+                    <span class="engine-tag">Symbolic Exec</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="cm"># BUG: SQL injection — username flows into query</span>
+<span class="kw">def</span> <span class="fn">authenticate_unsafe</span>(username, password):
+    query = <span class="str">f"SELECT * FROM users WHERE username = '</span>{username}<span class="str">'"</span>
+    <span class="kw">return</span> {<span class="str">"query"</span>: query}  <span class="cm"># TAINTED -> SQL SINK!</span>
+
+<span class="cm"># FIX: parameterized query</span>
+<span class="kw">def</span> <span class="fn">authenticate_safe</span>(username, password_hash):
+    query = <span class="str">"SELECT * FROM users WHERE username = ? AND pw = ?"</span>
+    params = (username, password_hash)  <span class="cm"># Safe</span></div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/security/auth_service.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Security: Input Validation -->
+        <div class="example-card" data-category="security">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128737;</div>
+                <div>
+                    <h3>Input Validation</h3>
+                    <span class="industry">Security</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Symbolic execution proves all user inputs are validated before use. No path bypasses validation. Path traversal attacks are caught by taint analysis.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Symbolic Exec</span>
+                    <span class="engine-tag">Taint Analysis</span>
+                    <span class="engine-tag">Abstract Interp</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">validate_api_request</span>(method, path, body, api_key):
+    <span class="str">"""
+    Requires: method in ['GET', 'POST', 'PUT', 'DELETE']
+    Ensures:  result['valid'] == True or len(result['errors']) > 0
+    """</span>
+    errors = []
+    <span class="kw">if</span> method <span class="kw">not in</span> [<span class="str">'GET'</span>, <span class="str">'POST'</span>, <span class="str">'PUT'</span>, <span class="str">'DELETE'</span>]:
+        errors.append(<span class="str">"invalid_method"</span>)
+    <span class="kw">if</span> len(api_key) < <span class="ty">32</span>:
+        errors.append(<span class="str">"invalid_api_key"</span>)
+    <span class="kw">return</span> {<span class="str">'valid'</span>: len(errors) == <span class="ty">0</span>, <span class="str">'errors'</span>: errors}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/security/input_validation.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Infrastructure: Rate Limiter -->
+        <div class="example-card" data-category="infrastructure">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#9889;</div>
+                <div>
+                    <h3>Rate Limiter</h3>
+                    <span class="industry">Infrastructure</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Model checking verifies no request starvation (liveness). Token bucket invariants maintained. Concurrent access doesn't corrupt token count.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Model Checking</span>
+                    <span class="engine-tag">Abstract Interp</span>
+                    <span class="engine-tag">Concurrency</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">try_consume</span>(bucket, cost):
+    <span class="str">"""
+    Requires: cost > 0
+    Ensures:  result[0] == True implies result[1].tokens == bucket.tokens - cost
+    Ensures:  result[0] == False implies result[1].tokens == bucket.tokens
+    """</span>
+    <span class="kw">if</span> bucket.tokens >= cost:
+        <span class="kw">return</span> (<span class="ty">True</span>, TokenBucket(bucket.capacity, bucket.refill_rate,
+                                  bucket.tokens - cost))
+    <span class="kw">return</span> (<span class="ty">False</span>, bucket)</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/infrastructure/rate_limiter.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Infrastructure: Connection Pool -->
+        <div class="example-card" data-category="infrastructure">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128279;</div>
+                <div>
+                    <h3>Connection Pool</h3>
+                    <span class="industry">Infrastructure</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Separation logic catches double-free of connections. Verifies no connection leaks. Pool exhaustion handled without deadlock.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Separation Logic</span>
+                    <span class="engine-tag">Concurrency</span>
+                    <span class="engine-tag">Model Checking</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">release_connection</span>(pool, conn):
+    <span class="str">"""
+    Requires: conn.in_use == True
+    Ensures:  result == True implies conn.in_use == False
+
+    BUG risk: calling release twice = double-free.
+    AEON's separation logic: after first release,
+    caller no longer owns the resource.
+    """</span>
+    <span class="kw">if not</span> conn.in_use:
+        <span class="kw">return</span> <span class="ty">False</span>  <span class="cm"># Double-free attempt</span>
+    conn.in_use = <span class="ty">False</span>
+    <span class="kw">return</span> <span class="ty">True</span></div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/infrastructure/connection_pool.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Data: ETL Processor -->
+        <div class="example-card" data-category="data">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128202;</div>
+                <div>
+                    <h3>ETL Processor</h3>
+                    <span class="industry">Data Engineering</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Termination analysis proves all ETL stages finish. Abstract interpretation catches accumulator overflow. Effect algebra tracks DB writes.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Termination</span>
+                    <span class="engine-tag">Abstract Interp</span>
+                    <span class="engine-tag">Effect Algebra</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">run_pipeline</span>(source_data, required_fields, field_mapping, batch_size):
+    <span class="str">"""
+    Requires: batch_size > 0
+    Ensures:  result['status'] == 'completed'
+    Ensures:  result['records_processed'] <= len(source_data)
+    """</span>
+    valid = extract_records(source_data, required_fields)
+    transformed = transform_records(valid, field_mapping)
+    batches = load_batch(transformed, batch_size)
+    <span class="kw">return</span> {<span class="str">'status'</span>: <span class="str">'completed'</span>, <span class="str">'records_processed'</span>: len(transformed)}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/data_pipeline/etl_processor.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Data: Schema Validator -->
+        <div class="example-card" data-category="data">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128196;</div>
+                <div>
+                    <h3>Schema Validator</h3>
+                    <span class="industry">Data Engineering</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Dependent types verify schema definitions are consistent. Symbolic execution covers all field type branches. Shape analysis verifies nested structures.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Dependent Types</span>
+                    <span class="engine-tag">Symbolic Exec</span>
+                    <span class="engine-tag">Shape Analysis</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">def</span> <span class="fn">validate_batch</span>(records, schema):
+    <span class="str">"""
+    Requires: len(schema) > 0
+    Ensures:  result['valid_count'] + result['invalid_count'] == result['total']
+    """</span>
+    valid_count = <span class="ty">0</span>
+    invalid_count = <span class="ty">0</span>
+    <span class="kw">for</span> record <span class="kw">in</span> records:
+        result = validate_record(record, schema)
+        <span class="kw">if</span> result[<span class="str">"valid"</span>]:
+            valid_count += <span class="ty">1</span>
+        <span class="kw">else</span>:
+            invalid_count += <span class="ty">1</span>
+    <span class="kw">return</span> {<span class="str">"total"</span>: len(records), <span class="str">"valid_count"</span>: valid_count, <span class="str">"invalid_count"</span>: invalid_count}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/data_pipeline/schema_validator.py</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Algorithms: Binary Search -->
+        <div class="example-card" data-category="algorithms">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#128269;</div>
+                <div>
+                    <h3>Binary Search</h3>
+                    <span class="industry">Algorithms</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>AEON proves binary search terminates (hi&minus;lo strictly decreases), the result is always a valid index or &minus;1, and the midpoint division is safe.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Hoare Logic</span>
+                    <span class="engine-tag">Termination</span>
+                    <span class="engine-tag">Div-by-Zero VC</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">pure</span> <span class="fn">binarySearch</span>(arr: List&lt;Int&gt;, target: Int, lo: Int, hi: Int) -&gt; Int {
+  <span class="cm">-- requires: lo &gt;= 0 &amp;&amp; hi &lt; arr.length()</span>
+  <span class="cm">-- ensures:  result &gt;= -1 &amp;&amp; result &lt; arr.length()</span>
+  <span class="cm">-- AEON: mid = (lo+hi)/2 — denominator 2 != 0 ✓</span>
+  <span class="cm">-- AEON: hi-lo decreases each call → terminates ✓</span>
+  <span class="kw">if</span> lo &gt; hi { <span class="kw">return</span> <span class="ty">0</span> - <span class="ty">1</span> }
+  <span class="kw">let</span> mid: Int = (lo + hi) / <span class="ty">2</span>
+  <span class="kw">if</span> arr.get(mid) == target { <span class="kw">return</span> mid }
+  <span class="kw">if</span> arr.get(mid) &lt; target {
+    <span class="kw">return</span> binarySearch(arr, target, mid + <span class="ty">1</span>, hi)
+  } <span class="kw">else</span> {
+    <span class="kw">return</span> binarySearch(arr, target, lo, mid - <span class="ty">1</span>)
+  }
+}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/algorithms/sorting.aeon</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Algorithms: GCD / Fibonacci -->
+        <div class="example-card" data-category="algorithms">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#8734;</div>
+                <div>
+                    <h3>Fibonacci &amp; GCD</h3>
+                    <span class="industry">Algorithms</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Size-change termination proves Fibonacci terminates on both recursive branches. GCD's modulo is safe because <code>b&nbsp;&gt;&nbsp;0</code> is a requires clause.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Size-Change</span>
+                    <span class="engine-tag">Termination</span>
+                    <span class="engine-tag">Hoare Logic</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">pure</span> <span class="fn">fibonacci</span>(n: Int) -&gt; Int {
+  <span class="cm">-- requires: n &gt;= 0  ensures: result &gt;= 0</span>
+  <span class="cm">-- AEON: fib(n-1) and fib(n-2) both decrease n ✓</span>
+  <span class="kw">if</span> n == <span class="ty">0</span> { <span class="kw">return</span> <span class="ty">0</span> }
+  <span class="kw">if</span> n == <span class="ty">1</span> { <span class="kw">return</span> <span class="ty">1</span> }
+  <span class="kw">return</span> fibonacci(n - <span class="ty">1</span>) + fibonacci(n - <span class="ty">2</span>)
+}
+
+<span class="kw">pure</span> <span class="fn">gcd</span>(a: Int, b: Int) -&gt; Int {
+  <span class="cm">-- requires: a &gt; 0 &amp;&amp; b &gt; 0  ensures: result &gt; 0</span>
+  <span class="cm">-- AEON: a % b safe (b &gt; 0 from requires) ✓</span>
+  <span class="kw">if</span> b == <span class="ty">0</span> { <span class="kw">return</span> a }
+  <span class="kw">return</span> gcd(b, a % b)
+}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/algorithms/sorting.aeon</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Algorithms: Circuit Breaker (concurrent) -->
+        <div class="example-card" data-category="algorithms">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#9889;</div>
+                <div>
+                    <h3>Circuit Breaker</h3>
+                    <span class="industry">Algorithms &mdash; Concurrency</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>Owicki-Gries interference freedom proves concurrent tasks can't corrupt the circuit breaker state. State transitions are verified deterministic by Hoare logic.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Owicki-Gries</span>
+                    <span class="engine-tag">Hoare Logic</span>
+                    <span class="engine-tag">Typestate</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="kw">pure</span> <span class="fn">circuitBreakerRecordFailure</span>(cb: CircuitBreaker) -&gt; CircuitBreaker {
+  <span class="cm">-- requires: cb.threshold &gt; 0</span>
+  <span class="cm">-- ensures:  result.failures == cb.failures + 1</span>
+  <span class="cm">-- ensures:  result.is_open == (cb.failures + 1 &gt;= cb.threshold)</span>
+  <span class="cm">-- AEON: state transition is deterministic ✓</span>
+  <span class="cm">-- AEON: Owicki-Gries: concurrent reads are interference-free ✓</span>
+  <span class="kw">let</span> new_failures: Int = cb.failures + <span class="ty">1</span>
+  <span class="kw">let</span> now_open: Bool = new_failures &gt;= cb.threshold
+  <span class="kw">return</span> CircuitBreaker {
+    failures: new_failures,
+    threshold: cb.threshold,
+    is_open: now_open
+  }
+}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/algorithms/concurrent_tasks.aeon</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Algorithms: Division-by-Zero Safety -->
+        <div class="example-card" data-category="algorithms">
+            <div class="example-card-header">
+                <div class="example-card-icon">&#10006;</div>
+                <div>
+                    <h3>Division-by-Zero Safety</h3>
+                    <span class="industry">Algorithms &mdash; Safety VCs</span>
+                </div>
+            </div>
+            <div class="example-card-body">
+                <p>AEON automatically emits a division-by-zero verification condition for every <code>/</code> and <code>%</code> operator — even without contracts. A <code>requires: b != 0</code> discharges it.</p>
+                <div class="example-card-engines">
+                    <span class="engine-tag">Hoare Logic</span>
+                    <span class="engine-tag">Safety VCs</span>
+                    <span class="engine-tag">Z3 SMT</span>
+                </div>
+            </div>
+            <div class="example-card-code"><span class="cm">-- BUG: no guard on denominator</span>
+<span class="kw">pure</span> <span class="fn">unsafeDivide</span>(a: Int, b: Int) -&gt; Int {
+  <span class="kw">return</span> a / b  <span class="cm">-- AEON emits VC: b != 0 (UNPROVED)</span>
+}
+
+<span class="cm">-- FIX: add requires clause</span>
+<span class="kw">pure</span> <span class="fn">safeDivide</span>(a: Int, b: Int) -&gt; Int {
+  <span class="cm">-- requires: b != 0</span>
+  <span class="kw">return</span> a / b  <span class="cm">-- AEON: VC discharged by Z3 ✓</span>
+}
+
+<span class="cm">-- FIX: guard with if-check</span>
+<span class="kw">pure</span> <span class="fn">guardedDivide</span>(a: Int, b: Int) -&gt; Int {
+  <span class="kw">if</span> b == <span class="ty">0</span> { <span class="kw">return</span> <span class="ty">0</span> }
+  <span class="kw">return</span> a / b  <span class="cm">-- AEON: path-sensitive, b != 0 here ✓</span>
+}</div>
+            <div class="example-card-footer">
+                <span class="file-path">examples/algorithms/sorting.aeon</span>
+                <a href="index.html#demo" class="try-link">Try in Demo &rarr;</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AEON Native Examples -->
+    <section class="aeon-examples-section">
+        <div class="section-label" style="text-align:center;">AEON Native Language</div>
+        <h2>Built-in language examples</h2>
+        <p>The AEON native language uses three primitives: <code>pure</code>, <code>task</code>, and <code>data</code>.</p>
+
+        <div class="aeon-grid">
+            <div class="aeon-card">
+                <h4>Pure Functions</h4>
+                <p>Side-effect-free functions with contracts verified at compile time.</p>
+<pre>pure add(a: Int, b: Int) -> Int {
+  ensures: result == a + b
+  return a + b
+}
+
+pure abs(x: Int) -> Int {
+  ensures: result >= 0
+  if x >= 0 { return x }
+  else { return 0 - x }
+}</pre>
+            </div>
+            <div class="aeon-card">
+                <h4>Contract System</h4>
+                <p>Preconditions and postconditions verified by Z3 and Hoare logic.</p>
+<pre>pure processPayment(amount: Int, balance: Int) -> Int {
+  requires: balance >= amount
+  requires: amount > 0
+  ensures:  result == balance - amount
+  return balance - amount
+}
+
+pure clamp(value: Int, lo: Int, hi: Int) -> Int {
+  requires: lo <= hi
+  ensures:  result >= lo
+  ensures:  result <= hi
+  ...
+}</pre>
+            </div>
+            <div class="aeon-card">
+                <h4>Task Functions</h4>
+                <p>Functions with declared algebraic effects tracked by the compiler.</p>
+<pre>task createUser(user: User) -> Bool {
+  requires: user.email.isValid()
+  ensures:  result == true
+  effects:  [Database.Write]
+  return db.insert(user)
+}
+
+task findUser(id: UUID) -> User {
+  effects: [Database.Read]
+  return db.find(id)
+}</pre>
+            </div>
+            <div class="aeon-card">
+                <h4>Data Types</h4>
+                <p>Immutable type definitions modeled as initial algebras.</p>
+<pre>data User {
+  id:    UUID
+  email: Email
+  name:  String
+}
+
+data Account {
+  id:      UUID
+  owner:   User
+  balance: Int
+}
+
+data Receipt {
+  total:   Int
+  account: UUID
+}</pre>
+            </div>
+            <div class="aeon-card">
+                <h4>Termination Proofs</h4>
+                <p>AEON proves recursive functions terminate using ranking functions, size-change analysis, and Houdini invariant inference.</p>
+<pre>pure factorial(n: Int) -> Int {
+  requires: n >= 0
+  ensures:  result >= 1
+  -- AEON: ranking fn r = n, decreases by 1 each call
+  -- Base case: n <= 1 returns without recursion ✓
+  if n <= 1 { return 1 }
+  return n * factorial(n - 1)
+}
+
+pure gcd(a: Int, b: Int) -> Int {
+  requires: a > 0 && b > 0
+  ensures:  result > 0
+  -- AEON: ranking fn r = b, a % b < b ✓
+  if b == 0 { return a }
+  return gcd(b, a % b)
+}</pre>
+            </div>
+            <div class="aeon-card">
+                <h4>Automatic Safety VCs</h4>
+                <p>Division-by-zero verification conditions are emitted automatically for every <code>/</code> and <code>%</code> — no annotation required.</p>
+<pre>-- No contract needed — AEON still checks safety
+pure divide(a: Int, b: Int) -> Int {
+  return a / b
+  -- ^ AEON emits VC: b != 0 (auto-generated)
+  -- Z3 result: UNPROVED (no requires clause)
+}
+
+-- Add requires to discharge the VC
+pure safeDivide(a: Int, b: Int) -> Int {
+  requires: b != 0
+  return a / b
+  -- ^ AEON: VC discharged by Z3 ✓
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo">AEON<span>.</span></div>
+                <p>Formal verification for the languages you already use. 30+ engines. 44 papers. 14 languages.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="index.html#demo">Live Demo</a></li>
+                    <li><a href="index.html#engines">Engines</a></li>
+                    <li><a href="index.html#install">Installation</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <ul>
+                    <li><a href="docs.html">Documentation</a></li>
+                    <li><a href="tutorials.html">Tutorials</a></li>
+                    <li><a href="examples.html">Examples</a></li>
+                    <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                    <li><a href="changelog.html">Changelog</a></li>
+                    <li><a href="docs.html#glossary">Glossary</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 AEON Project</span>
+            <span>Built with mathematical certainty</span>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/copy.js"></script>
+    <script>
+        function filterExamples(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.querySelectorAll('.example-card').forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

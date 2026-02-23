@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/category_semantics.py
+# hypothesis_version: 6.141.1
+
+[' x ', ', ', '1', '2', 'Bool', 'Email', 'Emit', 'Flatten', 'Float', 'IR', 'Int', 'LLVM', 'Prove', 'R', 'Sigma*', 'String', 'Syntax', 'Typed', 'USD', 'UUID', 'Void', 'Z', 'double', 'equations', 'functors', 'i1', 'i64', 'i8*', 'morphisms', 'objects', 'void']

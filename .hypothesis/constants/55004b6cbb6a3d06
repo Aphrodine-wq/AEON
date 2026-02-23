@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/engines/deadcode.py
+# hypothesis_version: 6.141.1
+
+['!=', ', ', '<dead>', '<expr>', '==', 'Dead Code Detection', '_', 'abort', 'always false', 'always true', 'code after return', 'condition', 'die', 'duplicate branches', 'engine', 'exit', 'fatal', 'location', 'os_exit', 'panic', 'parameter', 'pattern', 'process_exit', 'raise', 'self-assignment', 'self-comparison (!=)', 'self-comparison (==)', 'sys_exit', 'throw', 'unreachable', 'variable', '|']

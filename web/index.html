@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON — Provably Correct Code for the AI Age</title>
+    <meta name="description" content="AEON mathematically proves your code is correct using 30+ peer-reviewed formal verification engines. 14 languages. Zero false confidence.">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:*; frame-ancestors 'none';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <noscript><style>.fade-in,.stagger{opacity:1!important;transform:none!important;animation:none!important;}</style></noscript>
+    <style>
+        /* ── Scroll Progress Bar ───────────────── */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 2px;
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe, #74b9ff);
+            z-index: 9999; width: 0%; transition: width 0.1s linear;
+        }
+
+        /* ── Hero ──────────────────────────────── */
+        .hero {
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            padding: 2rem; padding-top: calc(var(--nav-height) + 2rem);
+            position: relative; overflow: hidden;
+        }
+        .hero-orb {
+            position: absolute; border-radius: 50%; filter: blur(80px);
+            pointer-events: none; z-index: 0;
+        }
+        .hero-orb-1 {
+            width: 600px; height: 600px; top: -150px; left: 50%;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, #6c5ce730 0%, transparent 70%);
+            animation: orb-float-1 8s ease-in-out infinite;
+        }
+        .hero-orb-2 {
+            width: 400px; height: 400px; top: 200px; right: -100px;
+            background: radial-gradient(circle, #00d26a18 0%, transparent 70%);
+            animation: orb-float-2 10s ease-in-out infinite;
+        }
+        .hero-orb-3 {
+            width: 350px; height: 350px; bottom: 100px; left: -50px;
+            background: radial-gradient(circle, #74b9ff18 0%, transparent 70%);
+            animation: orb-float-3 12s ease-in-out infinite;
+        }
+        @keyframes orb-float-1 {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(30px); }
+        }
+        @keyframes orb-float-2 {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-40px) translateX(-20px); }
+        }
+        @keyframes orb-float-3 {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-25px) translateX(30px); }
+        }
+        .hero > *:not(.hero-orb) { position: relative; z-index: 1; }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1.1rem; border: 1px solid var(--border);
+            border-radius: 100px; font-size: 0.8rem; color: var(--text-dim);
+            margin-bottom: 2rem; background: var(--bg-card);
+            animation: badge-in 0.8s ease 0s 1 normal both;
+        }
+        .badge .dot {
+            display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); animation: pulse 2s infinite;
+        }
+        @keyframes badge-in { from { opacity: 0; transform: translateY(-10px); } }
+
+        h1 {
+            font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 900;
+            letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 1.5rem;
+            animation: hero-text-in 1s ease 0.2s 1 normal both;
+        }
+        h1 .gradient {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #74b9ff, #6c5ce7);
+            background-size: 300% 300%;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 6s ease infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes hero-text-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .subtitle {
+            font-size: 1.25rem; color: var(--text-dim); max-width: 640px;
+            margin-bottom: 2.5rem; line-height: 1.7;
+            animation: hero-text-in 1s ease 0.4s 1 normal both;
+        }
+        .cta-row {
+            display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 3rem;
+            animation: hero-text-in 1s ease 0.6s 1 normal both;
+        }
+
+        /* Hero Terminal with typing */
+        .hero-terminal {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 0; max-width: 620px; width: 100%;
+            text-align: left; overflow: hidden;
+            animation: hero-text-in 1s ease 0.8s 1 normal both;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px #6c5ce715;
+        }
+        .term-titlebar {
+            display: flex; align-items: center; gap: 6px;
+            padding: 0.7rem 1rem; background: #0d0d14; border-bottom: 1px solid var(--border);
+        }
+        .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .term-dot:nth-child(1) { background: #ff5f57; }
+        .term-dot:nth-child(2) { background: #ffbd2e; }
+        .term-dot:nth-child(3) { background: #28c840; }
+        .term-title { font-size: 0.72rem; color: var(--text-dim); margin-left: 0.5rem; }
+        .term-body {
+            padding: 1.25rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem; line-height: 1.9;
+        }
+        .term-line { opacity: 0; transform: translateY(4px); transition: all 0.4s ease; }
+        .term-line.visible { opacity: 1; transform: translateY(0); }
+        .term-line .prompt { color: var(--green); }
+        .term-line .cmd { color: var(--text); }
+        .term-line .flag { color: var(--accent-light); }
+        .term-line .pass { color: var(--green); }
+        .term-line .fail { color: var(--red); }
+        .term-line .fix { color: var(--yellow); }
+        .term-cursor {
+            display: inline-block; width: 8px; height: 16px; background: var(--accent-light);
+            animation: blink-cursor 1s step-end infinite; vertical-align: middle;
+            margin-left: 2px;
+        }
+        @keyframes blink-cursor { 50% { opacity: 0; } }
+
+        .scroll-hint {
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            z-index: 1; animation: bounce-down 2s ease infinite 2s; opacity: 0.4;
+        }
+        .scroll-hint svg { width: 24px; height: 24px; color: var(--text-dim); }
+        @keyframes bounce-down {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+
+        /* ── Stats ─────────────────────────────── */
+        .stats {
+            display: flex; gap: 3rem; justify-content: center;
+            padding: 3.5rem 2rem; border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border); flex-wrap: wrap;
+            position: relative; z-index: 1;
+            background: linear-gradient(180deg, transparent 0%, #0d0d1580 100%);
+        }
+        .stat { text-align: center; }
+        .stat-number {
+            font-size: 2.75rem; font-weight: 800;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; font-variant-numeric: tabular-nums;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+        /* ── The Problem ───────────────────────── */
+        .problem-section {
+            max-width: 1100px; margin: 0 auto; padding: 7rem 2rem;
+            text-align: center; position: relative; z-index: 1;
+        }
+        .problem-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem; margin-top: 3rem;
+        }
+        @media (max-width: 768px) { .problem-grid { grid-template-columns: 1fr; } }
+        .problem-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2.5rem 2rem; text-align: center;
+            position: relative; overflow: hidden; transition: all 0.4s ease;
+        }
+        .problem-card::before {
+            content: ''; position: absolute; inset: 0; border-radius: 16px;
+            padding: 1px; background: linear-gradient(135deg, transparent, transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            transition: background 0.4s;
+        }
+        .problem-card:hover::before {
+            background: linear-gradient(135deg, #6c5ce760, #a29bfe40, #74b9ff60);
+        }
+        .problem-card:hover { transform: translateY(-4px); border-color: transparent; }
+        .problem-icon {
+            font-size: 2.5rem; margin-bottom: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            width: 64px; height: 64px; margin: 0 auto 1.25rem;
+            border-radius: 16px; background: #1a1a2e;
+        }
+        .problem-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .problem-card p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.7; }
+        .problem-card.highlight-card { border-color: var(--accent); }
+        .problem-card.highlight-card .problem-icon { background: #6c5ce720; }
+
+        /* ── How It Works ──────────────────────── */
+        .how-section {
+            max-width: 1000px; margin: 0 auto; padding: 7rem 2rem;
+            text-align: center; position: relative; z-index: 1;
+        }
+        .pipeline {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0; margin-top: 3rem; flex-wrap: wrap;
+        }
+        .pipe-step {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem 2.25rem; text-align: center;
+            min-width: 200px; transition: all 0.4s ease; position: relative;
+        }
+        .pipe-step:hover { border-color: var(--accent); transform: translateY(-4px);
+            box-shadow: 0 10px 40px #6c5ce720; }
+        .pipe-step.active { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+        .pipe-step .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #7c6cf7);
+            color: #fff; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem;
+        }
+        .pipe-step h4 { font-size: 1.05rem; font-weight: 700; }
+        .pipe-step p { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.35rem; }
+        .pipe-arrow {
+            font-size: 1.5rem; color: var(--accent); padding: 0 1.25rem;
+            animation: arrow-pulse 2s ease infinite;
+        }
+        @keyframes arrow-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        @media (max-width: 640px) {
+            .pipe-arrow { transform: rotate(90deg); padding: 0.5rem 0; }
+            .pipeline { flex-direction: column; }
+        }
+
+        /* ── Comparison ────────────────────────── */
+        .comparison-section {
+            max-width: 1000px; margin: 0 auto; padding: 7rem 2rem;
+            text-align: center; position: relative; z-index: 1;
+        }
+        .comparison-table {
+            width: 100%; border-collapse: collapse; margin-top: 2rem; font-size: 0.9rem;
+        }
+        .comparison-table th {
+            padding: 1rem 1.25rem; text-align: left;
+            border-bottom: 2px solid var(--border); color: var(--text-dim);
+            font-weight: 600; font-size: 0.82rem; text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .comparison-table th:first-child { color: var(--text); }
+        .comparison-table th.highlight { color: var(--accent-light); }
+        .comparison-table td {
+            padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .comparison-table td:first-child { color: var(--text); font-weight: 500; }
+        .comparison-table td.highlight {
+            color: var(--green); font-weight: 600; background: var(--green-glow);
+        }
+        .comparison-table .check { color: var(--green); }
+        .comparison-table .cross { color: var(--red); opacity: 0.6; }
+        .comparison-table .partial { color: var(--yellow); }
+        @media (max-width: 640px) {
+            .comparison-table { font-size: 0.78rem; }
+            .comparison-table th, .comparison-table td { padding: 0.6rem 0.5rem; }
+        }
+
+        /* ── Enterprise Use Cases ──────────────── */
+        .usecases-section {
+            max-width: 1200px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .usecases-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem; margin-top: 2rem;
+        }
+        .usecase-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem;
+            transition: all 0.4s ease; position: relative; overflow: hidden;
+        }
+        .usecase-card::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            transition: left 0.6s ease;
+        }
+        .usecase-card:hover::after { left: 100%; }
+        .usecase-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .usecase-card .uc-icon {
+            width: 48px; height: 48px; display: flex; align-items: center;
+            justify-content: center; border-radius: 12px; background: #1a1a2e;
+            font-size: 1.4rem; margin-bottom: 1rem;
+        }
+        .usecase-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .usecase-card p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.65; margin-bottom: 0.75rem; }
+        .usecase-card .uc-engines { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .usecase-card .uc-tag {
+            padding: 0.2rem 0.6rem; border-radius: 6px; background: #1a1a2e;
+            color: var(--accent-light); font-size: 0.7rem; font-weight: 500;
+        }
+
+        /* ── Demo ──────────────────────────────── */
+        .demo-section {
+            max-width: 1100px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .demo-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;
+        }
+        @media (max-width: 768px) { .demo-container { grid-template-columns: 1fr; } }
+        .demo-panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden; transition: all 0.3s;
+        }
+        .demo-panel:hover { border-color: var(--border-hover); }
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border);
+            font-size: 0.82rem; font-weight: 600;
+        }
+        .panel-dots { display: flex; gap: 6px; }
+        .panel-dots span { width: 10px; height: 10px; border-radius: 50%; }
+        .panel-dots span:nth-child(1) { background: #ff5f57; }
+        .panel-dots span:nth-child(2) { background: #ffbd2e; }
+        .panel-dots span:nth-child(3) { background: #28c840; }
+
+        textarea#code-input {
+            width: 100%; min-height: 280px; padding: 1.25rem;
+            background: transparent; border: none; color: var(--text);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.83rem;
+            line-height: 1.75; resize: vertical; outline: none; tab-size: 4;
+        }
+        #verify-btn {
+            width: 100%; padding: 0.9rem;
+            background: linear-gradient(135deg, var(--accent), #7c6cf7);
+            border: none; color: #fff; font-family: 'Inter', sans-serif;
+            font-size: 0.95rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; letter-spacing: 0.03em;
+        }
+        #verify-btn:hover { filter: brightness(1.15); }
+        #verify-btn:disabled { opacity: 0.5; cursor: wait; }
+        #verify-btn:active { transform: scale(0.99); }
+        .result-area {
+            padding: 1.25rem; min-height: 280px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            line-height: 1.85; white-space: pre-wrap;
+        }
+        .result-verified {
+            color: var(--green); background: var(--green-glow); border-radius: 8px;
+            padding: 0.5rem 0.75rem; margin-bottom: 0.75rem;
+            display: inline-block; font-weight: 600;
+        }
+        .result-bug {
+            color: var(--red); background: var(--red-glow); border-radius: 8px;
+            padding: 0.5rem 0.75rem; margin-bottom: 0.75rem;
+            display: inline-block; font-weight: 600;
+        }
+        .result-detail { color: var(--text-dim); padding: 0.2rem 0; }
+        .example-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .example-btn {
+            padding: 0.45rem 0.9rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            color: var(--text-dim); font-size: 0.78rem;
+            font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.2s;
+        }
+        .example-btn:hover { border-color: var(--accent); color: var(--text); background: #1a1a2e; }
+        .example-btn.active { border-color: var(--accent); color: var(--accent-light); background: #1c1a30; }
+        .install-tab {
+            padding: 0.55rem 1.25rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            color: var(--text-dim); font-size: 0.85rem;
+            font-family: 'Inter', sans-serif; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .install-tab.active { border-color: var(--accent); color: var(--accent-light); background: #1c1a30; }
+        .install-tab:hover { border-color: var(--accent); }
+
+        /* ── Engines ───────────────────────────── */
+        .engines-section {
+            max-width: 1200px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .engine-categories { margin-top: 3rem; }
+        .engine-cat {
+            margin-bottom: 2.5rem;
+        }
+        .engine-cat-label {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.3rem 0.9rem; border-radius: 6px;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.1em; margin-bottom: 1rem;
+        }
+        .cat-correctness { background: #6c5ce720; color: #a29bfe; }
+        .cat-safety { background: #00d26a20; color: #00d26a; }
+        .cat-security { background: #ff475720; color: #ff6b7a; }
+        .cat-architecture { background: #74b9ff20; color: #74b9ff; }
+        .engines-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+        .engine-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.5rem; transition: all 0.4s ease;
+            position: relative; overflow: hidden;
+        }
+        .engine-card::before {
+            content: ''; position: absolute; bottom: 0; left: 0;
+            width: 0; height: 2px; transition: width 0.4s ease;
+        }
+        .engine-card:hover::before { width: 100%; }
+        .engine-card:hover { transform: translateY(-3px); border-color: var(--border-hover); }
+        .cat-correctness + .engines-grid .engine-card::before,
+        .engine-card.ec-correct::before { background: linear-gradient(90deg, #6c5ce7, #a29bfe); }
+        .engine-card.ec-safety::before { background: linear-gradient(90deg, #00a854, #00d26a); }
+        .engine-card.ec-security::before { background: linear-gradient(90deg, #ff4757, #ff6b7a); }
+        .engine-card.ec-arch::before { background: linear-gradient(90deg, #0984e3, #74b9ff); }
+        .engine-card .e-icon {
+            font-size: 1.3rem; margin-bottom: 0.75rem;
+        }
+        .engine-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .engine-card p { color: var(--text-dim); font-size: 0.82rem; line-height: 1.6; }
+        .engine-card .paper {
+            display: inline-block; margin-top: 0.6rem;
+            font-size: 0.68rem; color: var(--accent); opacity: 0.6;
+        }
+
+        /* ── VS Code ───────────────────────────── */
+        .vscode-section {
+            max-width: 1000px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .vscode-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 3rem; align-items: center;
+        }
+        @media (max-width: 768px) { .vscode-grid { grid-template-columns: 1fr; } }
+        .vscode-features { list-style: none; }
+        .vscode-features li {
+            padding: 0.6rem 0; display: flex; align-items: flex-start;
+            gap: 0.75rem; font-size: 0.92rem;
+        }
+        .vscode-features .check { color: var(--green); font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+        .vscode-features li span { color: var(--text-dim); }
+        .vscode-features li strong { color: var(--text); font-weight: 600; }
+        .vscode-mockup {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .vscode-mockup .mock-titlebar {
+            display: flex; align-items: center; gap: 6px; padding: 0.75rem 1rem;
+            background: #1a1a2e; border-bottom: 1px solid var(--border);
+        }
+        .vscode-mockup .mock-titlebar span { width: 10px; height: 10px; border-radius: 50%; }
+        .vscode-mockup .mock-titlebar span:nth-child(1) { background: #ff5f57; }
+        .vscode-mockup .mock-titlebar span:nth-child(2) { background: #ffbd2e; }
+        .vscode-mockup .mock-titlebar span:nth-child(3) { background: #28c840; }
+        .vscode-mockup .mock-titlebar .title { font-size: 0.75rem; color: var(--text-dim); margin-left: 0.5rem; }
+        .vscode-mock-body {
+            padding: 1.25rem; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; line-height: 1.85;
+        }
+        .vscode-mock-body .line { display: flex; gap: 1rem; }
+        .vscode-mock-body .ln { color: #444; min-width: 20px; text-align: right; user-select: none; }
+        .vscode-mock-body .kw { color: #c792ea; }
+        .vscode-mock-body .fn { color: #82aaff; }
+        .vscode-mock-body .ty { color: #ffcb6b; }
+        .vscode-mock-body .op { color: #89ddff; }
+        .vscode-mock-body .squiggle { text-decoration: wavy underline var(--red); text-underline-offset: 3px; }
+        .vscode-mock-body .lens { color: var(--text-dim); font-size: 0.7rem; padding-left: 2.2rem; margin: 0.15rem 0; }
+
+        /* ── Vision ────────────────────────────── */
+        .vision-section {
+            max-width: 1000px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .vision-timeline {
+            position: relative; margin-top: 3rem;
+            padding-left: 3rem;
+        }
+        .vision-timeline::before {
+            content: ''; position: absolute; left: 15px; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(180deg, var(--accent), var(--green), #74b9ff);
+        }
+        .vision-step {
+            position: relative; padding-bottom: 3rem;
+        }
+        .vision-step:last-child { padding-bottom: 0; }
+        .vision-step::before {
+            content: ''; position: absolute; left: -3rem; top: 4px;
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 3px solid var(--accent); background: var(--bg);
+            z-index: 1; transition: all 0.3s;
+        }
+        .vision-step.vs-now::before { background: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .vision-step.vs-next::before { border-color: var(--green); }
+        .vision-step.vs-future::before { border-color: #74b9ff; }
+        .vision-label {
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.1em; margin-bottom: 0.35rem;
+        }
+        .vs-now .vision-label { color: var(--accent-light); }
+        .vs-next .vision-label { color: var(--green); }
+        .vs-future .vision-label { color: #74b9ff; }
+        .vision-step h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .vision-step p { color: var(--text-dim); font-size: 0.92rem; line-height: 1.7; max-width: 600px; }
+        .vision-quote {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0;
+            padding: 1.5rem 2rem; margin-top: 3rem;
+        }
+        .vision-quote p {
+            font-size: 1.1rem; font-weight: 600; font-style: italic;
+            color: var(--text); line-height: 1.7; max-width: none;
+        }
+
+        /* ── Research / Academic ────────────────── */
+        .research-section {
+            max-width: 1000px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .papers-flow {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2rem;
+            justify-content: center;
+        }
+        .paper-chip {
+            padding: 0.4rem 0.85rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            font-size: 0.75rem; color: var(--text-dim);
+            transition: all 0.3s; cursor: default;
+        }
+        .paper-chip:hover {
+            border-color: var(--accent); color: var(--accent-light);
+            transform: translateY(-2px); box-shadow: 0 4px 12px #6c5ce720;
+        }
+        .paper-chip .year { color: var(--accent); font-weight: 600; margin-right: 0.3rem; }
+        .research-stats {
+            display: flex; justify-content: center; gap: 4rem; margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+        .research-stat { text-align: center; }
+        .research-stat .rs-num {
+            font-size: 2rem; font-weight: 800; color: var(--text);
+        }
+        .research-stat .rs-label { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+        /* ── Install ───────────────────────────── */
+        .install-section {
+            max-width: 900px; margin: 0 auto; padding: 7rem 2rem;
+            text-align: center; position: relative; z-index: 1;
+        }
+        .install-tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .install-block {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem; text-align: left; display: none;
+        }
+        .install-block.active { display: block; }
+        .install-block pre {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.83rem;
+            line-height: 1.8; color: var(--text); overflow-x: auto;
+        }
+        .install-block pre .comment { color: #546e7a; }
+        .install-block pre .cmd { color: var(--green); }
+        .install-block pre .flag { color: var(--accent-light); }
+        .install-block p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem; }
+
+        /* ── Stagger animation classes ─────────── */
+        .stagger { opacity: 0; transform: translateY(25px); transition: all 0.6s ease; animation: css-fallback-stagger 0.6s ease 3s 1 normal both; }
+        .stagger.visible { opacity: 1; transform: translateY(0); animation: none; }
+        @keyframes css-fallback-stagger { to { opacity: 1; transform: translateY(0); } }
+        .stagger-d1 { transition-delay: 0.1s; }
+        .stagger-d2 { transition-delay: 0.2s; }
+        .stagger-d3 { transition-delay: 0.3s; }
+        .stagger-d4 { transition-delay: 0.4s; }
+        .stagger-d5 { transition-delay: 0.5s; }
+
+        /* ── Section Divider ───────────────────── */
+        .section-divider {
+            height: 1px; border: none; margin: 0;
+            background: linear-gradient(90deg, transparent 0%, var(--border) 20%, var(--accent) 50%, var(--border) 80%, transparent 100%);
+            position: relative; z-index: 1;
+        }
+
+        /* ── CTA Banner ────────────────────────── */
+        .cta-banner {
+            text-align: center; padding: 6rem 2rem; position: relative; z-index: 1;
+            background: linear-gradient(180deg, transparent, #6c5ce708, #6c5ce712, #6c5ce708, transparent);
+        }
+        .cta-banner h2 { margin-bottom: 1rem; }
+        .cta-banner p { color: var(--text-dim); font-size: 1.05rem; max-width: 500px; margin: 0 auto 2rem; }
+
+        /* ── What Is Formal Verification ──────── */
+        .explainer-section {
+            max-width: 1100px; margin: 0 auto; padding: 7rem 2rem;
+            text-align: center; position: relative; z-index: 1;
+        }
+        .analogy-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem; margin-top: 3rem;
+        }
+        @media (max-width: 768px) { .analogy-grid { grid-template-columns: 1fr; } }
+        .analogy-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2.5rem 2rem; text-align: center;
+            transition: all 0.4s ease; position: relative; overflow: hidden;
+        }
+        .analogy-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+        .analogy-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .analogy-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .analogy-card .analogy-everyday { color: var(--accent-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; }
+        .analogy-card p { color: var(--text-dim); font-size: 0.88rem; line-height: 1.7; }
+        .explainer-bottom {
+            margin-top: 3rem; display: flex; gap: 2rem; justify-content: center;
+            flex-wrap: wrap; align-items: stretch;
+        }
+        .explainer-stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.75rem 2.5rem; text-align: center;
+            flex: 1; min-width: 200px; max-width: 280px;
+        }
+        .explainer-stat-card .es-num {
+            font-size: 2rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .explainer-stat-card .es-label { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+        /* ── Persona Cards (Who Is This For?) ──── */
+        .personas-section {
+            max-width: 1200px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .persona-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem; margin-top: 2rem;
+        }
+        .persona-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem; transition: all 0.4s ease;
+        }
+        .persona-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .persona-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .persona-avatar {
+            width: 48px; height: 48px; border-radius: 12px; background: #1a1a2e;
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+        }
+        .persona-header h3 { font-size: 1.05rem; font-weight: 700; }
+        .persona-header .persona-role { font-size: 0.78rem; color: var(--text-dim); }
+        .persona-card p { color: var(--text-dim); font-size: 0.88rem; line-height: 1.65; margin-bottom: 0.75rem; }
+        .persona-engines { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .persona-tag {
+            padding: 0.2rem 0.6rem; border-radius: 6px; background: #1a1a2e;
+            color: var(--accent-light); font-size: 0.7rem; font-weight: 500;
+        }
+
+        /* ── Engine Toggle (Simple/Technical) ──── */
+        .engine-toggle {
+            display: inline-flex; align-items: center; gap: 0; margin-bottom: 2rem;
+            border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+        }
+        .engine-toggle-btn {
+            padding: 0.45rem 1.1rem; font-size: 0.8rem; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer;
+            background: transparent; border: none; color: var(--text-dim);
+            transition: all 0.2s;
+        }
+        .engine-toggle-btn.active {
+            background: var(--accent); color: #fff;
+        }
+        .engine-desc-simple, .engine-desc-technical { display: none; }
+        .engine-desc-simple.active, .engine-desc-technical.active { display: block; }
+
+        /* ── AI Ethics Section ────────────────── */
+        .ethics-section {
+            max-width: 1100px; margin: 0 auto; padding: 7rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .ethics-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem; margin-top: 2.5rem;
+        }
+        @media (max-width: 768px) { .ethics-grid { grid-template-columns: 1fr; } }
+        .ethics-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem; transition: all 0.4s ease;
+            position: relative; overflow: hidden;
+        }
+        .ethics-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .ethics-card .ethics-icon {
+            width: 48px; height: 48px; border-radius: 12px; background: #1a1a2e;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-bottom: 1rem;
+        }
+        .ethics-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .ethics-card p { color: var(--text-dim); font-size: 0.88rem; line-height: 1.65; }
+        .ethics-card .ethics-cite {
+            display: inline-block; margin-top: 0.75rem; font-size: 0.72rem;
+            color: var(--accent); opacity: 0.7;
+        }
+        .ethics-callout {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-left: 3px solid var(--red); border-radius: 0 14px 14px 0;
+            padding: 2rem 2.5rem; margin-top: 2.5rem;
+        }
+        .ethics-callout h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text); }
+        .ethics-callout p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.7; }
+        .incident-list { list-style: none; margin-top: 1rem; }
+        .incident-list li {
+            padding: 0.5rem 0; display: flex; align-items: flex-start; gap: 0.75rem;
+            font-size: 0.88rem; color: var(--text-dim); border-bottom: 1px solid #1a1a2e;
+        }
+        .incident-list .incident-year { color: var(--red); font-weight: 700; min-width: 40px; }
+        .incident-list .incident-cost { color: var(--yellow); font-size: 0.78rem; }
+
+        /* ── Expanded Research ────────────────── */
+        .paper-chip a {
+            color: inherit; text-decoration: none;
+        }
+        .paper-chip a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- Scroll Progress -->
+    <div class="scroll-progress" id="scroll-progress"></div>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="index.html" class="nav-logo">AEON<span>.</span></a>
+        <button class="mobile-toggle" onclick="toggleMobile()">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="#problem">Why</a></li>
+            <li><a href="#how">How</a></li>
+            <li><a href="#demo">Demo</a></li>
+            <li class="nav-dropdown">
+                <a href="docs.html">Docs</a>
+                <div class="nav-dropdown-menu">
+                    <a href="docs.html">Documentation</a>
+                    <a href="tutorials.html">Tutorials</a>
+                    <a href="api-reference.html">API Reference</a>
+                    <a href="benchmarks.html">Benchmarks</a>
+                    <a href="changelog.html">Changelog</a>
+                </div>
+            </li>
+            <li><a href="#vision">Vision</a></li>
+            <li><a href="#ethics">Ethics</a></li>
+            <li><a href="#install">Install</a></li>
+            <li><button class="nav-search-btn search-trigger" onclick="openAeonSearch()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search <kbd>&#8984;K</kbd></button></li>
+            <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="nav-cta">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- HERO                                                     -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="hero">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+
+        <div class="badge"><span class="dot"></span> v0.5.0 &mdash; 30+ Formal Verification Engines</div>
+
+        <h1>Your Code, <br><span class="gradient">Mathematically Proven Safe.</span></h1>
+
+        <p class="subtitle">AEON checks your code for bugs that tests miss. 30+ analysis engines scan every possible path through your program. Works with 14 languages. If AEON says it's safe, it's proven.</p>
+
+        <div class="cta-row">
+            <a href="#demo" class="btn btn-primary">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Try the Live Demo
+            </a>
+            <a href="docs.html" class="btn btn-secondary">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Read the Docs
+            </a>
+        </div>
+
+        <div class="hero-terminal">
+            <div class="term-titlebar">
+                <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+                <span class="term-title">Terminal &mdash; AEON Verify</span>
+            </div>
+            <div class="term-body" id="hero-term">
+                <div class="term-line" id="tl-0"><span class="prompt">$</span> <span class="cmd">aeon check</span> <span class="flag">payment.py</span> <span class="flag">--deep-verify</span><span class="term-cursor" id="term-cursor"></span></div>
+                <div class="term-line" id="tl-1"><span class="pass">&#10003; Types</span> &nbsp; <span class="pass">&#10003; Null Safety</span> &nbsp; <span class="pass">&#10003; Dead Code</span> &nbsp; <span class="pass">&#10003; Numeric</span></div>
+                <div class="term-line" id="tl-2"><span class="pass">&#10003; Hoare Logic</span> &nbsp; <span class="pass">&#10003; Taint</span> &nbsp; <span class="pass">&#10003; API Contracts</span> &nbsp; <span class="pass">&#10003; Errors</span></div>
+                <div class="term-line" id="tl-3"><span class="pass">&#10003; Separation Logic</span> &nbsp; <span class="pass">&#10003; Concurrency</span> &nbsp; <span class="pass">&#10003; Info Flow</span></div>
+                <div class="term-line" id="tl-4"><span class="pass">&#10003; Shape Analysis</span> &nbsp; <span class="pass">&#10003; Model Check</span> &nbsp; <span class="pass">&#10003; +17 more</span></div>
+                <div class="term-line" id="tl-5"><span class="fail">&#10007; Symbolic Execution: division by zero on line 14</span></div>
+                <div class="term-line" id="tl-6"><span class="fix">&nbsp; &#128161; Fix: add <code style="color:var(--accent-light)">requires count != 0</code></span></div>
+                <div class="term-line" id="tl-7"><span style="color:var(--text-dim)">&#9473;&#9473;&#9473; 29/30 passed &middot; 1 bug found &middot; 0.34s</span></div>
+            </div>
+        </div>
+
+        <div class="scroll-hint">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 13l5 5 5-5"/><path d="M7 6l5 5 5-5"/></svg>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- STATS                                                    -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-number" data-target="30">0</div>
+            <div class="stat-label">Analysis Engines</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" data-target="44">0</div>
+            <div class="stat-label">Papers Implemented</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" data-target="14">0</div>
+            <div class="stat-label">Languages Supported</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" data-target="52">0</div>
+            <div class="stat-label">Tests Passing</div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- THE PROBLEM                                              -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="problem-section fade-in" id="problem">
+        <div class="section-label">The Problem</div>
+        <h2>Tests catch some bugs. AEON catches all of them.</h2>
+        <p class="section-desc" style="margin:0 auto;">Unit tests check a few inputs. Code review catches what humans spot. Neither covers every path. AEON does.</p>
+
+        <div class="problem-grid">
+            <div class="problem-card stagger stagger-d1">
+                <div class="problem-icon">&#9889;</div>
+                <h3>Tests only cover ~30% of paths</h3>
+                <p>You write tests for the cases you think of. But bugs hide in the paths you don't. Edge cases, race conditions, and overflow errors slip through.</p>
+            </div>
+            <div class="problem-card stagger stagger-d2">
+                <div class="problem-icon">&#128027;</div>
+                <h3>Bugs cost 100x more in production</h3>
+                <p>A null pointer caught during development costs minutes. The same bug in production costs hours of debugging, lost revenue, and broken trust.</p>
+            </div>
+            <div class="problem-card highlight-card stagger stagger-d3">
+                <div class="problem-icon">&#128737;</div>
+                <h3>AEON checks every possible path</h3>
+                <p>30+ engines analyze your code mathematically. Division by zero, null dereference, SQL injection, memory leaks, dead code &mdash; all caught before deployment.</p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- HOW IT WORKS                                             -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="how-section fade-in" id="how">
+        <div class="section-label">How It Works</div>
+        <h2>Three steps to verified code</h2>
+        <p class="section-desc" style="margin:0 auto 0;">Write code in any language. AEON proves it's correct. Ship with confidence.</p>
+        <div class="pipeline">
+            <div class="pipe-step stagger stagger-d1">
+                <div class="step-num">1</div>
+                <h4>Your Code</h4>
+                <p>Any of 14 languages &mdash; or AI-generated</p>
+            </div>
+            <div class="pipe-arrow">&#8594;</div>
+            <div class="pipe-step active stagger stagger-d2">
+                <div class="step-num">2</div>
+                <h4>AEON Verifies</h4>
+                <p>30+ analysis engines run in parallel</p>
+            </div>
+            <div class="pipe-arrow">&#8594;</div>
+            <div class="pipe-step stagger stagger-d3">
+                <div class="step-num">3</div>
+                <h4>Ship with Certainty</h4>
+                <p>Proven correct &mdash; or bugs surfaced with fixes</p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- WHAT IS FORMAL VERIFICATION — PLAIN ENGLISH               -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="explainer-section fade-in" id="formal-verification">
+        <div class="section-label">Understanding Formal Verification</div>
+        <h2>What does &ldquo;mathematically proven&rdquo; actually mean?</h2>
+        <p class="section-desc" style="margin:0 auto;">Formal verification isn&rsquo;t magic &mdash; it&rsquo;s a well-understood branch of computer science that&rsquo;s been used in aerospace, chip design, and nuclear systems for decades. Here&rsquo;s how to think about it.</p>
+
+        <div class="analogy-grid">
+            <div class="analogy-card stagger stagger-d1">
+                <div class="analogy-icon">&#128269;</div>
+                <div class="analogy-everyday">Like spell-check, but for logic</div>
+                <h3>Spell-Check for Code</h3>
+                <p>Spell-check doesn&rsquo;t read your essay &mdash; it checks every word against rules. AEON doesn&rsquo;t run your code &mdash; it checks every possible execution against mathematical rules. If it says &ldquo;correct,&rdquo; it means <em>every</em> path is safe.</p>
+            </div>
+            <div class="analogy-card stagger stagger-d2">
+                <div class="analogy-icon">&#128187;</div>
+                <div class="analogy-everyday">Like an X-ray, not a spot check</div>
+                <h3>X-Ray for Software</h3>
+                <p>Testing checks a few inputs and hopes for the best. AEON examines the <em>structure</em> of your code &mdash; like an X-ray that sees every bone, not just the ones that hurt. It finds bugs that no amount of testing would catch.</p>
+            </div>
+            <div class="analogy-card stagger stagger-d3">
+                <div class="analogy-icon">&#128272;</div>
+                <div class="analogy-everyday">Like a mathematical proof, not a guess</div>
+                <h3>Proof, Not Probability</h3>
+                <p>When a mathematician proves the Pythagorean theorem, it&rsquo;s true for <em>every</em> right triangle &mdash; not just the ones they measured. AEON proves your code works for <em>every</em> possible input, not just the test cases you wrote.</p>
+            </div>
+        </div>
+
+        <div class="explainer-bottom">
+            <div class="explainer-stat-card stagger stagger-d1">
+                <div class="es-num">10&times;</div>
+                <div class="es-label">Cheaper to fix bugs at verification vs. production</div>
+            </div>
+            <div class="explainer-stat-card stagger stagger-d2">
+                <div class="es-num">100%</div>
+                <div class="es-label">Path coverage (vs. ~30% with unit tests)</div>
+            </div>
+            <div class="explainer-stat-card stagger stagger-d3">
+                <div class="es-num">0</div>
+                <div class="es-label">False confidence &mdash; if AEON says it&rsquo;s safe, it&rsquo;s proven</div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- WHO IS THIS FOR — PERSONAS                                -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="personas-section fade-in" id="personas">
+        <div style="text-align:center;">
+            <div class="section-label">Who Is This For?</div>
+            <h2>Built for every developer</h2>
+            <p class="section-desc" style="margin:0 auto;">Whether you&rsquo;re a security researcher or a first-year CS student, AEON meets you where you are.</p>
+        </div>
+        <div class="persona-grid">
+            <div class="persona-card stagger stagger-d1">
+                <div class="persona-header">
+                    <div class="persona-avatar">&#128187;</div>
+                    <div><h3>Backend Developer</h3><div class="persona-role">Building APIs &amp; services</div></div>
+                </div>
+                <p>Catch division-by-zero, null references, and infinite loops before they hit production. AEON verifies your Python, Java, Go, or TypeScript code in seconds.</p>
+                <div class="persona-engines"><span class="persona-tag">Symbolic Exec</span><span class="persona-tag">Abstract Interp</span><span class="persona-tag">Termination</span></div>
+            </div>
+            <div class="persona-card stagger stagger-d2">
+                <div class="persona-header">
+                    <div class="persona-avatar">&#128274;</div>
+                    <div><h3>Security Engineer</h3><div class="persona-role">Protecting systems &amp; data</div></div>
+                </div>
+                <p>Prove that secrets never leak, user input is always sanitized, and no SQL injection is possible &mdash; not with pattern matching, but with mathematical proof.</p>
+                <div class="persona-engines"><span class="persona-tag">Taint Analysis</span><span class="persona-tag">Info Flow</span><span class="persona-tag">Noninterference</span></div>
+            </div>
+            <div class="persona-card stagger stagger-d3">
+                <div class="persona-header">
+                    <div class="persona-avatar">&#129302;</div>
+                    <div><h3>AI/ML Engineer</h3><div class="persona-role">Working with AI-generated code</div></div>
+                </div>
+                <p>AI writes code 100x faster &mdash; but bugs scale too. AEON is the verification layer that makes AI-generated code trustworthy. Verify before you ship.</p>
+                <div class="persona-engines"><span class="persona-tag">All 30+ Engines</span><span class="persona-tag">Auto-Fix</span><span class="persona-tag">Contracts</span></div>
+            </div>
+            <div class="persona-card stagger stagger-d4">
+                <div class="persona-header">
+                    <div class="persona-avatar">&#127891;</div>
+                    <div><h3>Student &amp; Researcher</h3><div class="persona-role">Learning formal methods</div></div>
+                </div>
+                <p>See 50 years of PL research in action. Every engine links to its foundational paper. Learn Hoare logic, separation logic, and abstract interpretation by using them.</p>
+                <div class="persona-engines"><span class="persona-tag">50+ Papers</span><span class="persona-tag">Plain-English</span><span class="persona-tag">Interactive</span></div>
+            </div>
+            <div class="persona-card stagger stagger-d5">
+                <div class="persona-header">
+                    <div class="persona-avatar">&#128188;</div>
+                    <div><h3>Engineering Leader</h3><div class="persona-role">CTO / VP Engineering</div></div>
+                </div>
+                <p>Reduce production incidents, satisfy compliance requirements, and adopt incrementally with baseline mode. AEON integrates into CI/CD with zero friction.</p>
+                <div class="persona-engines"><span class="persona-tag">SARIF</span><span class="persona-tag">CI/CD</span><span class="persona-tag">Baseline</span></div>
+            </div>
+            <div class="persona-card stagger stagger-d1">
+                <div class="persona-header">
+                    <div class="persona-avatar">&#128736;</div>
+                    <div><h3>Open-Source Maintainer</h3><div class="persona-role">Shipping reliable libraries</div></div>
+                </div>
+                <p>Verify pull requests automatically. Contributors get instant feedback on correctness. Ship with a verification badge that means something real.</p>
+                <div class="persona-engines"><span class="persona-tag">GitHub Action</span><span class="persona-tag">Auto-Fix</span><span class="persona-tag">Review</span></div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- WHY AEON — COMPARISON                                    -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="comparison-section fade-in" id="why">
+        <div class="section-label">Why AEON</div>
+        <h2>Beyond testing and linting</h2>
+        <p class="section-desc" style="margin:0 auto 2rem;">Here's what AEON catches that other tools miss.</p>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Capability</th>
+                    <th>Unit Tests</th>
+                    <th>Linters</th>
+                    <th>Code Review</th>
+                    <th class="highlight">AEON</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Division by zero</td><td><span class="partial">~</span> If tested</td><td><span class="cross">&#10007;</span></td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> Proven</td></tr>
+                <tr><td>Null dereference</td><td><span class="partial">~</span> If tested</td><td><span class="partial">~</span> Basic</td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> Tracked</td></tr>
+                <tr><td>SQL injection / XSS</td><td><span class="cross">&#10007;</span></td><td><span class="partial">~</span> Pattern</td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> Taint tracked</td></tr>
+                <tr><td>Race conditions</td><td><span class="cross">&#10007;</span></td><td><span class="cross">&#10007;</span></td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> Proven</td></tr>
+                <tr><td>Memory safety</td><td><span class="cross">&#10007;</span></td><td><span class="cross">&#10007;</span></td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> Separation logic</td></tr>
+                <tr><td>Dead code &amp; unused vars</td><td><span class="cross">&#10007;</span></td><td><span class="check">&#10003;</span> Basic</td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> All patterns</td></tr>
+                <tr><td>Integer overflow</td><td><span class="cross">&#10007;</span></td><td><span class="cross">&#10007;</span></td><td><span class="cross">&#10007;</span></td><td class="highlight"><span class="check">&#10003;</span> Numeric engine</td></tr>
+                <tr><td>Error handling gaps</td><td><span class="cross">&#10007;</span></td><td><span class="partial">~</span> Basic</td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> All paths</td></tr>
+                <tr><td>API misuse</td><td><span class="cross">&#10007;</span></td><td><span class="cross">&#10007;</span></td><td><span class="partial">~</span> If spotted</td><td class="highlight"><span class="check">&#10003;</span> Contract checked</td></tr>
+                <tr><td>All-path coverage</td><td><span class="cross">&#10007;</span> Sample</td><td><span class="cross">&#10007;</span></td><td><span class="cross">&#10007;</span></td><td class="highlight"><span class="check">&#10003;</span> Exhaustive</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- LIVE DEMO                                                -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="demo-section fade-in" id="demo">
+        <div class="section-label">Live Demo</div>
+        <h2>Try it yourself</h2>
+        <p class="section-desc">Paste code in any of 14 supported languages. AEON runs 30+ analysis engines and tells you if it's safe.</p>
+
+        <div class="install-tabs" id="lang-tabs" style="justify-content:flex-start; margin-bottom:1rem; flex-wrap:wrap;">
+            <button class="install-tab active" onclick="switchLang('python', this)">Python</button>
+            <button class="install-tab" onclick="switchLang('java', this)">Java</button>
+            <button class="install-tab" onclick="switchLang('javascript', this)">JavaScript</button>
+            <button class="install-tab" onclick="switchLang('typescript', this)">TypeScript</button>
+            <button class="install-tab" onclick="switchLang('go', this)">Go</button>
+            <button class="install-tab" onclick="switchLang('rust', this)">Rust</button>
+            <button class="install-tab" onclick="switchLang('c', this)">C</button>
+            <button class="install-tab" onclick="switchLang('cpp', this)">C++</button>
+            <button class="install-tab" onclick="switchLang('ruby', this)">Ruby</button>
+            <button class="install-tab" onclick="switchLang('swift', this)">Swift</button>
+            <button class="install-tab" onclick="switchLang('kotlin', this)">Kotlin</button>
+            <button class="install-tab" onclick="switchLang('php', this)">PHP</button>
+            <button class="install-tab" onclick="switchLang('scala', this)">Scala</button>
+            <button class="install-tab" onclick="switchLang('dart', this)">Dart</button>
+        </div>
+
+        <div class="example-btns" id="example-btns">
+            <button class="example-btn active" onclick="loadExample('divzero', this)">Division by Zero</button>
+            <button class="example-btn" onclick="loadExample('nullsafety', this)">Null Dereference</button>
+            <button class="example-btn" onclick="loadExample('deadcode', this)">Dead Code</button>
+            <button class="example-btn" onclick="loadExample('errorhandling', this)">Swallowed Error</button>
+            <button class="example-btn" onclick="loadExample('contract', this)">Contract Verified</button>
+            <button class="example-btn" onclick="loadExample('infinite', this)">Infinite Loop</button>
+            <button class="example-btn" onclick="loadExample('security', this)">Secret Leak</button>
+            <button class="example-btn" onclick="loadExample('clean', this)">Clean Code</button>
+        </div>
+
+        <div class="demo-container">
+            <div class="demo-panel">
+                <div class="panel-header">
+                    <span id="input-filename">input.py</span>
+                    <div class="panel-dots"><span></span><span></span><span></span></div>
+                </div>
+                <textarea id="code-input" spellcheck="false">def average(numbers: list, count: int) -> float:
+    return sum(numbers) / count</textarea>
+                <button id="verify-btn" onclick="verifyCode()">&#9655; VERIFY CODE</button>
+            </div>
+            <div class="demo-panel">
+                <div class="panel-header">
+                    <span>AEON Analysis</span>
+                    <div class="panel-dots"><span></span><span></span><span></span></div>
+                </div>
+                <div class="result-area" id="result-area">
+                    <span style="color: var(--text-dim);">Click "VERIFY CODE" to analyze...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- 30+ ENGINES                                              -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="engines-section fade-in" id="engines">
+        <div style="text-align:center;">
+            <div class="section-label">What AEON Checks</div>
+            <h2>30+ verification engines</h2>
+            <p class="section-desc" style="margin:0 auto;">Each engine targets a specific class of bugs. Plain English below &mdash; toggle to see the computer science.</p>
+            <div class="engine-toggle" id="engine-toggle">
+                <button class="engine-toggle-btn active" onclick="setEngineMode('simple', this)">Plain English</button>
+                <button class="engine-toggle-btn" onclick="setEngineMode('technical', this)">Technical</button>
+            </div>
+        </div>
+
+        <div class="engine-categories">
+            <!-- CORRECTNESS -->
+            <div class="engine-cat">
+                <div class="engine-cat-label cat-correctness">&#9679; Correctness</div>
+                <div class="engines-grid">
+                    <div class="engine-card ec-correct stagger stagger-d1">
+                        <div class="e-icon">&#128270;</div>
+                        <h3>Symbolic Execution</h3>
+                        <p class="engine-desc-simple active">Tries every possible input to your function and tells you exactly which ones cause crashes. Gives you the specific value that breaks your code.</p>
+                        <p class="engine-desc-technical">Path-sensitive analysis exploring all feasible execution paths. Variables are symbolic; branches fork into two states. Path conditions checked by Z3 for feasibility. Generates concrete counterexamples.</p>
+                        <span class="paper">King 1976 &middot; KLEE/OSDI 2008</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d2">
+                        <div class="e-icon">&#128272;</div>
+                        <h3>Abstract Interpretation</h3>
+                        <p class="engine-desc-simple active">Tracks the range of every variable (e.g., &ldquo;this number is between 0 and 100&rdquo;) and catches overflow, division by zero, and out-of-bounds errors.</p>
+                        <p class="engine-desc-technical">Static analysis via Galois connections between concrete and abstract domains. Interval domain with threshold widening, sign domain Hasse lattice, congruence domain via CRT. Fixpoint computation uses widening (&nabla;) and narrowing (&Delta;).</p>
+                        <span class="paper">Cousot &amp; Cousot, POPL 1977</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d3">
+                        <div class="e-icon">&#128220;</div>
+                        <h3>Hoare Logic</h3>
+                        <p class="engine-desc-simple active">Checks your function&rsquo;s promises: &ldquo;If you give me valid input, I guarantee valid output.&rdquo; Mechanically verifies that every contract is honored.</p>
+                        <p class="engine-desc-technical">Weakest precondition calculus via wp(S,Q) substitution, composition, and conditional rules. Verification conditions discharged to Z3 SMT solver. Loop invariants inferred using Houdini&rsquo;s algorithm.</p>
+                        <span class="paper">Hoare 1969 &middot; Dijkstra 1975 &middot; Flanagan &amp; Leino 2001</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d4">
+                        <div class="e-icon">&#127919;</div>
+                        <h3>Liquid Types</h3>
+                        <p class="engine-desc-simple active">Attaches conditions to types: not just &ldquo;this is a number&rdquo; but &ldquo;this is a number greater than zero.&rdquo; The compiler then proves these conditions are always met.</p>
+                        <p class="engine-desc-technical">Refinement types annotate base types with logical predicates verified by SMT. Inference via predicate abstraction over qualifier templates, solving for strongest conjunction via CEGAR &mdash; a fixpoint in the qualifier conjunction lattice.</p>
+                        <span class="paper">Rondon, Kawaguchi, Jhala &mdash; PLDI 2008</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d5">
+                        <div class="e-icon">&#129518;</div>
+                        <h3>Dependent Types</h3>
+                        <p class="engine-desc-simple active">Types that carry data: instead of &ldquo;list of numbers,&rdquo; you can say &ldquo;list of exactly 5 numbers.&rdquo; Your program literally becomes a mathematical proof of its own correctness.</p>
+                        <p class="engine-desc-technical">Full Pi types where return types depend on input values. Via Curry-Howard, types are propositions and programs are proofs. Bidirectional type checking, beta/eta normalization, universe hierarchy Type&#8320; : Type&#8321; : &hellip;</p>
+                        <span class="paper">Martin-L&ouml;f 1984 &middot; Coquand &amp; Huet 1988</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d1">
+                        <div class="e-icon">&#128683;</div>
+                        <h3>Dead Code Detection</h3>
+                        <p class="engine-desc-simple active">Finds code that can never run: statements after a return, unused variables, parameters nobody reads, and if/else branches that do the same thing. Keeps your codebase clean.</p>
+                        <p class="engine-desc-technical">Control flow analysis identifies unreachable code after terminators. Def-use chains detect unused definitions. Branch equivalence via structural comparison. Self-assignment and redundant condition detection.</p>
+                        <span class="paper">Allen 1970 &middot; Knoop, R&uuml;thing &amp; Steffen 1994</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d2">
+                        <div class="e-icon">&#128200;</div>
+                        <h3>Abstract Refinement Types</h3>
+                        <p class="engine-desc-simple active">Goes beyond basic refinement types by parameterizing over abstract predicates. Enables generic, reusable verified components where the proof is also polymorphic.</p>
+                        <p class="engine-desc-technical">Parametric refinement types abstract over predicates. Enables type-polymorphic verification: a single sort implementation verified once works for all orderings. Solved via predicate abstraction with CEGAR.</p>
+                        <span class="paper">Vazou et al., ESOP 2013 &middot; ICFP 2014</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d3">
+                        <div class="e-icon">&#128208;</div>
+                        <h3>Gradual Typing Verification</h3>
+                        <p class="engine-desc-simple active">Handles codebases that mix typed and untyped code. Verifies what it can statically and inserts runtime checks for the rest &mdash; no all-or-nothing tradeoff.</p>
+                        <p class="engine-desc-technical">Consistent subtyping with the unknown type (?). Static guarantees degrade gracefully at typed/untyped boundaries. Runtime cast insertion for dynamic regions. Blame tracking identifies the source of type failures.</p>
+                        <span class="paper">Siek &amp; Taha 2006 &middot; Bader et al. 2018</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d4">
+                        <div class="e-icon">&#128301;</div>
+                        <h3>Craig Interpolation / CEGAR</h3>
+                        <p class="engine-desc-simple active">When a proof fails, automatically figures out what extra information is needed and refines the analysis. Keeps getting smarter until it either proves or finds a real bug.</p>
+                        <p class="engine-desc-technical">Counterexample-guided abstraction refinement (CEGAR). Uses Craig interpolants from infeasible error traces to discover new predicates. Iteratively refines the abstract domain until proof or concrete counterexample.</p>
+                        <span class="paper">McMillan, CAV 2003 &middot; Henzinger et al., POPL 2004</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d5">
+                        <div class="e-icon">&#128202;</div>
+                        <h3>Complexity Analysis</h3>
+                        <p class="engine-desc-simple active">Automatically computes how much time and memory your function uses as a function of input size. Catches accidentally quadratic algorithms and memory leaks.</p>
+                        <p class="engine-desc-technical">Resource-aware type system (RAML). Annotates types with potential functions. Derives polynomial bounds on heap, stack, and time usage. Amortized analysis via the potential method.</p>
+                        <span class="paper">Hoffmann et al., TOPLAS 2012 &middot; Gulwani et al., POPL 2009</span>
+                    </div>
+                    <div class="engine-card ec-correct stagger stagger-d1">
+                        <div class="e-icon">&#128256;</div>
+                        <h3>Relational Verification</h3>
+                        <p class="engine-desc-simple active">Compares two versions of a function and proves they behave the same. Essential for safe refactoring, compiler optimization validation, and security (non-interference).</p>
+                        <p class="engine-desc-technical">2-safety via product programs. Self-composition for non-interference. Relational Hoare logic for comparing two program executions. Proves equivalence, refinement, and relative correctness.</p>
+                        <span class="paper">Barthe et al., FM 2011 &middot; Benton, POPL 2004</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAFETY -->
+            <div class="engine-cat">
+                <div class="engine-cat-label cat-safety">&#9679; Safety</div>
+                <div class="engines-grid">
+                    <div class="engine-card ec-safety stagger stagger-d1">
+                        <div class="e-icon">&#9203;</div>
+                        <h3>Termination Analysis</h3>
+                        <p class="engine-desc-simple active">Proves your functions will always finish running &mdash; no infinite loops, no hangs, no frozen programs. Uses a clever mathematical trick from Ramsey theory.</p>
+                        <p class="engine-desc-technical">Decides termination using Ramsey&rsquo;s theorem. Builds size-change graphs at each call site, computes transitive closure under graph composition, and verifies strict decrease exists for every idempotent self-loop SCG. Sound and complete for SCT.</p>
+                        <span class="paper">Lee, Jones, Ben-Amram &mdash; POPL 2001</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d2">
+                        <div class="e-icon">&#128679;</div>
+                        <h3>Separation Logic</h3>
+                        <p class="engine-desc-simple active">Prevents memory bugs: using freed memory, freeing memory twice, or forgetting to free memory at all. This is the math behind Facebook&rsquo;s Infer tool.</p>
+                        <p class="engine-desc-technical">Heap safety via spatial reasoning. Separating conjunction (P * Q) splits heap into disjoint parts. Frame rule enables modular verification. Bi-abduction (Calcagno et al. 2011) for automatic pre/postcondition inference.</p>
+                        <span class="paper">Reynolds 2002 &middot; O&rsquo;Hearn 2019 &middot; Calcagno et al. 2011</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d3">
+                        <div class="e-icon">&#128260;</div>
+                        <h3>Concurrency</h3>
+                        <p class="engine-desc-simple active">Finds race conditions (two threads changing the same data at once) and deadlocks (threads waiting for each other forever). Critical for multi-threaded servers.</p>
+                        <p class="engine-desc-technical">Lockset analysis (Eraser/Savage et al. 1997) tracks locks held during shared access. Happens-before (Lamport 1978) partial order on concurrent events. Cycle detection in lock-order graphs for deadlock prevention.</p>
+                        <span class="paper">Owicki &amp; Gries 1976 &middot; Savage et al. 1997</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d4">
+                        <div class="e-icon">&#128300;</div>
+                        <h3>Model Checking</h3>
+                        <p class="engine-desc-simple active">Exhaustively checks every possible state your program can be in, up to a limit. Like testing every combination of inputs, but done mathematically.</p>
+                        <p class="engine-desc-technical">Bounded state-space exploration. Program unrolled to bound k, encoded as SAT/SMT formula. Temporal logic (CTL): AG P (safety), AF P (liveness), EF P (reachability). Counterexample traces for assertion violations.</p>
+                        <span class="paper">Clarke, Emerson, Sistla 1986 &middot; Biere et al. 1999</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d5">
+                        <div class="e-icon">&#128456;</div>
+                        <h3>Shape Analysis</h3>
+                        <p class="engine-desc-simple active">Verifies that your linked lists don&rsquo;t have cycles, your trees are balanced, and you never follow a null pointer. Essential for data-structure-heavy code.</p>
+                        <p class="engine-desc-technical">Verification of linked structures via 3-valued logic (Kleene). Canonical abstraction merges nodes into summary nodes by predicates. Shape predicates: reach(x,y), cycle(x), shared(x), sorted(x).</p>
+                        <span class="paper">Sagiv, Reps, Wilhelm &mdash; TOPLAS 2002</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d1">
+                        <div class="e-icon">&#128290;</div>
+                        <h3>Numeric Safety</h3>
+                        <p class="engine-desc-simple active">Catches math bugs: integer overflow when numbers get too big, dividing by zero, comparing floats with == (unreliable), and mixing signed/unsigned integers. Silent data corruption, prevented.</p>
+                        <p class="engine-desc-technical">Abstract numeric domain analysis. Tracks integer bounds for overflow/underflow. Detects lossy float-to-int coercions, NaN propagation, unsigned subtraction wrap, and signed/unsigned arithmetic mismatch.</p>
+                        <span class="paper">Min&eacute; 2004 &middot; Dietz et al. 2012</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d2">
+                        <div class="e-icon">&#128290;</div>
+                        <h3>Null Safety</h3>
+                        <p class="engine-desc-simple active">Tracks which variables might be null and warns you before you use them. Catches the #1 runtime error in most languages &mdash; the dreaded NullPointerException &mdash; before it happens.</p>
+                        <p class="engine-desc-technical">Null-state tracking with narrowing through control flow. Three states: DEFINITELY_NULL, DEFINITELY_NOT_NULL, MAYBE_NULL. Null guard analysis narrows state after if (x != null). Detects unsafe optional unwrap.</p>
+                        <span class="paper">F&auml;hndrich &amp; Leino 2003</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d3">
+                        <div class="e-icon">&#128279;</div>
+                        <h3>Linear / Affine Resources</h3>
+                        <p class="engine-desc-simple active">Ensures every resource (file handle, connection, lock) is used exactly once &mdash; never leaked, never double-freed. The compiler enforces it, not the programmer.</p>
+                        <p class="engine-desc-technical">Linear type system based on Girard&rsquo;s linear logic (1987). Resources must be consumed exactly once (linear) or at most once (affine). Detects resource leaks, double-free, and use-after-close at compile time.</p>
+                        <span class="paper">Girard 1987 &middot; Hofmann &amp; Jost, ESOP 2003</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d4">
+                        <div class="e-icon">&#128272;</div>
+                        <h3>Type-State Analysis</h3>
+                        <p class="engine-desc-simple active">Tracks the state of objects through their lifecycle (e.g., a file must be opened before reading and closed after). Catches protocol violations at compile time.</p>
+                        <p class="engine-desc-technical">Augments type system with object states and valid transitions. State machine per type tracks operations valid in each state. Prevents out-of-order API calls and resource protocol violations.</p>
+                        <span class="paper">Strom &amp; Yemini 1986 &middot; DeLine &amp; F&auml;hndrich, ECOOP 2004</span>
+                    </div>
+                    <div class="engine-card ec-safety stagger stagger-d5">
+                        <div class="e-icon">&#127922;</div>
+                        <h3>Probabilistic Analysis</h3>
+                        <p class="engine-desc-simple active">Reasons about programs that use randomness &mdash; sampling, machine learning, simulations. Proves probabilistic bounds like &ldquo;this classifier is at least 95% accurate.&rdquo;</p>
+                        <p class="engine-desc-technical">Probabilistic program semantics via measure-theoretic foundations. Computes distribution bounds, expectation analysis, and concentration inequalities. Supports Monte Carlo verification and Bayesian inference.</p>
+                        <span class="paper">Kozen 1981 &middot; Gordon et al. 2014</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RELIABILITY -->
+            <div class="engine-cat">
+                <div class="engine-cat-label" style="background:#ff922b20;color:#ff922b;">&#9679; Reliability</div>
+                <div class="engines-grid">
+                    <div class="engine-card stagger stagger-d1" style="--card-accent:#ff922b;">
+                        <div class="e-icon">&#128196;</div>
+                        <h3>API Contract Verification</h3>
+                        <p class="engine-desc-simple active">Checks that you validate inputs before using them, check return values from operations that can fail, and don&rsquo;t use resources (files, connections) after closing them.</p>
+                        <p class="engine-desc-technical">Tracks resource lifecycle (OPEN/CLOSED) with protocol verification. Detects unchecked returns from fallible operations, missing parameter validation, and use-after-close violations.</p>
+                        <span class="paper">Acharya et al. 2007 &middot; Engler et al. 2001</span>
+                    </div>
+                    <div class="engine-card stagger stagger-d2" style="--card-accent:#ff922b;">
+                        <div class="e-icon">&#9888;</div>
+                        <h3>Error Handling</h3>
+                        <p class="engine-desc-simple active">Finds swallowed errors (empty catch blocks that hide failures), missing error handling for operations that can fail, and resources that leak when something goes wrong.</p>
+                        <p class="engine-desc-technical">Exception flow analysis tracking error propagation paths. Detects empty catch handlers, catch-all without re-throw, missing error handling for fallible operations, and resource cleanup gaps on error paths.</p>
+                        <span class="paper">Robillard &amp; Murphy 2000 &middot; Weimer &amp; Necula 2004</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECURITY -->
+            <div class="engine-cat">
+                <div class="engine-cat-label cat-security">&#9679; Security</div>
+                <div class="engines-grid">
+                    <div class="engine-card ec-security stagger stagger-d1">
+                        <div class="e-icon">&#128274;</div>
+                        <h3>Information Flow</h3>
+                        <p class="engine-desc-simple active">Proves that secret data (passwords, API keys, personal info) can never leak to public outputs. Not by searching for patterns &mdash; by mathematically proving the data flow is safe.</p>
+                        <p class="engine-desc-technical">Security type system proving noninterference &mdash; secret inputs cannot influence public outputs. Security lattice: PUBLIC &le; INTERNAL &le; SECRET &le; TOP_SECRET. Detects explicit, implicit, and termination channel leaks.</p>
+                        <span class="paper">Volpano, Smith, Irvine 1996</span>
+                    </div>
+                    <div class="engine-card ec-security stagger stagger-d2">
+                        <div class="e-icon">&#128375;</div>
+                        <h3>Taint Analysis</h3>
+                        <p class="engine-desc-simple active">Tracks user input from the moment it enters your app to where it&rsquo;s used. If untrusted data reaches a database query or HTML output without sanitization, AEON catches it.</p>
+                        <p class="engine-desc-technical">Injection detection by tracking untrusted data. Sources: HTTP params, user input, file reads, env vars. Sinks: SQL queries, HTML output, OS commands. Propagation through assignments, operations, and calls. Detects SQLi, XSS, SSRF, path traversal.</p>
+                        <span class="paper">Schwartz et al. 2010 &middot; Tripp et al. PLDI 2009 &middot; Arzt et al. 2014</span>
+                    </div>
+                    <div class="engine-card ec-security stagger stagger-d3">
+                        <div class="e-icon">&#128272;</div>
+                        <h3>Differential Privacy</h3>
+                        <p class="engine-desc-simple active">Proves that your data analysis algorithms protect individual privacy. Guarantees that adding or removing one person&rsquo;s data doesn&rsquo;t significantly change the output.</p>
+                        <p class="engine-desc-technical">Verifies (&epsilon;, &delta;)-differential privacy via sensitivity analysis on queries. Tracks privacy budget composition. Detects unbounded sensitivity, missing noise injection, and privacy budget exhaustion.</p>
+                        <span class="paper">Reed &amp; Pierce, ICFP 2010 &middot; Gaboardi et al., POPL 2013</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ARCHITECTURE -->
+            <div class="engine-cat">
+                <div class="engine-cat-label cat-architecture">&#9679; Architecture</div>
+                <div class="engines-grid">
+                    <div class="engine-card ec-arch stagger stagger-d1">
+                        <div class="e-icon">&#9889;</div>
+                        <h3>Algebraic Effects</h3>
+                        <p class="engine-desc-simple active">Tracks what side effects your code has (database reads, network calls, file writes) and ensures they&rsquo;re declared and controlled. No hidden surprises.</p>
+                        <p class="engine-desc-technical">Effects form a bounded lattice with row-polymorphic typing. Effect rows with row variable polymorphism, commutativity analysis for auto-parallelization, handler semantics via delimited continuations.</p>
+                        <span class="paper">Plotkin &amp; Pretnar, ESOP 2009 &middot; Leijen, POPL 2017</span>
+                    </div>
+                    <div class="engine-card ec-arch stagger stagger-d2">
+                        <div class="e-icon">&#128208;</div>
+                        <h3>Category Semantics</h3>
+                        <p class="engine-desc-simple active">Gives your code a precise mathematical meaning. Pure functions, side effects, and data types each have a rigorous definition &mdash; which means the compiler can reason about them perfectly.</p>
+                        <p class="engine-desc-technical">Denotational semantics: pure functions &rarr; morphisms in a Cartesian Closed Category (CCC); task functions &rarr; Kleisli morphisms in a graded monad T<sub>E</sub>; data types &rarr; initial algebras of polynomial functors.</p>
+                        <span class="paper">Moggi 1991</span>
+                    </div>
+                    <div class="engine-card ec-arch stagger stagger-d3">
+                        <div class="e-icon">&#128737;</div>
+                        <h3>Certified Compilation</h3>
+                        <p class="engine-desc-simple active">Proves that the compiled code does exactly what your source code says. No compiler bugs, no optimization surprises. Inspired by the CompCert verified C compiler.</p>
+                        <p class="engine-desc-technical">CompCert-style simulation proofs verify each compiler pass preserves semantics. Forward simulation, invariant tracking, translation validation, and compositional pass-by-pass correctness.</p>
+                        <span class="paper">Leroy, CACM 2009</span>
+                    </div>
+                    <div class="engine-card ec-arch stagger stagger-d4">
+                        <div class="e-icon">&#128172;</div>
+                        <h3>Session Types</h3>
+                        <p class="engine-desc-simple active">Verifies that communicating components follow their protocol correctly. If a client must send a request before receiving a response, the compiler enforces it.</p>
+                        <p class="engine-desc-technical">Binary session types via the Curry-Howard correspondence with linear logic. Duality ensures each send has a matching receive. Multiparty session types extend to n-party protocols. Detects deadlocks and protocol violations.</p>
+                        <span class="paper">Honda et al., POPL 2008 &middot; Wadler, ICFP 2012</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ENTERPRISE USE CASES                                     -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="usecases-section fade-in" id="usecases">
+        <div style="text-align:center;">
+            <div class="section-label">Enterprise Use Cases</div>
+            <h2>Built for production workloads</h2>
+            <p class="section-desc" style="margin:0 auto;">AEON catches the bugs that cost enterprises millions.</p>
+        </div>
+        <div class="usecases-grid">
+            <div class="usecase-card stagger stagger-d1">
+                <div class="uc-icon">&#128179;</div>
+                <h3>Financial Services</h3>
+                <p>Verify payment processing, interest calculations, and transaction ledgers. Prove no overflow, no rounding errors, no double-charges.</p>
+                <div class="uc-engines"><span class="uc-tag">Abstract Interp</span><span class="uc-tag">Hoare Logic</span><span class="uc-tag">Symbolic Exec</span></div>
+            </div>
+            <div class="usecase-card stagger stagger-d2">
+                <div class="uc-icon">&#127973;</div>
+                <h3>Healthcare &amp; Compliance</h3>
+                <p>Prove PHI never leaks to public endpoints. Verify dosage calculations stay within safe ranges.</p>
+                <div class="uc-engines"><span class="uc-tag">Info Flow</span><span class="uc-tag">Contracts</span><span class="uc-tag">Effect Algebra</span></div>
+            </div>
+            <div class="usecase-card stagger stagger-d3">
+                <div class="uc-icon">&#128722;</div>
+                <h3>E-Commerce</h3>
+                <p>No overselling with concurrent inventory. Price calculations are correct. Order pipelines handle all edge cases.</p>
+                <div class="uc-engines"><span class="uc-tag">Concurrency</span><span class="uc-tag">Model Checking</span><span class="uc-tag">Termination</span></div>
+            </div>
+            <div class="usecase-card stagger stagger-d4">
+                <div class="uc-icon">&#128274;</div>
+                <h3>Security-Critical Systems</h3>
+                <p>Detect SQL injection, XSS, command injection. Prove API keys never leak. Validate all user inputs on every path.</p>
+                <div class="uc-engines"><span class="uc-tag">Taint Analysis</span><span class="uc-tag">Info Flow</span><span class="uc-tag">Symbolic Exec</span></div>
+            </div>
+            <div class="usecase-card stagger stagger-d5">
+                <div class="uc-icon">&#9881;</div>
+                <h3>Infrastructure &amp; DevOps</h3>
+                <p>Verify config parsers handle all shapes. Rate limiters don't starve. Connection pools have no double-free.</p>
+                <div class="uc-engines"><span class="uc-tag">Shape Analysis</span><span class="uc-tag">Separation Logic</span><span class="uc-tag">Model Checking</span></div>
+            </div>
+            <div class="usecase-card stagger stagger-d1">
+                <div class="uc-icon">&#128202;</div>
+                <h3>Data Pipelines</h3>
+                <p>ETL pipelines always terminate. Schema validators match data. Aggregations don't overflow on large datasets.</p>
+                <div class="uc-engines"><span class="uc-tag">Termination</span><span class="uc-tag">Dependent Types</span><span class="uc-tag">Abstract Interp</span></div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- VS CODE                                                  -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="vscode-section fade-in" id="vscode">
+        <div class="section-label">Editor Integration</div>
+        <h2>Verify inside VS Code</h2>
+        <p class="section-desc">The AEON Verify extension brings all 30+ engines into your editor with one keystroke.</p>
+        <div class="vscode-grid">
+            <ul class="vscode-features">
+                <li><span class="check">&#10003;</span> <div><strong>Inline diagnostics</strong> <span>&mdash; bugs appear as red squiggles with engine attribution</span></div></li>
+                <li><span class="check">&#10003;</span> <div><strong>CodeLens</strong> <span>&mdash; "Verify" button above every function</span></div></li>
+                <li><span class="check">&#10003;</span> <div><strong>Quick fixes</strong> <span>&mdash; auto-insert <code>requires</code> guards</span></div></li>
+                <li><span class="check">&#10003;</span> <div><strong>Hover tooltips</strong> <span>&mdash; see verification results inline</span></div></li>
+                <li><span class="check">&#10003;</span> <div><strong>Verify on save</strong> <span>&mdash; debounced auto-verification</span></div></li>
+                <li><span class="check">&#10003;</span> <div><strong>14 languages</strong> <span>&mdash; Python, Java, JS, TS, Go, Rust, C, C++, Ruby, Swift, Kotlin, PHP, Scala, Dart</span></div></li>
+            </ul>
+            <div class="vscode-mockup">
+                <div class="mock-titlebar">
+                    <span></span><span></span><span></span>
+                    <span class="title">payment.py &mdash; AEON Verify</span>
+                </div>
+                <div class="vscode-mock-body">
+                    <div class="lens">&#128737; Verify</div>
+                    <div class="line"><span class="ln">1</span><span><span class="kw">def</span> <span class="fn">process</span>(<span class="ty">amount</span>: <span class="ty">int</span>, <span class="ty">tax</span>: <span class="ty">float</span>) <span class="op">-></span> <span class="ty">float</span>:</span></div>
+                    <div class="line"><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;rate <span class="op">=</span> tax <span class="op">/</span> <span class="squiggle">amount</span></span></div>
+                    <div class="line"><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> amount <span class="op">*</span> (<span class="ty">1</span> <span class="op">+</span> rate)</span></div>
+                    <div class="line" style="height: 0.5rem;"></div>
+                    <div class="line"><span class="ln" style="visibility:hidden">4</span><span style="color: var(--red); font-size: 0.72rem;">&#9888; AEON: Division by zero possible [Abstract Interp]</span></div>
+                    <div class="line"><span class="ln" style="visibility:hidden">5</span><span style="color: var(--text-dim); font-size: 0.72rem;">&#128161; Quick fix: Add requires amount != 0</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- THE VISION                                               -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="vision-section fade-in" id="vision">
+        <div style="text-align:center;">
+            <div class="section-label">The Vision</div>
+            <h2>Where this leads</h2>
+            <p class="section-desc" style="margin:0 auto;">AEON isn't just a tool &mdash; it's the beginning of a paradigm shift in how software is built.</p>
+        </div>
+
+        <div class="vision-timeline">
+            <div class="vision-step vs-now stagger stagger-d1">
+                <div class="vision-label">Today</div>
+                <h3>Verify any codebase in 14 languages</h3>
+                <p>Run <code>aeon check</code> on any file and get mathematical guarantees. 30+ engines analyze every function, every path, every edge case. Integrates into CI/CD, VS Code, and your daily workflow.</p>
+            </div>
+
+            <div class="vision-step vs-next stagger stagger-d2">
+                <div class="vision-label">Next</div>
+                <h3>Every AI assistant verifies before suggesting</h3>
+                <p>Copilot, Claude, GPT &mdash; every AI code generator runs AEON before presenting code to developers. No more "looks right to me" &mdash; mathematically verified suggestions only.</p>
+            </div>
+
+            <div class="vision-step vs-future stagger stagger-d3">
+                <div class="vision-label">The Future</div>
+                <h3>Deployed software is provably correct</h3>
+                <p>A world where "it works on my machine" is replaced by "it's mathematically proven to work everywhere." Not 95% test coverage &mdash; 100% path verification. The era of verified-by-default software.</p>
+            </div>
+        </div>
+
+        <div class="vision-quote stagger stagger-d4">
+            <p>"As AI writes more code than humans, the question isn't whether we need formal verification &mdash; it's whether we can afford not to have it."</p>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- AI ETHICS IN PROGRAMMING                                  -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="ethics-section fade-in" id="ethics">
+        <div style="text-align:center;">
+            <div class="section-label">The Ethics of AI Code</div>
+            <h2>With great speed comes great responsibility</h2>
+            <p class="section-desc" style="margin:0 auto;">AI is writing more code than ever. Without formal verification, we&rsquo;re deploying unverified software at unprecedented scale. AEON exists because this is an ethical imperative, not just a technical one.</p>
+        </div>
+
+        <div class="ethics-grid">
+            <div class="ethics-card stagger stagger-d1">
+                <div class="ethics-icon">&#9878;</div>
+                <h3>The Accountability Gap</h3>
+                <p>When AI generates code that causes a data breach or financial loss, who is responsible? The developer who prompted it? The AI company? AEON provides a verifiable audit trail &mdash; mathematical proof that code was checked before deployment.</p>
+                <span class="ethics-cite">Jobin et al. &ldquo;The Global Landscape of AI Ethics Guidelines&rdquo; &mdash; Nature Machine Intelligence, 2019</span>
+            </div>
+            <div class="ethics-card stagger stagger-d2">
+                <div class="ethics-icon">&#128737;</div>
+                <h3>Bias in Code, Proven Absent</h3>
+                <p>Algorithms that decide loan approvals, hiring, or healthcare can encode bias. AEON&rsquo;s information flow analysis can mathematically prove that protected attributes (race, gender, age) never influence decisions &mdash; not by testing, by proof.</p>
+                <span class="ethics-cite">Dwork et al. &ldquo;Fairness Through Awareness&rdquo; &mdash; ITCS 2012</span>
+            </div>
+            <div class="ethics-card stagger stagger-d3">
+                <div class="ethics-icon">&#128196;</div>
+                <h3>Regulatory Compliance</h3>
+                <p>The EU AI Act (2024) requires &ldquo;high-risk&rdquo; AI systems to demonstrate safety and transparency. Formal verification is the gold standard for demonstrating that software meets safety requirements &mdash; and AEON makes it accessible.</p>
+                <span class="ethics-cite">EU AI Act, 2024 &middot; IEEE &ldquo;Ethically Aligned Design&rdquo; 2019</span>
+            </div>
+            <div class="ethics-card stagger stagger-d4">
+                <div class="ethics-icon">&#128065;</div>
+                <h3>Transparency Through Formal Methods</h3>
+                <p>Unlike black-box AI testing, formal verification is explainable and auditable. Every result AEON produces can be traced to a specific mathematical proof. Regulators, auditors, and users can understand <em>why</em> code is safe.</p>
+                <span class="ethics-cite">Floridi et al. &ldquo;AI4People &mdash; An Ethical Framework&rdquo; &mdash; Minds and Machines, 2018</span>
+            </div>
+            <div class="ethics-card stagger stagger-d5">
+                <div class="ethics-icon">&#127973;</div>
+                <h3>Safety-Critical Domains</h3>
+                <p>Healthcare dosage calculations, autonomous vehicle control, financial trading algorithms &mdash; these are domains where unverified AI-generated code isn&rsquo;t just risky, it&rsquo;s negligent. Formal verification is the standard of care.</p>
+                <span class="ethics-cite">Selbst et al. &ldquo;Fairness and Abstraction in Sociotechnical Systems&rdquo; &mdash; FAT* 2019</span>
+            </div>
+            <div class="ethics-card stagger stagger-d1">
+                <div class="ethics-icon">&#128640;</div>
+                <h3>The Case for Verified AI Output</h3>
+                <p>Every AI code suggestion should carry a verification certificate. Just as food has nutrition labels and buildings have inspection certificates, AI-generated code should come with a formal proof of correctness.</p>
+                <span class="ethics-cite">Chen et al. &ldquo;Evaluating Large Language Models Trained on Code&rdquo; &mdash; 2021</span>
+            </div>
+        </div>
+
+        <div class="ethics-callout stagger stagger-d2">
+            <h3>When verification would have prevented disaster</h3>
+            <p>History is full of software failures that formal verification could have prevented. These incidents cost lives, billions of dollars, and public trust.</p>
+            <ul class="incident-list">
+                <li><span class="incident-year">1985</span> <div><strong>Therac-25 radiation machine</strong> &mdash; race condition caused lethal radiation overdoses. 6 patients affected, 3 deaths. <span class="incident-cost">Concurrency verification would have caught this.</span></div></li>
+                <li><span class="incident-year">1996</span> <div><strong>Ariane 5 rocket</strong> &mdash; integer overflow in guidance software caused self-destruction 37 seconds after launch. <span class="incident-cost">$370M loss. Abstract interpretation would have caught this.</span></div></li>
+                <li><span class="incident-year">2012</span> <div><strong>Knight Capital</strong> &mdash; untested deployment code caused $440M loss in 45 minutes. <span class="incident-cost">Model checking the state machine would have caught this.</span></div></li>
+                <li><span class="incident-year">2014</span> <div><strong>Heartbleed (OpenSSL)</strong> &mdash; buffer over-read exposed private keys of 17% of secure web servers. <span class="incident-cost">Separation logic would have caught this.</span></div></li>
+                <li><span class="incident-year">2017</span> <div><strong>Equifax breach</strong> &mdash; unvalidated input led to exposure of 147 million records. <span class="incident-cost">$1.4B cost. Taint analysis would have caught this.</span></div></li>
+                <li><span class="incident-year">2021</span> <div><strong>Log4Shell (Log4j)</strong> &mdash; untrusted input passed to JNDI lookup. Affected millions of systems worldwide. <span class="incident-cost">Taint + information flow analysis would have caught this.</span></div></li>
+            </ul>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ACADEMIC FOUNDATION                                      -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="research-section fade-in" id="research">
+        <div style="text-align:center;">
+            <div class="section-label">Academic Foundation</div>
+            <h2>Standing on the shoulders of giants</h2>
+            <p class="section-desc" style="margin:0 auto;">Every engine in AEON implements a peer-reviewed, battle-tested algorithm from the best venues in computer science.</p>
+        </div>
+
+        <div class="papers-flow">
+            <div class="paper-chip"><span class="year">1969</span> <a href="https://doi.org/10.1145/363235.363259" target="_blank" rel="noopener noreferrer">Hoare Logic</a></div>
+            <div class="paper-chip"><span class="year">1975</span> <a href="https://doi.org/10.1145/360933.360975" target="_blank" rel="noopener noreferrer">Weakest Preconditions</a></div>
+            <div class="paper-chip"><span class="year">1976</span> <a href="https://doi.org/10.1145/360248.360252" target="_blank" rel="noopener noreferrer">Symbolic Execution</a></div>
+            <div class="paper-chip"><span class="year">1976</span> <a href="https://doi.org/10.1007/BF00268134" target="_blank" rel="noopener noreferrer">Owicki-Gries</a></div>
+            <div class="paper-chip"><span class="year">1977</span> <a href="https://doi.org/10.1145/512950.512973" target="_blank" rel="noopener noreferrer">Abstract Interpretation</a></div>
+            <div class="paper-chip"><span class="year">1978</span> <a href="https://doi.org/10.1145/359545.359563" target="_blank" rel="noopener noreferrer">Lamport Clocks</a></div>
+            <div class="paper-chip"><span class="year">1983</span> <a href="https://doi.org/10.1145/69624.357207" target="_blank" rel="noopener noreferrer">Rely-Guarantee (Jones)</a></div>
+            <div class="paper-chip"><span class="year">1984</span> Martin-L&ouml;f Type Theory</div>
+            <div class="paper-chip"><span class="year">1986</span> <a href="https://doi.org/10.1145/5397.5399" target="_blank" rel="noopener noreferrer">Model Checking</a></div>
+            <div class="paper-chip"><span class="year">1986</span> <a href="https://doi.org/10.1109/TSE.1986.6312929" target="_blank" rel="noopener noreferrer">Typestate (Strom &amp; Yemini)</a></div>
+            <div class="paper-chip"><span class="year">1988</span> <a href="https://doi.org/10.1016/0890-5401(88)90005-3" target="_blank" rel="noopener noreferrer">Calculus of Constructions</a></div>
+            <div class="paper-chip"><span class="year">1991</span> <a href="https://doi.org/10.1016/0890-5401(91)90052-4" target="_blank" rel="noopener noreferrer">Moggi Monads</a></div>
+            <div class="paper-chip"><span class="year">1992</span> <a href="https://doi.org/10.1109/2.161279" target="_blank" rel="noopener noreferrer">Design by Contract (Meyer)</a></div>
+            <div class="paper-chip"><span class="year">1996</span> Noninterference (Volpano et al.)</div>
+            <div class="paper-chip"><span class="year">1997</span> <a href="https://doi.org/10.1145/265924.265927" target="_blank" rel="noopener noreferrer">Eraser / Locksets</a></div>
+            <div class="paper-chip"><span class="year">1999</span> Bounded Model Checking (Biere et al.)</div>
+            <div class="paper-chip"><span class="year">2000</span> <a href="https://doi.org/10.1145/351240.351266" target="_blank" rel="noopener noreferrer">QuickCheck (Claessen &amp; Hughes)</a></div>
+            <div class="paper-chip"><span class="year">2001</span> <a href="https://doi.org/10.1145/360204.360210" target="_blank" rel="noopener noreferrer">Size-Change Termination</a></div>
+            <div class="paper-chip"><span class="year">2001</span> Houdini Algorithm (Flanagan &amp; Leino)</div>
+            <div class="paper-chip"><span class="year">2002</span> <a href="https://doi.org/10.1109/LICS.2002.1029817" target="_blank" rel="noopener noreferrer">Separation Logic</a></div>
+            <div class="paper-chip"><span class="year">2002</span> <a href="https://doi.org/10.1145/566172.566190" target="_blank" rel="noopener noreferrer">Shape Analysis</a></div>
+            <div class="paper-chip"><span class="year">2005</span> <a href="https://doi.org/10.1145/1040305.1040315" target="_blank" rel="noopener noreferrer">Partial-Order Reduction</a></div>
+            <div class="paper-chip"><span class="year">2008</span> <a href="https://doi.org/10.1145/1375581.1375602" target="_blank" rel="noopener noreferrer">Liquid Types</a></div>
+            <div class="paper-chip"><span class="year">2008</span> <a href="https://doi.org/10.5555/1855741.1855756" target="_blank" rel="noopener noreferrer">KLEE</a></div>
+            <div class="paper-chip"><span class="year">2008</span> <a href="https://doi.org/10.1007/978-3-540-78800-3_24" target="_blank" rel="noopener noreferrer">Z3 SMT Solver</a></div>
+            <div class="paper-chip"><span class="year">2009</span> <a href="https://doi.org/10.1007/978-3-642-00590-9_7" target="_blank" rel="noopener noreferrer">Algebraic Effects</a></div>
+            <div class="paper-chip"><span class="year">2009</span> <a href="https://doi.org/10.1145/1538788.1538814" target="_blank" rel="noopener noreferrer">CompCert</a></div>
+            <div class="paper-chip"><span class="year">2009</span> <a href="https://doi.org/10.1145/1542476.1542486" target="_blank" rel="noopener noreferrer">TAJ Taint</a></div>
+            <div class="paper-chip"><span class="year">2009</span> <a href="https://doi.org/10.1145/1518701.1519044" target="_blank" rel="noopener noreferrer">Software Model Checking Survey</a></div>
+            <div class="paper-chip"><span class="year">2010</span> <a href="https://doi.org/10.1109/SP.2010.26" target="_blank" rel="noopener noreferrer">Dynamic Taint Analysis</a></div>
+            <div class="paper-chip"><span class="year">2011</span> <a href="https://doi.org/10.1145/1925844.1926404" target="_blank" rel="noopener noreferrer">Bi-Abduction</a></div>
+            <div class="paper-chip"><span class="year">2012</span> <a href="https://doi.org/10.1145/2090236.2090255" target="_blank" rel="noopener noreferrer">Fairness Through Awareness</a></div>
+            <div class="paper-chip"><span class="year">2012</span> <a href="https://doi.org/10.1109/TSE.2010.62" target="_blank" rel="noopener noreferrer">GenProg (Auto Repair)</a></div>
+            <div class="paper-chip"><span class="year">2014</span> <a href="https://doi.org/10.1145/2594291.2594299" target="_blank" rel="noopener noreferrer">FlowDroid</a></div>
+            <div class="paper-chip"><span class="year">2014</span> <a href="https://doi.org/10.1145/2628136.2628161" target="_blank" rel="noopener noreferrer">LiquidHaskell</a></div>
+            <div class="paper-chip"><span class="year">2016</span> <a href="https://doi.org/10.1145/2976749.2978428" target="_blank" rel="noopener noreferrer">AFL / Coverage Fuzzing</a></div>
+            <div class="paper-chip"><span class="year">2016</span> Liberating Effects (Hillerstr&ouml;m &amp; Lindley)</div>
+            <div class="paper-chip"><span class="year">2017</span> <a href="https://doi.org/10.1145/3009837.3009872" target="_blank" rel="noopener noreferrer">Row-Typed Effects</a></div>
+            <div class="paper-chip"><span class="year">2018</span> <a href="https://doi.org/10.1007/978-3-319-73721-8_13" target="_blank" rel="noopener noreferrer">Gradual Verification</a></div>
+            <div class="paper-chip"><span class="year">2018</span> <a href="https://doi.org/10.1145/3158141" target="_blank" rel="noopener noreferrer">Refinement Reflection</a></div>
+            <div class="paper-chip"><span class="year">2019</span> <a href="https://doi.org/10.1145/3371078" target="_blank" rel="noopener noreferrer">Incorrectness Logic</a></div>
+            <div class="paper-chip"><span class="year">2019</span> <a href="https://doi.org/10.1145/3338112" target="_blank" rel="noopener noreferrer">Infer at Scale (Facebook)</a></div>
+            <div class="paper-chip"><span class="year">2019</span> <a href="https://doi.org/10.1038/s42256-019-0088-2" target="_blank" rel="noopener noreferrer">AI Ethics Landscape</a></div>
+            <div class="paper-chip"><span class="year">2021</span> <a href="https://arxiv.org/abs/2107.03374" target="_blank" rel="noopener noreferrer">Codex / LLM Code Eval</a></div>
+        </div>
+
+        <div class="research-stats">
+            <div class="research-stat stagger stagger-d1">
+                <div class="rs-num">44</div>
+                <div class="rs-label">Published Papers</div>
+            </div>
+            <div class="research-stat stagger stagger-d2">
+                <div class="rs-num">55+</div>
+                <div class="rs-label">Years of Research</div>
+            </div>
+            <div class="research-stat stagger stagger-d3">
+                <div class="rs-num">30+</div>
+                <div class="rs-label">Implemented Engines</div>
+            </div>
+            <div class="research-stat stagger stagger-d4">
+                <div class="rs-num">12</div>
+                <div class="rs-label">Top CS Venues</div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- INSTALL                                                  -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="install-section fade-in" id="install">
+        <div class="section-label">Get Started</div>
+        <h2>Up and running in 30 seconds</h2>
+        <p class="section-desc" style="margin: 0 auto 2rem;">Choose your platform:</p>
+
+        <div class="install-tabs" style="flex-wrap:wrap;">
+            <button class="install-tab active" onclick="showTab('pip', this)">pip</button>
+            <button class="install-tab" onclick="showTab('brew', this)">Homebrew</button>
+            <button class="install-tab" onclick="showTab('curl', this)">Linux / macOS</button>
+            <button class="install-tab" onclick="showTab('windows', this)">Windows</button>
+            <button class="install-tab" onclick="showTab('docker', this)">Docker</button>
+            <button class="install-tab" onclick="showTab('npm', this)">npm / npx</button>
+            <button class="install-tab" onclick="showTab('vscode-tab', this)">VS Code</button>
+            <button class="install-tab" onclick="showTab('ci', this)">CI / GitHub Action</button>
+        </div>
+
+        <div class="install-block active" id="tab-pip">
+            <p>Install AEON via pip and verify your first file:</p>
+            <pre><span class="comment"># Install from PyPI</span>
+<span class="cmd">pip install aeon-lang</span>
+
+<span class="comment"># Verify any file (auto-detects language)</span>
+<span class="cmd">aeon check</span> <span class="flag">your_code.py</span> <span class="flag">--deep-verify</span>
+<span class="cmd">aeon check</span> <span class="flag">Main.java</span> <span class="flag">--deep-verify</span>
+<span class="cmd">aeon check</span> <span class="flag">server.go</span> <span class="flag">--deep-verify</span></pre>
+        </div>
+        <div class="install-block" id="tab-brew">
+            <p>Install via Homebrew (macOS &amp; Linux):</p>
+            <pre><span class="cmd">brew tap</span> <span class="flag">aeon-lang/tap</span>
+<span class="cmd">brew install</span> <span class="flag">aeon</span>
+<span class="cmd">aeon check</span> <span class="flag">your_code.rs</span> <span class="flag">--deep-verify</span></pre>
+        </div>
+        <div class="install-block" id="tab-curl">
+            <p>One-line install for Linux &amp; macOS:</p>
+            <pre><span class="cmd">curl -fsSL</span> <span class="flag">https://raw.githubusercontent.com/aeon-lang/aeon/main/install.sh</span> | <span class="cmd">bash</span></pre>
+        </div>
+        <div class="install-block" id="tab-windows">
+            <p>Install on Windows via PowerShell or Scoop:</p>
+            <pre><span class="comment"># PowerShell</span>
+<span class="cmd">irm</span> <span class="flag">https://raw.githubusercontent.com/aeon-lang/aeon/main/install.ps1</span> | <span class="cmd">iex</span>
+
+<span class="comment"># Scoop</span>
+<span class="cmd">scoop bucket add</span> <span class="flag">aeon</span> https://github.com/aeon-lang/scoop-aeon
+<span class="cmd">scoop install</span> <span class="flag">aeon</span></pre>
+        </div>
+        <div class="install-block" id="tab-docker">
+            <p>Run AEON in Docker &mdash; no installation needed:</p>
+            <pre><span class="cmd">docker run</span> <span class="flag">-v $(pwd):/workspace</span> aeon-lang/aeon \
+  <span class="cmd">aeon check</span> <span class="flag">/workspace/your_code.py --deep-verify</span></pre>
+        </div>
+        <div class="install-block" id="tab-npm">
+            <p>For JS/TS developers:</p>
+            <pre><span class="cmd">npx aeon-verify</span> <span class="flag">check app.ts --deep-verify</span></pre>
+        </div>
+        <div class="install-block" id="tab-vscode-tab">
+            <p>Install the AEON Verify VS Code extension:</p>
+            <pre><span class="cmd">cd</span> vscode-extension
+<span class="cmd">npm install</span> && <span class="cmd">npm run compile</span>
+<span class="cmd">npx vsce package</span>
+<span class="cmd">code</span> <span class="flag">--install-extension</span> aeon-verify-0.5.0.vsix</pre>
+        </div>
+        <div class="install-block" id="tab-ci">
+            <p>Add AEON verification to your CI pipeline:</p>
+            <pre><span class="comment"># .github/workflows/verify.yml</span>
+name: AEON Verify
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install aeon-lang
+      - run: <span class="cmd">aeon scan</span> <span class="flag">src/ --deep-verify --format sarif</span></pre>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- FINAL CTA                                                -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="cta-banner fade-in">
+        <h2>Ready to write <span style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">provably correct</span> code?</h2>
+        <p>Join the future of verified software development.</p>
+        <div class="cta-row" style="animation:none;opacity:1;">
+            <a href="#install" class="btn btn-primary">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Install AEON
+            </a>
+            <a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                Star on GitHub
+            </a>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- FOOTER                                                   -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo">AEON<span>.</span></div>
+                <p>Formal verification for the languages you already use. 30+ engines built on 55 years of programming language research. 44 peer-reviewed papers implemented.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#demo">Live Demo</a></li>
+                    <li><a href="#engines">30+ Engines</a></li>
+                    <li><a href="#vscode">VS Code Extension</a></li>
+                    <li><a href="#install">Installation</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <ul>
+                    <li><a href="docs.html">Documentation</a></li>
+                    <li><a href="tutorials.html">Tutorials</a></li>
+                    <li><a href="examples.html">Examples</a></li>
+                    <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                    <li><a href="changelog.html">Changelog</a></li>
+                    <li><a href="docs.html#glossary">Glossary</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 AEON Project &mdash; MIT License</span>
+            <span>Built with mathematical certainty</span>
+        </div>
+    </footer>
+
+    <!-- ═══ Scripts ═══════════════════════════════════════════ -->
+    <script src="js/particles.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/demo.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/copy.js"></script>
+
+    <script>
+    /* ── Scroll Progress Bar ─────────────────────────────── */
+    (function() {
+        const bar = document.getElementById('scroll-progress');
+        if (!bar) return;
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement.scrollHeight - window.innerHeight;
+            bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
+        });
+    })();
+
+    /* ── Stagger Scroll Reveal ───────────────────────────── */
+    (function() {
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    obs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.stagger').forEach(el => obs.observe(el));
+    })();
+
+    /* ── Hero Terminal Typing Animation ──────────────────── */
+    (function() {
+        const lines = document.querySelectorAll('#hero-term .term-line');
+        const cursor = document.getElementById('term-cursor');
+        if (!lines.length) return;
+
+        // Show first line (the command) immediately
+        lines[0].classList.add('visible');
+
+        // Show remaining lines with staggered delay
+        let delay = 1200;
+        for (let i = 1; i < lines.length; i++) {
+            ((idx, d) => {
+                setTimeout(() => {
+                    lines[idx].classList.add('visible');
+                    // Move cursor to current line or hide at end
+                    if (cursor && idx === lines.length - 1) {
+                        cursor.style.display = 'none';
+                    }
+                }, d);
+            })(i, delay);
+            delay += i <= 4 ? 400 : 600; // Results appear faster, then slow for bug
+        }
+    })();
+
+    /* ── Engine Simple/Technical Toggle ─────────────────── */
+    function setEngineMode(mode, btn) {
+        document.querySelectorAll('.engine-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (mode === 'simple') {
+            document.querySelectorAll('.engine-desc-simple').forEach(el => { el.classList.add('active'); });
+            document.querySelectorAll('.engine-desc-technical').forEach(el => { el.classList.remove('active'); });
+        } else {
+            document.querySelectorAll('.engine-desc-simple').forEach(el => { el.classList.remove('active'); });
+            document.querySelectorAll('.engine-desc-technical').forEach(el => { el.classList.add('active'); });
+        }
+    }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/information_flow.py
+# hypothesis_version: 6.141.1
+
+['<unsafe_block>', 'Console.Read', 'Console.Write', 'Database.Read', 'Database.Write', 'Email', 'File.Read', 'File.Write', 'Network.Read', 'Network.Write', 'System.Execute', 'USD', 'UUID', 'Void', '__return__', 'audit_note', 'channel_type', 'condition_level', 'credit_card', 'data_level', 'effect', 'effect_level', 'explicit', 'flow_type', 'from_level', 'function', 'implicit', 'justified', 'key', 'location', 'password', 'pc_level', 'secret', 'source_level', 'ssn', 'target_level', 'termination', 'to_level', 'token', 'unsafe block', 'variable']

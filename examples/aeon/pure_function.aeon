@@ -1,0 +1,42 @@
+pure add(a: Int, b: Int) -> Int {
+  ensures: result == a + b
+  return a + b
+}
+
+pure subtract(a: Int, b: Int) -> Int {
+  ensures: result == a - b
+  return a - b
+}
+
+pure multiply(a: Int, b: Int) -> Int {
+  ensures: result == a * b
+  return a * b
+}
+
+pure max(a: Int, b: Int) -> Int {
+  ensures: result >= a
+  ensures: result >= b
+  if a >= b {
+    return a
+  } else {
+    return b
+  }
+}
+
+pure abs(x: Int) -> Int {
+  ensures: result >= 0
+  if x >= 0 {
+    return x
+  } else {
+    return 0 - x
+  }
+}
+
+pure factorial(n: Int) -> Int {
+  requires: n >= 0
+  if n <= 1 {
+    return 1
+  } else {
+    return n * factorial(n - 1)
+  }
+}

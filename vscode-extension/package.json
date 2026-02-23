@@ -1,0 +1,158 @@
+{
+  "name": "aeon-verify",
+  "displayName": "AEON Verify",
+  "description": "Mathematically verify code in 14+ languages using 30+ formal verification engines",
+  "version": "0.5.0",
+  "publisher": "aeon-lang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aeon-lang/aeon"
+  },
+  "homepage": "https://github.com/aeon-lang/aeon#readme",
+  "bugs": {
+    "url": "https://github.com/aeon-lang/aeon/issues"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Testing"
+  ],
+  "keywords": [
+    "verification",
+    "formal methods",
+    "static analysis",
+    "python",
+    "java",
+    "javascript",
+    "typescript",
+    "bug detection",
+    "formal verification",
+    "contracts",
+    "type checking"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:java",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:aeon"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aeon.verifyFile",
+        "title": "AEON: Verify Current File",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "aeon.verifySelection",
+        "title": "AEON: Verify Selection"
+      },
+      {
+        "command": "aeon.startServer",
+        "title": "AEON: Start Verification Server"
+      },
+      {
+        "command": "aeon.stopServer",
+        "title": "AEON: Stop Verification Server"
+      },
+      {
+        "command": "aeon.showOutput",
+        "title": "AEON: Show Output"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "aeon.verifySelection",
+          "when": "editorHasSelection && (editorLangId == python || editorLangId == java || editorLangId == javascript || editorLangId == javascriptreact || editorLangId == typescript || editorLangId == typescriptreact || editorLangId == aeon)",
+          "group": "1_modification@10"
+        },
+        {
+          "command": "aeon.verifyFile",
+          "when": "editorLangId == python || editorLangId == java || editorLangId == javascript || editorLangId == javascriptreact || editorLangId == typescript || editorLangId == typescriptreact || editorLangId == aeon",
+          "group": "1_modification@11"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "aeon.verifyFile",
+          "when": "editorLangId == python || editorLangId == java || editorLangId == javascript || editorLangId == javascriptreact || editorLangId == typescript || editorLangId == typescriptreact || editorLangId == aeon",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AEON Verify",
+      "properties": {
+        "aeon.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "URL of the AEON verification API server"
+        },
+        "aeon.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Path to Python interpreter"
+        },
+        "aeon.aeonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to AEON project root (containing aeon/ module)"
+        },
+        "aeon.verifyOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically verify files on save"
+        },
+        "aeon.deepVerify": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run all 10 analysis engines (slower but more thorough)"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "aeon.verifyFile",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a",
+        "when": "editorTextFocus && (editorLangId == python || editorLangId == java || editorLangId == javascript || editorLangId == javascriptreact || editorLangId == typescript || editorLangId == typescriptreact || editorLangId == aeon)"
+      }
+    ],
+    "languages": [
+      {
+        "id": "aeon",
+        "extensions": [".aeon"],
+        "aliases": ["AEON"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "aeon",
+        "scopeName": "source.aeon",
+        "path": "./syntaxes/aeon.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "tsc --noEmit",
+    "package": "npm run compile && npx vsce package",
+    "prepackage": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.3.0"
+  }
+}

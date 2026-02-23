@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/lexer.py
+# hypothesis_version: 6.141.1
+
+['!', '!=', '"', '%', '&', '&&', '(', ')', '*', '+', ',', '-', '->', '.', '/', ':', '::', ';', '<', '<=', '<stdin>', '=', '==', '>', '>=', '[', '\\', ']', '_', 'borrow', 'break', 'continue', 'data', 'effects', 'else', 'ensures', 'false', 'for', 'if', 'import', 'in', 'let', 'match', 'move', 'mut', 'n', 'pure', 'requires', 'return', 't', 'task', 'true', 'unsafe', 'while', '{', '|', '||', '}']

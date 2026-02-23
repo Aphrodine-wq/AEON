@@ -1,0 +1,14 @@
+data Resource {
+  id:   Int
+  name: String
+}
+
+pure transferOwnership(r: Resource) -> Int {
+  let id: Int = r.id
+  return id
+}
+
+pure demonstrateBorrow(x: Int, y: Int) -> Int {
+  let sum: Int = x + y
+  return sum
+}

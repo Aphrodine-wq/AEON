@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/session_types.py
+# hypothesis_version: 6.141.1
+
+[', ', '<anonymous>', '?', 'accept', 'body', 'branch', 'channel', 'choose', 'close', 'connect', 'consume', 'create', 'disconnect', 'done', 'emit', 'end', 'finish', 'get', 'listen', 'location', 'method', 'name', 'new', 'object', 'open', 'pick', 'pop', 'produce', 'publish', 'pull', 'push', 'put', 'read', 'receive', 'recv', 'select', 'send', 'session', 'shutdown', 'subscribe', 'value', 'write']

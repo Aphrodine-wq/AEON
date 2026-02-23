@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/shape_analysis.py
+# hypothesis_version: 6.141.1
+
+['<shape>', 'Shape Analysis', 'box', 'child', 'children', 'engine', 'field_name', 'graph', 'head', 'lchild', 'left', 'link', 'linkedlist', 'list', 'location', 'next', 'node', 'null', 'option', 'optional', 'parent', 'pointer', 'predecessor', 'prev', 'ptr', 'rchild', 'ref', 'right', 'source', 'structure', 'structure_kind', 'subtree', 'succ', 'successor', 'tail', 'target', 'tree']

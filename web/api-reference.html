@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON API Reference — REST API &amp; Python SDK</title>
+    <meta name="description" content="Complete API reference for AEON. REST endpoints, Python SDK, request/response schemas, and code examples.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .api-hero {
+            padding: calc(var(--nav-height) + 4rem) 2rem 4rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .api-hero h1 {
+            font-size: clamp(2.25rem, 5vw, 3.5rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+        .api-hero h1 .gradient {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #74b9ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .api-hero p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .api-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem 6rem;
+        }
+        .api-content h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .api-content h2:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+        .api-content > p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+        .api-content h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .api-content h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-dim);
+        }
+        .api-content table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+        .api-content table th {
+            text-align: left;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .api-content table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .api-content table td:first-child { color: var(--text); font-weight: 500; }
+        .api-content code {
+            background: var(--bg-code);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--accent-light);
+        }
+        .api-content pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+        }
+        .api-content ul, .api-content ol {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            padding-left: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .endpoint {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+        }
+        .endpoint:hover { border-color: var(--accent); }
+        .endpoint-method {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            margin-right: 0.5rem;
+        }
+        .endpoint-method.post { background: #00d26a20; color: var(--green); }
+        .endpoint-method.get { background: #6c5ce720; color: var(--accent-light); }
+        .endpoint-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .endpoint-desc {
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .param-table { width: 100%; }
+        .param-table th {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            font-weight: 600;
+            padding: 0.4rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+        .param-table td {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.82rem;
+            border-bottom: 1px solid #1a1a2e;
+            color: var(--text-dim);
+        }
+        .param-table td:first-child {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--accent-light);
+        }
+        .param-required {
+            color: var(--red);
+            font-size: 0.68rem;
+            font-weight: 600;
+        }
+        .param-optional {
+            color: var(--text-dim);
+            font-size: 0.68rem;
+            opacity: 0.6;
+        }
+
+        .sdk-method {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .sdk-method h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        .sdk-method p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="index.html" class="nav-logo">AEON<span>.</span></a>
+        <button class="mobile-toggle" onclick="toggleMobile()">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="nav-dropdown">
+                <a href="docs.html">Docs</a>
+                <div class="nav-dropdown-menu">
+                    <a href="docs.html">Documentation</a>
+                    <a href="tutorials.html">Tutorials</a>
+                    <a href="api-reference.html" class="active">API Reference</a>
+                    <a href="benchmarks.html">Benchmarks</a>
+                    <a href="changelog.html">Changelog</a>
+                </div>
+            </li>
+            <li><a href="examples.html">Examples</a></li>
+            <li><a href="index.html#install">Install</a></li>
+            <li><button class="nav-search-btn search-trigger" onclick="openAeonSearch()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search <kbd>&#8984;K</kbd></button></li>
+            <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="nav-cta">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <section class="api-hero">
+        <h1><span class="gradient">API</span> Reference</h1>
+        <p>REST API endpoints and Python SDK for programmatic verification.</p>
+    </section>
+
+    <div class="api-content">
+
+        <!-- REST API -->
+        <h2>REST API</h2>
+        <p>Start the AEON API server to verify code programmatically over HTTP. All endpoints accept and return JSON.</p>
+
+<pre><code># Start the API server
+python -m aeon.api_server
+
+# Server runs at http://localhost:5000
+# Health check: GET /health</code></pre>
+
+        <h3>Authentication</h3>
+        <p>The local API server runs without authentication by default. For production deployments, set the <code>AEON_API_KEY</code> environment variable. When set, all requests must include the header:</p>
+<pre><code>Authorization: Bearer &lt;your-api-key&gt;</code></pre>
+
+        <!-- POST /verify -->
+        <div class="endpoint">
+            <div>
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/verify</span>
+            </div>
+            <p class="endpoint-desc">Verify a source code string. Returns verification results including any bugs found, engine details, and suggested fixes.</p>
+
+            <h4>Request Body</h4>
+            <table class="param-table">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td>code</td><td><code>string</code></td><td><span class="param-required">required</span></td><td>Source code to verify</td></tr>
+                    <tr><td>language</td><td><code>string</code></td><td><span class="param-optional">optional</span></td><td>Language override (auto-detected if omitted)</td></tr>
+                    <tr><td>deep_verify</td><td><code>boolean</code></td><td><span class="param-optional">optional</span></td><td>Enable all 30+ engines (default: false)</td></tr>
+                    <tr><td>engines</td><td><code>string[]</code></td><td><span class="param-optional">optional</span></td><td>Specific engines to run: <code>["symbolic", "hoare", "taint"]</code></td></tr>
+                    <tr><td>timeout</td><td><code>integer</code></td><td><span class="param-optional">optional</span></td><td>Timeout in seconds (default: 30)</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Example Request</h4>
+<pre><code>curl -X POST http://localhost:5000/verify \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "def divide(a, b):\n    return a / b",
+    "language": "python",
+    "deep_verify": true
+  }'</code></pre>
+
+            <h4>Response (200 OK)</h4>
+<pre><code>{
+  "verified": false,
+  "bugs_found": 1,
+  "functions_analyzed": 1,
+  "classes_analyzed": 0,
+  "results": [
+    {
+      "type": "error",
+      "code": "AEON-E001",
+      "message": "Division by zero possible",
+      "engine": "Abstract Interpretation",
+      "line": 2,
+      "column": 12,
+      "severity": "error",
+      "details": {
+        "divisor_range": "(-\u221e, +\u221e) includes 0",
+        "counterexample": { "b": 0 }
+      },
+      "fix": "Add contract: Requires: b != 0"
+    }
+  ],
+  "execution_time_ms": 420,
+  "engines_used": [
+    "symbolic_execution",
+    "abstract_interpretation",
+    "hoare_logic",
+    "size_change_termination",
+    "information_flow",
+    "liquid_types",
+    "algebraic_effects",
+    "dependent_types",
+    "taint_analysis",
+    "separation_logic",
+    "concurrency_verification",
+    "bounded_model_checking",
+    "shape_analysis",
+    "certified_compilation",
+    "category_theoretic_semantics"
+  ]
+}</code></pre>
+
+            <h4>Response (verified, no bugs)</h4>
+<pre><code>{
+  "verified": true,
+  "bugs_found": 0,
+  "functions_analyzed": 1,
+  "classes_analyzed": 0,
+  "results": [],
+  "execution_time_ms": 380,
+  "engines_used": ["symbolic_execution", "abstract_interpretation", ...]
+}</code></pre>
+        </div>
+
+        <!-- POST /verify/file -->
+        <div class="endpoint">
+            <div>
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/verify/file</span>
+            </div>
+            <p class="endpoint-desc">Verify a file by path. The file must be accessible from the server's filesystem.</p>
+
+            <table class="param-table">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td>file_path</td><td><code>string</code></td><td><span class="param-required">required</span></td><td>Absolute or relative path to source file</td></tr>
+                    <tr><td>deep_verify</td><td><code>boolean</code></td><td><span class="param-optional">optional</span></td><td>Enable all 30+ engines (default: false)</td></tr>
+                    <tr><td>engines</td><td><code>string[]</code></td><td><span class="param-optional">optional</span></td><td>Specific engines to run</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Example</h4>
+<pre><code>curl -X POST http://localhost:5000/verify/file \
+  -H "Content-Type: application/json" \
+  -d '{"file_path": "src/payment.py", "deep_verify": true}'</code></pre>
+        </div>
+
+        <!-- POST /verify/directory -->
+        <div class="endpoint">
+            <div>
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/verify/directory</span>
+            </div>
+            <p class="endpoint-desc">Scan an entire directory recursively. Equivalent to <code>aeon scan</code> via the API.</p>
+
+            <table class="param-table">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td>directory</td><td><code>string</code></td><td><span class="param-required">required</span></td><td>Path to directory to scan</td></tr>
+                    <tr><td>deep_verify</td><td><code>boolean</code></td><td><span class="param-optional">optional</span></td><td>Enable all engines</td></tr>
+                    <tr><td>parallel</td><td><code>boolean</code></td><td><span class="param-optional">optional</span></td><td>Enable parallel scanning</td></tr>
+                    <tr><td>workers</td><td><code>integer</code></td><td><span class="param-optional">optional</span></td><td>Number of parallel workers</td></tr>
+                    <tr><td>baseline</td><td><code>string</code></td><td><span class="param-optional">optional</span></td><td>Path to baseline file for diff mode</td></tr>
+                    <tr><td>format</td><td><code>string</code></td><td><span class="param-optional">optional</span></td><td><code>json</code> | <code>sarif</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- GET /health -->
+        <div class="endpoint">
+            <div>
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/health</span>
+            </div>
+            <p class="endpoint-desc">Health check endpoint. Returns server status and version.</p>
+
+            <h4>Response</h4>
+<pre><code>{
+  "status": "ok",
+  "version": "1.0.0",
+  "engines": 15,
+  "languages": 14,
+  "z3_version": "4.12.4"
+}</code></pre>
+        </div>
+
+        <!-- GET /engines -->
+        <div class="endpoint">
+            <div>
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/engines</span>
+            </div>
+            <p class="endpoint-desc">List all available verification engines with their CLI flags and descriptions.</p>
+
+            <h4>Response</h4>
+<pre><code>{
+  "engines": [
+    {
+      "name": "symbolic_execution",
+      "flag": "--symbolic",
+      "description": "Path-based exploration with Z3 constraint solving",
+      "paper": "King, CACM 1976"
+    },
+    ...
+  ]
+}</code></pre>
+        </div>
+
+        <!-- Error Responses -->
+        <h3>Error Responses</h3>
+        <table>
+            <thead><tr><th>Status</th><th>Meaning</th><th>Body</th></tr></thead>
+            <tbody>
+                <tr><td><code>400</code></td><td>Bad Request</td><td><code>{"error": "Missing required field: code"}</code></td></tr>
+                <tr><td><code>401</code></td><td>Unauthorized</td><td><code>{"error": "Invalid or missing API key"}</code></td></tr>
+                <tr><td><code>408</code></td><td>Timeout</td><td><code>{"error": "Verification timed out after 30s"}</code></td></tr>
+                <tr><td><code>422</code></td><td>Unprocessable</td><td><code>{"error": "Unsupported language: brainfuck"}</code></td></tr>
+                <tr><td><code>500</code></td><td>Server Error</td><td><code>{"error": "Internal verification error"}</code></td></tr>
+            </tbody>
+        </table>
+
+
+        <!-- Python SDK -->
+        <h2>Python SDK</h2>
+        <p>The Python SDK provides a programmatic interface to AEON's verification engines. Install with <code>pip install aeon-lang</code>.</p>
+
+<pre><code>from aeon import verify, scan, AeonConfig</code></pre>
+
+        <div class="sdk-method">
+            <h4>verify(code, language=None, deep_verify=False, engines=None, timeout=30)</h4>
+            <p>Verify a source code string. Returns a <code>VerificationResult</code>.</p>
+            <table class="param-table">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td>code</td><td><code>str</code></td><td>&mdash;</td><td>Source code to verify</td></tr>
+                    <tr><td>language</td><td><code>str | None</code></td><td><code>None</code></td><td>Language (auto-detected if None)</td></tr>
+                    <tr><td>deep_verify</td><td><code>bool</code></td><td><code>False</code></td><td>Enable all 30+ engines</td></tr>
+                    <tr><td>engines</td><td><code>list[str] | None</code></td><td><code>None</code></td><td>Specific engines to run</td></tr>
+                    <tr><td>timeout</td><td><code>int</code></td><td><code>30</code></td><td>Timeout in seconds</td></tr>
+                </tbody>
+            </table>
+<pre><code>from aeon import verify
+
+result = verify("""
+def average(nums: list, count: int) -> float:
+    \"\"\"
+    Requires: count != 0
+    \"\"\"
+    return sum(nums) / count
+""", language="python", deep_verify=True)
+
+print(result.verified)           # True
+print(result.bugs_found)         # 0
+print(result.functions_analyzed) # 1
+print(result.execution_time_ms)  # 420</code></pre>
+        </div>
+
+        <div class="sdk-method">
+            <h4>verify_file(path, deep_verify=False, engines=None, timeout=30)</h4>
+            <p>Verify a file by path. Language is auto-detected from extension.</p>
+<pre><code>from aeon import verify_file
+
+result = verify_file("src/payment.py", deep_verify=True)
+if not result.verified:
+    for bug in result.results:
+        print(f"[{bug.code}] {bug.message} at line {bug.line}")
+        print(f"  Engine: {bug.engine}")
+        print(f"  Fix: {bug.fix}")</code></pre>
+        </div>
+
+        <div class="sdk-method">
+            <h4>scan(directory, deep_verify=False, parallel=False, workers=None, baseline=None)</h4>
+            <p>Scan a directory recursively. Returns a <code>ScanResult</code> with per-file results.</p>
+<pre><code>from aeon import scan
+
+results = scan("src/", deep_verify=True, parallel=True, workers=8)
+
+print(f"Files scanned: {results.files_scanned}")
+print(f"Total bugs: {results.total_bugs}")
+print(f"Clean files: {results.clean_files}")
+
+for file_result in results.file_results:
+    if not file_result.verified:
+        print(f"\n{file_result.file_path}:")
+        for bug in file_result.results:
+            print(f"  [{bug.code}] {bug.message}")</code></pre>
+        </div>
+
+        <div class="sdk-method">
+            <h4>AeonConfig(config_path=None, **overrides)</h4>
+            <p>Load and customize AEON configuration programmatically.</p>
+<pre><code>from aeon import AeonConfig, scan
+
+config = AeonConfig(
+    deep_verify=True,
+    parallel=True,
+    workers=8,
+    timeout=60,
+    exclude=["**/test_*.py", "**/vendor/**"],
+    security={
+        "auto_label": True,
+        "patterns": {
+            "SECRET": ["*_key", "*_token", "password*"]
+        }
+    }
+)
+
+results = scan("src/", config=config)</code></pre>
+        </div>
+
+        <!-- Data Types -->
+        <h3>Return Types</h3>
+
+        <div class="sdk-method">
+            <h4>VerificationResult</h4>
+            <table class="param-table">
+                <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td>verified</td><td><code>bool</code></td><td>True if no bugs found</td></tr>
+                    <tr><td>bugs_found</td><td><code>int</code></td><td>Number of bugs found</td></tr>
+                    <tr><td>functions_analyzed</td><td><code>int</code></td><td>Number of functions analyzed</td></tr>
+                    <tr><td>classes_analyzed</td><td><code>int</code></td><td>Number of classes analyzed</td></tr>
+                    <tr><td>results</td><td><code>list[Finding]</code></td><td>List of findings (bugs/warnings)</td></tr>
+                    <tr><td>execution_time_ms</td><td><code>int</code></td><td>Total execution time in milliseconds</td></tr>
+                    <tr><td>engines_used</td><td><code>list[str]</code></td><td>Engines that were run</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sdk-method">
+            <h4>Finding</h4>
+            <table class="param-table">
+                <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td>type</td><td><code>str</code></td><td><code>"error"</code> or <code>"warning"</code></td></tr>
+                    <tr><td>code</td><td><code>str</code></td><td>Error code (e.g., <code>"AEON-E001"</code>)</td></tr>
+                    <tr><td>message</td><td><code>str</code></td><td>Human-readable description</td></tr>
+                    <tr><td>engine</td><td><code>str</code></td><td>Engine that found this issue</td></tr>
+                    <tr><td>line</td><td><code>int</code></td><td>Line number</td></tr>
+                    <tr><td>column</td><td><code>int</code></td><td>Column number</td></tr>
+                    <tr><td>severity</td><td><code>str</code></td><td><code>"error"</code> | <code>"warning"</code> | <code>"info"</code></td></tr>
+                    <tr><td>fix</td><td><code>str | None</code></td><td>Suggested fix</td></tr>
+                    <tr><td>details</td><td><code>dict</code></td><td>Engine-specific details (counterexamples, ranges, etc.)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sdk-method">
+            <h4>ScanResult</h4>
+            <table class="param-table">
+                <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td>files_scanned</td><td><code>int</code></td><td>Total files scanned</td></tr>
+                    <tr><td>total_bugs</td><td><code>int</code></td><td>Total bugs across all files</td></tr>
+                    <tr><td>clean_files</td><td><code>int</code></td><td>Files with no bugs</td></tr>
+                    <tr><td>file_results</td><td><code>list[FileResult]</code></td><td>Per-file verification results</td></tr>
+                    <tr><td>execution_time_ms</td><td><code>int</code></td><td>Total scan time</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo">AEON<span>.</span></div>
+                <p>Formal verification for the languages you already use. 30+ engines. 14 languages.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="index.html#demo">Live Demo</a></li>
+                    <li><a href="index.html#engines">Engines</a></li>
+                    <li><a href="index.html#install">Installation</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <ul>
+                    <li><a href="docs.html">Documentation</a></li>
+                    <li><a href="tutorials.html">Tutorials</a></li>
+                    <li><a href="examples.html">Examples</a></li>
+                    <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                    <li><a href="changelog.html">Changelog</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 AEON Project</span>
+            <span>Built with mathematical certainty</span>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/copy.js"></script>
+</body>
+</html>

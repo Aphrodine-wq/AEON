@@ -1,0 +1,61 @@
+{
+  "prompt": "Create a task function 'round_2' that performs system.write, database.read operations",
+  "source_code": "task round_2(a: Email, b: UUID, c: String) -> Float {\n  effects: [System.Write, Database.Read]\n  return db.insert(value)\n}",
+  "ir_output": null,
+  "llvm_output": null,
+  "errors": [
+    {
+      "kind": "name_error",
+      "message": "Undefined name 'value'",
+      "location": {
+        "file": "<stdin>",
+        "line": 3,
+        "column": 20
+      },
+      "details": {
+        "name": "value"
+      }
+    },
+    {
+      "kind": "type_error",
+      "message": "Expected type 'Float', got 'Bool'",
+      "location": {
+        "file": "<stdin>",
+        "line": 3,
+        "column": 3
+      },
+      "details": {
+        "node_id": "return",
+        "expected_type": "Float",
+        "actual_type": "Bool"
+      }
+    },
+    {
+      "kind": "effect_error",
+      "message": "Effect 'Database.Write' not declared. Declared: ['System.Write', 'Database.Read']",
+      "location": {
+        "file": "<stdin>",
+        "line": 1,
+        "column": 1
+      },
+      "details": {
+        "declared_effects": [
+          "System.Write",
+          "Database.Read"
+        ],
+        "actual_effect": "Database.Write",
+        "callsite_chain": [
+          "db.insert"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "type": "task_function",
+    "complexity": "simple",
+    "effects": [
+      "System.Write",
+      "Database.Read"
+    ]
+  }
+}

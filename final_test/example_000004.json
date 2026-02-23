@@ -1,0 +1,27 @@
+{
+  "prompt": "Create a data type 'Rect_4' and a function 'min_4' that operates on it",
+  "source_code": "data Rect_4 {\n    field_0: USD\n  field_1: Bool\n  field_2: UUID\n}\n\npure min_4(x: Rect_4) -> Int {\n  return x.field_2\n}",
+  "ir_output": null,
+  "llvm_output": null,
+  "errors": [
+    {
+      "kind": "type_error",
+      "message": "Expected type 'Int', got 'UUID'",
+      "location": {
+        "file": "<stdin>",
+        "line": 8,
+        "column": 3
+      },
+      "details": {
+        "node_id": "return",
+        "expected_type": "Int",
+        "actual_type": "UUID"
+      }
+    }
+  ],
+  "metadata": {
+    "type": "mixed",
+    "complexity": "medium",
+    "declarations": 2
+  }
+}

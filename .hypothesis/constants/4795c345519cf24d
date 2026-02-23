@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/refinement_types.py
+# hypothesis_version: 6.141.1
+
+[128, 256, 5000, ' /\\ ', ' \\/ ', '!', '!=', '%', '&&', '*', '+', ', ', '-', '/', '<', '<=', '==', '>', '>=', 'false', 'null', 'pure', 'reason', 'result', 'task', 'timeout', 'true', 'v', 'v!=0', 'v!=null', 'v%2==0', 'v%2==1', 'v<=0', 'v<=x', 'v==0', 'v==x*y', 'v==x+1', 'v==x+y', 'v==x-1', 'v==x-y', 'v>0', 'v>=0', 'v>=0&&v<x', '||']

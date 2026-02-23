@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/typestate.py
+# hypothesis_version: 6.141.1
+
+['<anonymous>', 'Closed', 'Connected', 'Connection', 'Disconnected', 'Exhausted', 'File', 'HasValue', 'InTransaction', 'Init', 'Iterator', 'Lock', 'Locked', 'Open', 'Piped', 'Ready', 'Stream', 'Unlocked', 'begin_transaction', 'body', 'channel', 'client', 'close', 'commit', 'conn', 'connect', 'connection', 'cursor', 'database', 'db', 'disconnect', 'enumerator', 'execute', 'fd', 'fh', 'file', 'filehandle', 'flush', 'iofile', 'iostream', 'iter', 'iterator', 'location', 'lock', 'method', 'mutex', 'name', 'next', 'object', 'open', 'params', 'pipe', 'query', 'read', 'rollback', 'rwlock', 'seek', 'semaphore', 'socket', 'stream', 'try_lock', 'type_annotation', 'unlock', 'value', 'write']

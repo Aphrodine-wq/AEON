@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON Tutorials — Step-by-Step Guides</title>
+    <meta name="description" content="Learn AEON through hands-on tutorials. From your first verification to securing APIs and CI/CD integration.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .tutorials-hero {
+            padding: calc(var(--nav-height) + 4rem) 2rem 4rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .tutorials-hero h1 {
+            font-size: clamp(2.25rem, 5vw, 3.5rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+        .tutorials-hero h1 .gradient {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #74b9ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tutorials-hero p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .tutorials-grid {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem 6rem;
+        }
+
+        .tutorial-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .tutorial-card:hover { border-color: var(--accent); }
+
+        .tutorial-card-header {
+            padding: 2rem 2rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+        }
+        .tutorial-num {
+            width: 44px; height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .tutorial-card-header h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .tutorial-card-header .tutorial-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.35rem;
+        }
+        .tutorial-card-header .tutorial-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .difficulty { padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.68rem; }
+        .difficulty.beginner { background: #00d26a20; color: var(--green); }
+        .difficulty.intermediate { background: #ffc31220; color: var(--yellow); }
+        .difficulty.advanced { background: #ff475720; color: var(--red); }
+
+        .tutorial-card-body {
+            padding: 1.5rem 2rem 2rem;
+        }
+        .tutorial-card-body p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        .tutorial-card-body pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        .tutorial-card-body h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-light);
+        }
+        .tutorial-card-body ul, .tutorial-card-body ol {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            padding-left: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .tutorial-card-body li { margin-bottom: 0.3rem; }
+        .tutorial-card-body strong { color: var(--text); }
+        .tutorial-card-body code {
+            background: var(--bg-code);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--accent-light);
+        }
+
+        .tutorial-card-body .callout {
+            border-left: 3px solid var(--accent);
+            background: #1c1a30;
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1rem;
+        }
+        .tutorial-card-body .callout p { margin-bottom: 0; color: var(--text); font-size: 0.85rem; }
+        .tutorial-card-body .callout.success { border-left-color: var(--green); background: #0a2a15; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="index.html" class="nav-logo">AEON<span>.</span></a>
+        <button class="mobile-toggle" onclick="toggleMobile()">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="nav-dropdown">
+                <a href="docs.html">Docs</a>
+                <div class="nav-dropdown-menu">
+                    <a href="docs.html">Documentation</a>
+                    <a href="tutorials.html" class="active">Tutorials</a>
+                    <a href="api-reference.html">API Reference</a>
+                    <a href="benchmarks.html">Benchmarks</a>
+                    <a href="changelog.html">Changelog</a>
+                </div>
+            </li>
+            <li><a href="examples.html">Examples</a></li>
+            <li><a href="index.html#install">Install</a></li>
+            <li><button class="nav-search-btn search-trigger" onclick="openAeonSearch()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search <kbd>&#8984;K</kbd></button></li>
+            <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="nav-cta">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="tutorials-hero">
+        <h1>Learn <span class="gradient">AEON</span></h1>
+        <p>Step-by-step guides from your first verification to full CI/CD integration. Each takes 5&ndash;15 minutes with copy-paste code.</p>
+    </section>
+
+    <!-- Tutorials -->
+    <div class="tutorials-grid">
+
+        <!-- Tutorial 1 -->
+        <div class="tutorial-card" id="tutorial-1">
+            <div class="tutorial-card-header">
+                <div class="tutorial-num">1</div>
+                <div>
+                    <h3>Your First 5 Minutes with AEON</h3>
+                    <div class="tutorial-meta">
+                        <span class="difficulty beginner">Beginner</span>
+                        <span>5 min</span>
+                        <span>Python</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-card-body">
+                <p>Install AEON, verify your first file, find a bug, fix it, and re-verify. The complete beginner workflow.</p>
+
+                <h4>Step 1: Install AEON</h4>
+<pre><code>pip install aeon-lang</code></pre>
+
+                <h4>Step 2: Create a file with a bug</h4>
+                <p>Create <code>example.py</code>:</p>
+<pre><code>def average(numbers: list, count: int) -> float:
+    return sum(numbers) / count</code></pre>
+
+                <h4>Step 3: Run AEON</h4>
+<pre><code>aeon check example.py --deep-verify</code></pre>
+                <p>AEON finds the bug:</p>
+<pre><code>&#10007; 2 bug(s) found
+  &#9888; Division by zero possible (line 2)
+    Engine: Abstract Interpretation (Cousot 1977)
+    divisor_range: (-&#8734;, +&#8734;) includes 0
+  &#9888; Symbolic Execution: division by zero reachable
+    Counterexample: count = 0
+    Fix: add requires count != 0</code></pre>
+
+                <h4>Step 4: Fix the bug with a contract</h4>
+<pre><code>def average(numbers: list, count: int) -> float:
+    """
+    Requires: count != 0
+    """
+    return sum(numbers) / count</code></pre>
+
+                <h4>Step 5: Re-verify</h4>
+<pre><code>aeon check example.py --deep-verify</code></pre>
+                <div class="callout success">
+                    <p><strong>&#10003; VERIFIED:</strong> 1 function, 0 classes &mdash; no bugs found</p>
+                </div>
+                <p>That's it. AEON mathematically proved your function is correct for <strong>all possible inputs</strong> where <code>count != 0</code>.</p>
+            </div>
+        </div>
+
+        <!-- Tutorial 2 -->
+        <div class="tutorial-card" id="tutorial-2">
+            <div class="tutorial-card-header">
+                <div class="tutorial-num">2</div>
+                <div>
+                    <h3>Adding Contracts to an Existing Python Project</h3>
+                    <div class="tutorial-meta">
+                        <span class="difficulty beginner">Beginner</span>
+                        <span>10 min</span>
+                        <span>Python</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-card-body">
+                <p>You don't need to rewrite your code. AEON reads contracts from Python docstrings. This tutorial shows how to progressively add contracts to an existing codebase.</p>
+
+                <h4>Step 1: Start with baseline mode</h4>
+                <p>Create a baseline of current issues so you only see <em>new</em> bugs going forward:</p>
+<pre><code>aeon scan src/ --deep-verify --create-baseline --baseline .aeon-baseline.json</code></pre>
+
+                <h4>Step 2: Add contracts to critical functions first</h4>
+                <p>Start with payment processing, auth, and data access functions:</p>
+<pre><code>def process_payment(amount: int, balance: int) -> int:
+    """
+    Requires: amount > 0
+    Requires: balance >= amount
+    Ensures:  result == balance - amount
+    Ensures:  result >= 0
+    """
+    return balance - amount</code></pre>
+
+                <h4>Step 3: Run with baseline to see only new issues</h4>
+<pre><code>aeon scan src/ --deep-verify --baseline .aeon-baseline.json</code></pre>
+                <p>Only newly introduced bugs are reported. Existing legacy issues are suppressed until you're ready to fix them.</p>
+
+                <h4>Step 4: Add to CI/CD</h4>
+                <p>Gate PRs on AEON verification so no new bugs slip in:</p>
+<pre><code># .github/workflows/verify.yml
+name: AEON Verify
+on: [pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install aeon-lang
+      - run: aeon scan src/ --deep-verify --baseline .aeon-baseline.json</code></pre>
+
+                <div class="callout">
+                    <p><strong>Tip:</strong> Start with <code>--verify</code> (contracts only) instead of <code>--deep-verify</code> for a gentler rollout. Gradually enable more engines as your team adds contracts.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tutorial 3 -->
+        <div class="tutorial-card" id="tutorial-3">
+            <div class="tutorial-card-header">
+                <div class="tutorial-num">3</div>
+                <div>
+                    <h3>Setting Up AEON in CI/CD (GitHub Actions)</h3>
+                    <div class="tutorial-meta">
+                        <span class="difficulty intermediate">Intermediate</span>
+                        <span>10 min</span>
+                        <span>YAML / CI</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-card-body">
+                <p>Integrate AEON into your GitHub Actions pipeline with SARIF output, code scanning annotations, and pass/fail gating.</p>
+
+                <h4>Step 1: Basic workflow</h4>
+<pre><code># .github/workflows/aeon-verify.yml
+name: AEON Verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install AEON
+        run: pip install aeon-lang
+
+      - name: Run AEON verification
+        run: aeon scan src/ --deep-verify --format sarif > aeon-results.sarif
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: aeon-results.sarif
+
+      - name: Fail on bugs
+        run: aeon scan src/ --deep-verify</code></pre>
+
+                <h4>Step 2: Add caching for faster builds</h4>
+<pre><code>      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-aeon
+          restore-keys: ${{ runner.os }}-pip-</code></pre>
+
+                <h4>Step 3: Use baseline for incremental adoption</h4>
+                <p>Commit your baseline file and only flag new issues in PRs:</p>
+<pre><code>      - name: Run with baseline
+        run: aeon scan src/ --deep-verify --baseline .aeon-baseline.json</code></pre>
+
+                <h4>What you get</h4>
+                <ul>
+                    <li>AEON findings appear as <strong>code annotations</strong> directly in your PR</li>
+                    <li>GitHub Security tab shows all findings with SARIF</li>
+                    <li>PRs are blocked if new bugs are introduced</li>
+                    <li>Baseline mode allows gradual adoption without noise</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tutorial 4 -->
+        <div class="tutorial-card" id="tutorial-4">
+            <div class="tutorial-card-header">
+                <div class="tutorial-num">4</div>
+                <div>
+                    <h3>Securing a Flask API with Taint Analysis</h3>
+                    <div class="tutorial-meta">
+                        <span class="difficulty intermediate">Intermediate</span>
+                        <span>15 min</span>
+                        <span>Python / Flask</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-card-body">
+                <p>Use AEON's taint analysis engine to find and fix SQL injection, XSS, and information leaks in a Flask application.</p>
+
+                <h4>Step 1: The vulnerable code</h4>
+<pre><code>from flask import Flask, request
+import sqlite3
+
+app = Flask(__name__)
+
+@app.route('/users')
+def get_user():
+    username = request.args.get('name')  # TAINT SOURCE
+    conn = sqlite3.connect('app.db')
+    # BUG: SQL injection — user input flows to query
+    result = conn.execute(f"SELECT * FROM users WHERE name = '{username}'")
+    return str(result.fetchall())</code></pre>
+
+                <h4>Step 2: Run AEON taint analysis</h4>
+<pre><code>aeon check app.py --taint</code></pre>
+                <p>Output:</p>
+<pre><code>&#10007; 1 bug found
+  &#9888; AEON-E007: SQL injection
+    Engine: Taint Analysis (Schwartz et al. 2010)
+    Source: request.args.get('name') [line 8]
+    Sink: conn.execute(...) [line 10]
+    Path: username &rarr; f-string &rarr; conn.execute()
+    Fix: use parameterized query</code></pre>
+
+                <h4>Step 3: Fix with parameterized queries</h4>
+<pre><code>@app.route('/users')
+def get_user():
+    username = request.args.get('name')
+    conn = sqlite3.connect('app.db')
+    # SAFE: parameterized query neutralizes taint
+    result = conn.execute("SELECT * FROM users WHERE name = ?", (username,))
+    return str(result.fetchall())</code></pre>
+
+                <h4>Step 4: Re-verify</h4>
+<pre><code>aeon check app.py --taint
+&#10003; VERIFIED: no taint violations found</code></pre>
+
+                <h4>Step 5: Add custom sources/sinks</h4>
+                <p>Configure additional sources and sinks for your codebase:</p>
+<pre><code># .aeonrc.yml
+taint:
+  custom_sources:
+    - "flask.request.args"
+    - "flask.request.form"
+    - "flask.request.json"
+  custom_sinks:
+    - "subprocess.call"
+    - "os.system"
+    - "eval"
+  custom_sanitizers:
+    - "bleach.clean"
+    - "markupsafe.escape"</code></pre>
+            </div>
+        </div>
+
+        <!-- Tutorial 5 -->
+        <div class="tutorial-card" id="tutorial-5">
+            <div class="tutorial-card-header">
+                <div class="tutorial-num">5</div>
+                <div>
+                    <h3>Verifying a Payment System End-to-End</h3>
+                    <div class="tutorial-meta">
+                        <span class="difficulty advanced">Advanced</span>
+                        <span>15 min</span>
+                        <span>Python</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-card-body">
+                <p>Build a payment processing module with full formal contracts. AEON proves no overflow, no negative balances, correct fee calculations, and no information leaks &mdash; for <em>all possible inputs</em>.</p>
+
+                <h4>Step 1: Define the data model</h4>
+<pre><code>from dataclasses import dataclass
+
+@dataclass
+class Account:
+    id: str
+    balance: int  # cents
+    tier: str     # 'standard' | 'premium' | 'enterprise'</code></pre>
+
+                <h4>Step 2: Write functions with contracts</h4>
+<pre><code>def calculate_fee(amount: int, tier: str) -> int:
+    """
+    Requires: amount > 0
+    Ensures:  result >= 0
+    Ensures:  result <= amount
+    """
+    rates = {'standard': 29, 'premium': 25, 'enterprise': 19}
+    rate = rates.get(tier, 29)  # basis points (29 = 0.29%)
+    return (amount * rate) // 10000
+
+def transfer(sender: Account, receiver: Account, amount: int) -> tuple:
+    """
+    Requires: amount > 0
+    Requires: sender.balance >= amount
+    Ensures:  result[0].balance == sender.balance - amount
+    Ensures:  result[1].balance == receiver.balance + amount - calculate_fee(amount, sender.tier)
+    """
+    fee = calculate_fee(amount, sender.tier)
+    new_sender = Account(sender.id, sender.balance - amount, sender.tier)
+    new_receiver = Account(receiver.id, receiver.balance + amount - fee, receiver.tier)
+    return (new_sender, new_receiver)</code></pre>
+
+                <h4>Step 3: Verify with all engines</h4>
+<pre><code>aeon check payment.py --deep-verify</code></pre>
+                <div class="callout success">
+                    <p><strong>&#10003; VERIFIED:</strong> 2 functions, 1 class &mdash; no bugs found</p>
+                </div>
+                <p>AEON has now mathematically proven:</p>
+                <ul>
+                    <li><strong>No overflow</strong> in fee calculation (Abstract Interpretation)</li>
+                    <li><strong>No negative balances</strong> possible (Hoare Logic)</li>
+                    <li><strong>Fee is always non-negative and bounded</strong> (Symbolic Execution)</li>
+                    <li><strong>Transfer conserves money</strong> (Hoare Logic &mdash; ensures clause)</li>
+                    <li><strong>All branches terminate</strong> (Size-Change Termination)</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo">AEON<span>.</span></div>
+                <p>Formal verification for the languages you already use. 30+ engines. 44 papers. 14 languages.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="index.html#demo">Live Demo</a></li>
+                    <li><a href="index.html#engines">Engines</a></li>
+                    <li><a href="index.html#install">Installation</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <ul>
+                    <li><a href="docs.html">Documentation</a></li>
+                    <li><a href="tutorials.html">Tutorials</a></li>
+                    <li><a href="examples.html">Examples</a></li>
+                    <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                    <li><a href="changelog.html">Changelog</a></li>
+                    <li><a href="docs.html#glossary">Glossary</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 AEON Project</span>
+            <span>Built with mathematical certainty</span>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/copy.js"></script>
+</body>
+</html>

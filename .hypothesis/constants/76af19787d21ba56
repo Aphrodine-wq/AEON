@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/proof_obligations.py
+# hypothesis_version: 6.141.1
+
+[0.0, '#', '%', '&', '(reset)', '-', '0.5.0', 'ERROR', 'SAT', 'SKIPPED', 'UNKNOWN', 'UNSAT', '\\#', '\\%', '\\&', '\\_', '\\begin{quote}', '\\begin{verbatim}', '\\checkmark', '\\end{quote}', '\\end{tabular}', '\\end{verbatim}', '\\hline', '\\textbf{FAILED}', '\\textit{Reference:} ', '\\{', '\\}', '_', 'abstract_interp', 'aeon_version', 'all_proved', 'category_semantics', 'concurrency', 'dependent_types', 'effect_algebra', 'engine', 'failed', 'function', 'hoare', 'information_flow', 'location', 'model_checking', 'obligations', 'proved', 'refinement_types', 'result', 'rule', 'separation_logic', 'shape_analysis', 'size_change', 'source_file', 'summary', 'symbolic_execution', 'taint_analysis', 'total', 'unknown', 'vc', 'witness', '{', '}', '✓ PROVED', '✗ FAILED']

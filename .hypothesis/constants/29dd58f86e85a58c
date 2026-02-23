@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/hoare.py
+# hypothesis_version: 6.141.1
+
+[0.0, 100, 500, 1000, 2000, 5000, 10000, ' * ', ' /\\ ', ' \\/ ', '!', '!=', '%', '&&', '(', ')', '*', '+', ', ', '-', '/', '<', '<=', '<?>', '==', '>', '>=', 'Bool', 'Float', 'Int', 'Proof.', 'Qed.', 'Theorem aeon_vc :', 'VCGenerator', 'Void', 'WPCalculator', 'arr', 'call_unknown', 'coq', 'emp', 'false', 'filename', 'formula', 'function_name', 'lean4', 'location', 'loop-consecution', 'loop-postcondition', 'owicki_gries', 'partial_correctness', 'postcondition', 'precondition', 'pure', 'ranking', 'ranking-lower-bound', 'refinement_type', 'result', 'task', 'timeout', 'total_correctness', 'true', 'unknown', 'v0', 'wp', 'wp-contract', 'wp_formula', '|', '||']

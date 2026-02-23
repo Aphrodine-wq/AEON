@@ -1,0 +1,30 @@
+data Account {
+  id:      UUID
+  balance: Int
+}
+
+data Receipt {
+  total: Int
+}
+
+pure processPayment(amount: Int, balance: Int) -> Int {
+  requires: balance >= amount
+  requires: amount > 0
+  ensures:  result == balance - amount
+  return balance - amount
+}
+
+pure clamp(value: Int, low: Int, high: Int) -> Int {
+  requires: low <= high
+  ensures:  result >= low
+  ensures:  result <= high
+  if value < low {
+    return low
+  } else {
+    if value > high {
+      return high
+    } else {
+      return value
+    }
+  }
+}

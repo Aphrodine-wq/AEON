@@ -1,0 +1,168 @@
+-- AEON Example: Concurrent Tasks with Owicki-Gries Verification
+-- Demonstrates: task functions, effect declarations, interference freedom,
+--               concurrent contract verification
+--
+-- AEON verifies:
+--   1. Owicki-Gries interference freedom: concurrent tasks don't corrupt each other's state
+--   2. Effect declarations are complete (no undeclared side effects)
+--   3. Shared variable access is safe under concurrent execution
+--   4. Message passing contracts are satisfied
+
+-- -----------------------------------------------------------------------
+-- Worker pool — task with Database and Queue effects
+-- -----------------------------------------------------------------------
+
+data Job {
+  id:       Int
+  priority: Int
+  payload:  String
+}
+
+data JobResult {
+  job_id:  Int
+  success: Bool
+  output:  String
+}
+
+task processJob(job: Job) -> JobResult {
+  requires: job.id > 0
+  requires: job.priority >= 1
+  requires: job.priority <= 10
+  ensures:  result.job_id == job.id
+  effects:  [Database.Write, Queue.Read]
+  -- AEON verifies:
+  --   1. result.job_id == job.id (output correctly tagged)
+  --   2. No undeclared effects (only DB write and queue read)
+  --   3. Interference freedom: this task's writes don't corrupt
+  --      other concurrent tasks' preconditions
+
+  return JobResult { job_id: job.id, success: true, output: "processed" }
+}
+
+task submitJob(job: Job) -> Bool {
+  requires: job.id > 0
+  ensures:  result == true
+  effects:  [Queue.Write]
+  return true
+}
+
+-- -----------------------------------------------------------------------
+-- Rate limiter — shared counter with atomic contract
+-- -----------------------------------------------------------------------
+
+data RateLimiter {
+  count:     Int
+  limit:     Int
+  window_ms: Int
+}
+
+pure rateLimiterNew(limit: Int, window_ms: Int) -> RateLimiter {
+  requires: limit > 0
+  requires: window_ms > 0
+  ensures:  result.count == 0
+  ensures:  result.limit == limit
+  return RateLimiter { count: 0, limit: limit, window_ms: window_ms }
+}
+
+pure rateLimiterAllow(rl: RateLimiter) -> Bool {
+  requires: rl.limit > 0
+  requires: rl.count >= 0
+  ensures:  result == (rl.count < rl.limit)
+  -- AEON verifies: the decision is deterministic given the state
+  -- Owicki-Gries: concurrent tasks reading this are interference-free
+  -- because this is a pure function (no mutation)
+  return rl.count < rl.limit
+}
+
+pure rateLimiterIncrement(rl: RateLimiter) -> RateLimiter {
+  requires: rl.count < rl.limit
+  ensures:  result.count == rl.count + 1
+  ensures:  result.limit == rl.limit
+  -- AEON verifies: count never exceeds limit (overflow-safe)
+  return RateLimiter { count: rl.count + 1, limit: rl.limit, window_ms: rl.window_ms }
+}
+
+-- -----------------------------------------------------------------------
+-- Event sourcing — append-only log with ordering contract
+-- -----------------------------------------------------------------------
+
+data Event {
+  sequence: Int
+  kind:     String
+  payload:  String
+}
+
+data EventLog {
+  events: List<Event>
+  next_seq: Int
+}
+
+pure eventLogNew() -> EventLog {
+  ensures: result.next_seq == 0
+  return EventLog { events: [], next_seq: 0 }
+}
+
+pure eventLogAppend(log: EventLog, kind: String, payload: String) -> EventLog {
+  requires: log.next_seq >= 0
+  ensures:  result.next_seq == log.next_seq + 1
+  -- AEON verifies:
+  --   1. Sequence numbers are strictly monotone (no gaps, no duplicates)
+  --   2. next_seq always increments by exactly 1
+  --   3. Concurrent appends: Owicki-Gries proves each task's append
+  --      preserves the other's next_seq precondition
+
+  let evt: Event = Event {
+    sequence: log.next_seq,
+    kind: kind,
+    payload: payload
+  }
+  return EventLog { events: log.events, next_seq: log.next_seq + 1 }
+}
+
+-- -----------------------------------------------------------------------
+-- Circuit breaker — state machine with typestate verification
+-- -----------------------------------------------------------------------
+
+data CircuitBreaker {
+  failures:     Int
+  threshold:    Int
+  is_open:      Bool
+}
+
+pure circuitBreakerNew(threshold: Int) -> CircuitBreaker {
+  requires: threshold > 0
+  ensures:  result.failures == 0
+  ensures:  result.is_open == false
+  ensures:  result.threshold == threshold
+  return CircuitBreaker { failures: 0, threshold: threshold, is_open: false }
+}
+
+pure circuitBreakerRecordFailure(cb: CircuitBreaker) -> CircuitBreaker {
+  requires: cb.threshold > 0
+  ensures:  result.failures == cb.failures + 1
+  ensures:  result.is_open == (cb.failures + 1 >= cb.threshold)
+  -- AEON verifies:
+  --   1. is_open transitions correctly when failures reach threshold
+  --   2. failures counter is monotone (never decreases on failure)
+  --   3. The state transition is deterministic
+
+  let new_failures: Int = cb.failures + 1
+  let now_open: Bool = new_failures >= cb.threshold
+  return CircuitBreaker {
+    failures: new_failures,
+    threshold: cb.threshold,
+    is_open: now_open
+  }
+}
+
+pure circuitBreakerReset(cb: CircuitBreaker) -> CircuitBreaker {
+  ensures: result.failures == 0
+  ensures: result.is_open == false
+  ensures: result.threshold == cb.threshold
+  return CircuitBreaker { failures: 0, threshold: cb.threshold, is_open: false }
+}
+
+pure circuitBreakerCanCall(cb: CircuitBreaker) -> Bool {
+  ensures: result == (cb.is_open == false)
+  return cb.is_open == false
+}

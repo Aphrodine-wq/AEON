@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/differential_privacy.py
+# hypothesis_version: 6.141.1
+
+[0.0, 1e-06, 0.1, 1.0, '%', '*', '+', '-', '/', '<anonymous>', 'above_threshold', 'account', 'add_noise', 'aggregate', 'average', 'avg', 'body', 'census', 'constant', 'count', 'database', 'dataframe', 'dataset', 'db', 'dp_count', 'dp_histogram', 'dp_mean', 'dp_median', 'dp_sum', 'financial', 'fold', 'frequency', 'gaussian_mechanism', 'histogram', 'inf', 'laplace_mechanism', 'location', 'max', 'mean', 'median', 'medical', 'min', 'name', 'op', 'params', 'patient', 'percentile', 'person', 'phi', 'pii', 'private', 'privatize', 'privatized', 'record', 'reduce', 'report_noisy_max', 'result', 'sensitive', 'sparse_vector', 'std', 'sum', 'table', 'type_annotation', 'unknown', 'user', 'variance']

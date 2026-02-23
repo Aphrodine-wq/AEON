@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/effect_algebra.py
+# hypothesis_version: 6.141.1
+
+['*', ', ', '.', '<', '<>', '>', 'Console', 'Database', 'Execute', 'File', 'IO', 'Network', 'Read', 'System', 'Write', 'console.print', 'console.read', 'db.contains', 'db.delete', 'db.find', 'db.insert', 'db.query', 'db.update', 'file.read', 'file.write', 'net.get', 'net.post', 'net.send', 'print']

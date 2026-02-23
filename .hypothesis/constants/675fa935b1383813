@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/termination.py
+# hypothesis_version: 6.141.1
+
+['*', '+', '-', '/', 'args', 'condition', 'else_body', 'function', 'left', 'obj', 'operand', 'pure', 'right', 'statements', 'task', 'then_body', 'value']

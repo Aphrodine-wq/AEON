@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/linear_resource.py
+# hypothesis_version: 6.141.1
+
+[0.0, 1e-09, 1.0, 100, '<anonymous>', 'Affine', 'Channel', 'Connection', 'File', 'Handle', 'Linear', 'Lock', 'Mutex', 'Own', 'Resource', 'Session', 'Socket', 'Stream', 'Transaction', 'Unique', 'body', 'location', 'name', 'params', 'pot_initial', 'type_annotation', '⊗', '⊸']

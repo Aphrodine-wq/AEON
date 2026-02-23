@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/types.py
+# hypothesis_version: 6.141.1
+
+[', ', 'Bool', 'Email', 'Error', 'Float', 'Int', 'List', 'Option', 'Result', 'String', 'USD', 'UUID', 'Unknown', 'Void', 'pure', 'task']

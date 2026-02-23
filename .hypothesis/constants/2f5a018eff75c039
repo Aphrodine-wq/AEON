@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/gradual_typing.py
+# hypothesis_version: 6.141.1
+
+['*', ', ', '->', '<anonymous>', '?', 'Any', 'Bool', 'Dynamic', 'Float', 'Int', 'String', 'any', 'auto', 'body', 'callee', 'dynamic', 'inferred', 'location', 'name', 'object', 'params', 'return_type', 'type_annotation', 'type_args']

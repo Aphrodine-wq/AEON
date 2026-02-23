@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/probabilistic.py
+# hypothesis_version: 6.141.1
+
+[-2.0, 0.0, 0.5, 1.0, 2.0, 100, '-inf', '.', '<anonymous>', 'advi', 'assert_prob', 'assume', 'bernoulli', 'beta', 'binomial', 'body', 'categorical', 'choice', 'coin', 'condition', 'constrain', 'dice', 'dirichlet', 'draw', 'elbo', 'exponential', 'factor', 'flip', 'gamma', 'gauss', 'geometric', 'gibbs', 'high', 'hmc', 'importance_sampling', 'inf', 'infer', 'inference', 'likelihood', 'location', 'low', 'mcmc', 'method', 'metropolis_hastings', 'mu', 'name', 'normal', 'nuts', 'observe', 'p', 'particle_filter', 'poisson', 'posterior', 'rand', 'randint', 'random', 'random_bool', 'random_float', 'random_int', 'rate', 'rejection_sampling', 'sample', 'score', 'shuffle', 'sigma2', 'smc', 'uniform', 'value', 'variational']

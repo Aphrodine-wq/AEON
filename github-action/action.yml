@@ -1,0 +1,73 @@
+name: 'AEON Verify'
+description: 'Mathematically verify code in 14 languages using 15 formal verification engines'
+author: 'AEON'
+
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  path:
+    description: 'Path to source files to verify (glob pattern). Supports .py, .java, .js, .ts, .go, .rs, .c, .cpp, .rb, .swift, .kt, .php, .scala, .dart'
+    required: false
+    default: '**/*.{py,java,js,ts,go,rs,c,cpp,rb,swift,kt,php,scala,dart}'
+  deep-verify:
+    description: 'Run all 15 analysis engines (true/false)'
+    required: false
+    default: 'true'
+  fail-on-errors:
+    description: 'Fail the action if verification errors are found'
+    required: false
+    default: 'true'
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+  aeon-version:
+    description: 'AEON version (git ref or "latest")'
+    required: false
+    default: 'latest'
+
+outputs:
+  verified:
+    description: 'Whether all files passed verification'
+  errors:
+    description: 'Number of errors found'
+  warnings:
+    description: 'Number of warnings found'
+  report:
+    description: 'Path to the JSON report file'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install AEON
+      shell: bash
+      run: |
+        pip install z3-solver 2>/dev/null || true
+        if [ -f "${{ github.action_path }}/../requirements.txt" ]; then
+          pip install -r "${{ github.action_path }}/../requirements.txt" 2>/dev/null || true
+        fi
+        # Add AEON to Python path
+        echo "PYTHONPATH=${{ github.action_path }}/..:$PYTHONPATH" >> $GITHUB_ENV
+
+    - name: Run AEON Verification
+      shell: bash
+      run: |
+        python3 "${{ github.action_path }}/verify.py" \
+          --path "${{ inputs.path }}" \
+          --deep-verify "${{ inputs.deep-verify }}" \
+          --fail-on-errors "${{ inputs.fail-on-errors }}" \
+          --output "${{ runner.temp }}/aeon-report.json"
+
+    - name: Upload Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: aeon-verification-report
+        path: ${{ runner.temp }}/aeon-report.json

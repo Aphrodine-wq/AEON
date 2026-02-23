@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/numeric_safety.py
+# hypothesis_version: 6.141.1
+
+['check_numeric_safety']

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON — The Ethics of AI-Generated Code</title>
+    <meta name="description" content="Why formal verification is an ethical imperative in the age of AI-generated code. Research, incidents, and the case for provably correct software.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <noscript><style>.fade-in,.stagger{opacity:1!important;transform:none!important;animation:none!important;}</style></noscript>
+    <style>
+        .ethics-hero {
+            min-height: 50vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            padding: 2rem; padding-top: calc(var(--nav-height) + 4rem);
+            position: relative; z-index: 1;
+        }
+        .ethics-hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900;
+            letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 1.5rem;
+        }
+        .ethics-hero h1 .gradient {
+            background: linear-gradient(135deg, #ff4757, #ff6b7a, #a29bfe);
+            background-size: 300% 300%;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 6s ease infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .ethics-hero .subtitle {
+            font-size: 1.15rem; color: var(--text-dim); max-width: 680px;
+            line-height: 1.7;
+        }
+
+        .ethics-content {
+            max-width: 900px; margin: 0 auto; padding: 4rem 2rem;
+            position: relative; z-index: 1;
+        }
+
+        .ethics-content h2 {
+            font-size: 1.8rem; font-weight: 800; margin-top: 4rem; margin-bottom: 1.25rem;
+            padding-top: 2rem; border-top: 1px solid var(--border);
+        }
+        .ethics-content h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+
+        .ethics-content h3 {
+            font-size: 1.2rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem;
+        }
+
+        .ethics-content p {
+            color: var(--text-dim); font-size: 0.95rem; line-height: 1.8;
+            margin-bottom: 1.25rem;
+        }
+
+        .ethics-content blockquote {
+            border-left: 3px solid var(--accent);
+            background: var(--bg-card);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+        .ethics-content blockquote p { margin-bottom: 0; color: var(--text); font-style: italic; }
+        .ethics-content blockquote cite { display: block; margin-top: 0.5rem; font-size: 0.82rem; color: var(--accent); font-style: normal; }
+
+        .incident-timeline {
+            position: relative; margin: 2rem 0; padding-left: 2.5rem;
+        }
+        .incident-timeline::before {
+            content: ''; position: absolute; left: 7px; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(180deg, var(--red), var(--yellow), var(--accent));
+        }
+        .incident-entry {
+            position: relative; padding-bottom: 2.5rem;
+        }
+        .incident-entry::before {
+            content: ''; position: absolute; left: -2.5rem; top: 6px;
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 2px solid var(--red); background: var(--bg); z-index: 1;
+        }
+        .incident-entry .ie-year {
+            font-size: 0.78rem; font-weight: 700; color: var(--red); margin-bottom: 0.25rem;
+        }
+        .incident-entry h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .incident-entry p { margin-bottom: 0.5rem; }
+        .incident-entry .ie-engine {
+            display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px;
+            background: #1a1a2e; color: var(--accent-light); font-size: 0.72rem; font-weight: 600;
+        }
+
+        .principles-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem; margin: 2rem 0;
+        }
+        @media (max-width: 768px) { .principles-grid { grid-template-columns: 1fr; } }
+        .principle-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem; transition: all 0.3s;
+        }
+        .principle-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .principle-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #7c6cf7);
+            color: #fff; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.75rem;
+        }
+        .principle-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; margin-top: 0; }
+        .principle-card p { margin-bottom: 0; }
+
+        .ref-list { list-style: none; margin: 1.5rem 0; }
+        .ref-list li {
+            padding: 0.75rem 0; border-bottom: 1px solid #1a1a2e;
+            font-size: 0.88rem; color: var(--text-dim); line-height: 1.6;
+        }
+        .ref-list .ref-year { color: var(--accent); font-weight: 700; margin-right: 0.5rem; }
+        .ref-list a { color: var(--accent-light); text-decoration: none; }
+        .ref-list a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="index.html" class="nav-logo">AEON<span>.</span></a>
+        <button class="mobile-toggle" onclick="toggleMobile()">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#demo">Demo</a></li>
+            <li class="nav-dropdown">
+                <a href="docs.html">Docs</a>
+                <div class="nav-dropdown-menu">
+                    <a href="docs.html">Documentation</a>
+                    <a href="tutorials.html">Tutorials</a>
+                    <a href="api-reference.html">API Reference</a>
+                    <a href="benchmarks.html">Benchmarks</a>
+                    <a href="changelog.html">Changelog</a>
+                </div>
+            </li>
+            <li><a href="ethics.html" class="active">Ethics</a></li>
+            <li><a href="research.html">Research</a></li>
+            <li><a href="https://github.com/aeon-lang/aeon" target="_blank" rel="noopener noreferrer" class="nav-cta">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="ethics-hero">
+        <h1>The Ethics of<br><span class="gradient">AI-Generated Code</span></h1>
+        <p class="subtitle">Every day, AI generates millions of lines of code that go straight to production. Formal verification is the only way to guarantee that code is safe. This isn't just a technical choice &mdash; it's an ethical one.</p>
+    </section>
+
+    <div class="ethics-content">
+
+        <!-- ── The Thesis ─────────────────────────── -->
+        <h2 id="thesis">The Central Argument</h2>
+
+        <p>In 2025, AI code assistants generate billions of lines of code per day. Developers accept AI suggestions with minimal review. The result: software systems built on code that no human fully understands, tested only by the probabilistic judgment of the same AI that wrote it.</p>
+
+        <p><strong>This is an unprecedented experiment in software engineering &mdash; and we are running it on production systems that handle healthcare records, financial transactions, and critical infrastructure.</strong></p>
+
+        <p>Formal verification offers an alternative: mathematical proof that code behaves correctly. Not testing some inputs &mdash; proving all inputs. Not hoping for correctness &mdash; guaranteeing it. AEON makes this practical for the first time across 14 mainstream programming languages.</p>
+
+        <blockquote>
+            <p>&ldquo;Program testing can be used to show the presence of bugs, but never to show their absence.&rdquo;</p>
+            <cite>Edsger W. Dijkstra, 1970</cite>
+        </blockquote>
+
+        <!-- ── The Accountability Gap ─────────────── -->
+        <h2 id="accountability">The Accountability Gap</h2>
+
+        <p>When a human developer writes a bug that causes a data breach, the chain of responsibility is clear: the developer, their team, their organization. When AI generates that same buggy code and a developer accepts it, the accountability fractures.</p>
+
+        <h3>Who is responsible?</h3>
+        <p>The developer who prompted the AI? They may not have understood the generated code. The AI company? Their terms of service explicitly disclaim responsibility for generated output. The organization? They may not have known AI was used. This gap is not hypothetical &mdash; it is the reality of modern software development.</p>
+
+        <p>Formal verification provides a solution: <strong>a verifiable, auditable record that code was mathematically checked before deployment.</strong> Regardless of who wrote the code &mdash; human or AI &mdash; AEON&rsquo;s verification certificate proves it was analyzed by 30+ peer-reviewed formal methods.</p>
+
+        <blockquote>
+            <p>&ldquo;The global landscape of AI ethics guidelines reveals a convergence on five principles: transparency, justice, non-maleficence, responsibility, and privacy. Formal verification directly enables transparency and non-maleficence.&rdquo;</p>
+            <cite>Jobin, Ienca &amp; Vayena &mdash; Nature Machine Intelligence, 2019</cite>
+        </blockquote>
+
+        <!-- ── Bias and Fairness ──────────────────── -->
+        <h2 id="fairness">Proving Fairness, Not Just Testing For It</h2>
+
+        <p>Algorithms that make decisions about people &mdash; loan approvals, hiring recommendations, healthcare prioritization, criminal sentencing &mdash; can encode discrimination. Traditional fairness testing checks a sample of inputs for disparate outcomes. This is necessary but insufficient.</p>
+
+        <p>AEON&rsquo;s <strong>information flow analysis</strong> (based on Volpano, Smith &amp; Irvine 1996) can mathematically prove that protected attributes &mdash; race, gender, age, disability status &mdash; never influence a decision function&rsquo;s output. This is <em>noninterference</em>: a formal guarantee that no information flows from protected inputs to decision outputs, through any execution path, under any input.</p>
+
+        <p>This is stronger than statistical fairness testing. A test might miss an edge case where bias appears for a specific combination of inputs. A proof covers <em>every</em> possible combination. This distinction matters when the stakes are people&rsquo;s lives and livelihoods.</p>
+
+        <blockquote>
+            <p>&ldquo;We present a framework for fair classification comprising a (hypothetical) task-specific metric and the condition that the classifier outcomes are similar for similar individuals.&rdquo;</p>
+            <cite>Dwork, Hardt, Pitassi, Reingold &amp; Zemel &mdash; ITCS, 2012</cite>
+        </blockquote>
+
+        <!-- ── Regulatory Landscape ───────────────── -->
+        <h2 id="regulation">The Regulatory Imperative</h2>
+
+        <p>Governments worldwide are recognizing that AI-generated code in critical systems requires stronger guarantees than testing alone can provide.</p>
+
+        <h3>EU AI Act (2024)</h3>
+        <p>The European Union&rsquo;s AI Act classifies AI systems into risk tiers. &ldquo;High-risk&rdquo; systems &mdash; including those used in healthcare, transportation, employment, and law enforcement &mdash; must demonstrate safety, transparency, and human oversight. Formal verification is the strongest available method for demonstrating these properties.</p>
+
+        <h3>IEEE Ethically Aligned Design (2019)</h3>
+        <p>The IEEE&rsquo;s framework for autonomous and intelligent systems calls for &ldquo;technically robust and trustworthy&rdquo; AI systems. Formal methods provide mathematical guarantees of robustness that no other technique can match.</p>
+
+        <h3>NIST AI Risk Management Framework (2023)</h3>
+        <p>NIST&rsquo;s framework emphasizes &ldquo;valid and reliable&rdquo; AI systems with documented testing and verification. AEON&rsquo;s SARIF output integrates directly into compliance workflows, providing machine-readable verification evidence.</p>
+
+        <!-- ── When Verification Would Have Helped ── -->
+        <h2 id="incidents">When Formal Verification Would Have Prevented Disaster</h2>
+
+        <p>The following incidents are documented cases where specific formal verification techniques would have caught the bug before deployment. These are not theoretical &mdash; they are concrete mappings between real disasters and real verification engines.</p>
+
+        <div class="incident-timeline">
+            <div class="incident-entry">
+                <div class="ie-year">1985&ndash;1987</div>
+                <h4>Therac-25 Radiation Therapy Machine</h4>
+                <p>A race condition between the operator interface and the radiation beam control allowed lethal overdoses. Six patients received massive radiation overdoses; three died. The bug was a classic concurrency error: two tasks accessing shared state without proper synchronization.</p>
+                <span class="ie-engine">Concurrency Verification (Owicki &amp; Gries 1976)</span>
+            </div>
+            <div class="incident-entry">
+                <div class="ie-year">1996</div>
+                <h4>Ariane 5 Flight 501</h4>
+                <p>A 64-bit floating point to 16-bit integer conversion overflowed, crashing the inertial reference system. The rocket self-destructed 37 seconds after launch. Cost: $370 million. The overflow was in code reused from Ariane 4 without re-verification.</p>
+                <span class="ie-engine">Abstract Interpretation (Cousot &amp; Cousot 1977)</span>
+            </div>
+            <div class="incident-entry">
+                <div class="ie-year">2012</div>
+                <h4>Knight Capital Trading Disaster</h4>
+                <p>A deployment error activated dormant test code on production servers. The system executed 4 million trades in 45 minutes, causing a $440 million loss. The company was bankrupt within days. The root cause was an untested state machine transition.</p>
+                <span class="ie-engine">Bounded Model Checking (Clarke et al. 1986)</span>
+            </div>
+            <div class="incident-entry">
+                <div class="ie-year">2014</div>
+                <h4>Heartbleed (OpenSSL CVE-2014-0160)</h4>
+                <p>A missing bounds check in the TLS heartbeat extension allowed attackers to read up to 64KB of server memory per request, exposing private keys, session tokens, and user data. An estimated 17% of all TLS servers were vulnerable.</p>
+                <span class="ie-engine">Separation Logic (Reynolds 2002)</span>
+            </div>
+            <div class="incident-entry">
+                <div class="ie-year">2017</div>
+                <h4>Equifax Data Breach</h4>
+                <p>An unvalidated input in Apache Struts allowed remote code execution, exposing the personal data of 147 million people. Total cost exceeded $1.4 billion. The vulnerability was a classic taint analysis failure: untrusted user input reached a code execution sink.</p>
+                <span class="ie-engine">Taint Analysis (Schwartz et al. 2010)</span>
+            </div>
+            <div class="incident-entry">
+                <div class="ie-year">2021</div>
+                <h4>Log4Shell (CVE-2021-44228)</h4>
+                <p>Untrusted input passed to Log4j&rsquo;s message formatting triggered JNDI lookups, allowing remote code execution on millions of servers worldwide. The vulnerability persisted for years before discovery. Information flow analysis would have flagged the untrusted-to-JNDI flow.</p>
+                <span class="ie-engine">Information Flow (Volpano et al. 1996) + Taint Analysis</span>
+            </div>
+        </div>
+
+        <!-- ── Principles ─────────────────────────── -->
+        <h2 id="principles">AEON&rsquo;s Ethical Principles</h2>
+
+        <p>We believe the following principles should guide the development and deployment of AI-generated code:</p>
+
+        <div class="principles-grid">
+            <div class="principle-card fade-in">
+                <div class="principle-num">1</div>
+                <h3>Verify Before Deploy</h3>
+                <p>No AI-generated code should reach production without formal verification. Testing is necessary but not sufficient. Mathematical proof is the standard of care.</p>
+            </div>
+            <div class="principle-card fade-in">
+                <div class="principle-num">2</div>
+                <h3>Transparency Through Proofs</h3>
+                <p>Every verification result must be traceable to a specific formal method. &ldquo;Safe&rdquo; is not enough &mdash; stakeholders deserve to know <em>why</em> and <em>how</em> safety was established.</p>
+            </div>
+            <div class="principle-card fade-in">
+                <div class="principle-num">3</div>
+                <h3>Accessibility Is Non-Negotiable</h3>
+                <p>Formal verification must be usable by every developer, not just PhD researchers. If safety tools are too hard to use, they won&rsquo;t be used. AEON runs with one command on code you already write.</p>
+            </div>
+            <div class="principle-card fade-in">
+                <div class="principle-num">4</div>
+                <h3>Open Foundations</h3>
+                <p>Every engine in AEON implements published, peer-reviewed algorithms. We cite our sources. Our methods are reproducible. This is science, not a black box.</p>
+            </div>
+            <div class="principle-card fade-in">
+                <div class="principle-num">5</div>
+                <h3>Fairness Is Provable</h3>
+                <p>Bias in algorithms is not just a social problem &mdash; it is a formal property that can be verified. Noninterference proofs are stronger than statistical audits.</p>
+            </div>
+            <div class="principle-card fade-in">
+                <div class="principle-num">6</div>
+                <h3>The Human Remains in the Loop</h3>
+                <p>AEON augments human judgment; it does not replace it. Formal verification catches what humans miss. Human expertise guides what to verify and how to interpret results.</p>
+            </div>
+        </div>
+
+        <!-- ── References ─────────────────────────── -->
+        <h2 id="references">References</h2>
+
+        <ul class="ref-list">
+            <li><span class="ref-year">1970</span> Dijkstra, E.W. &ldquo;Notes on Structured Programming.&rdquo; <em>EWD249.</em></li>
+            <li><span class="ref-year">1996</span> Volpano, D., Smith, G., &amp; Irvine, C. <a href="https://doi.org/10.1006/jcss.1996.0082" target="_blank" rel="noopener noreferrer">&ldquo;A Sound Type System for Secure Flow Analysis.&rdquo;</a> <em>Journal of Computer Security.</em></li>
+            <li><span class="ref-year">2012</span> Dwork, C., Hardt, M., Pitassi, T., Reingold, O., &amp; Zemel, R. <a href="https://doi.org/10.1145/2090236.2090255" target="_blank" rel="noopener noreferrer">&ldquo;Fairness Through Awareness.&rdquo;</a> <em>ITCS 2012.</em></li>
+            <li><span class="ref-year">2018</span> Floridi, L. et al. <a href="https://doi.org/10.1007/s11023-018-9482-5" target="_blank" rel="noopener noreferrer">&ldquo;AI4People &mdash; An Ethical Framework for a Good AI Society.&rdquo;</a> <em>Minds and Machines.</em></li>
+            <li><span class="ref-year">2019</span> Jobin, A., Ienca, M., &amp; Vayena, E. <a href="https://doi.org/10.1038/s42256-019-0088-2" target="_blank" rel="noopener noreferrer">&ldquo;The Global Landscape of AI Ethics Guidelines.&rdquo;</a> <em>Nature Machine Intelligence.</em></li>
+            <li><span class="ref-year">2019</span> Selbst, A.D. et al. <a href="https://doi.org/10.1145/3287560.3287598" target="_blank" rel="noopener noreferrer">&ldquo;Fairness and Abstraction in Sociotechnical Systems.&rdquo;</a> <em>FAT* 2019.</em></li>
+            <li><span class="ref-year">2019</span> IEEE. <em>Ethically Aligned Design: A Vision for Prioritizing Human Well-being with Autonomous and Intelligent Systems.</em> First Edition.</li>
+            <li><span class="ref-year">2019</span> Distefano, D. et al. <a href="https://doi.org/10.1145/3338112" target="_blank" rel="noopener noreferrer">&ldquo;Scaling Static Analyses at Facebook.&rdquo;</a> <em>CACM.</em></li>
+            <li><span class="ref-year">2021</span> Chen, M. et al. <a href="https://arxiv.org/abs/2107.03374" target="_blank" rel="noopener noreferrer">&ldquo;Evaluating Large Language Models Trained on Code.&rdquo;</a> <em>arXiv:2107.03374.</em></li>
+            <li><span class="ref-year">2023</span> NIST. <em>AI Risk Management Framework (AI RMF 1.0).</em></li>
+            <li><span class="ref-year">2024</span> European Parliament. <em>Regulation (EU) 2024/1689 &mdash; Artificial Intelligence Act.</em></li>
+        </ul>
+
+        <!-- ── Nav Footer ─────────────────────────── -->
+        <div class="docs-nav-footer">
+            <a href="index.html" class="docs-nav-link">
+                <span class="nav-label">&larr; Previous</span>
+                <span class="nav-title">Home</span>
+            </a>
+            <a href="research.html" class="docs-nav-link next">
+                <span class="nav-label">Next &rarr;</span>
+                <span class="nav-title">Research Foundation</span>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo">AEON<span>.</span></div>
+                <p>Formal verification for the languages you already use. 30+ engines built on 55 years of research.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="index.html#demo">Live Demo</a></li>
+                    <li><a href="index.html#engines">30+ Engines</a></li>
+                    <li><a href="index.html#install">Installation</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Learn</h4>
+                <ul>
+                    <li><a href="docs.html">Documentation</a></li>
+                    <li><a href="ethics.html">Ethics</a></li>
+                    <li><a href="research.html">Research</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                    <li><a href="changelog.html">Changelog</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 AEON Project &mdash; MIT License</span>
+            <span>Built with mathematical certainty</span>
+        </div>
+    </footer>
+
+    <script src="js/particles.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/copy.js"></script>
+</body>
+</html>

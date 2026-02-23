@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/memory.py
+# hypothesis_version: 6.141.1
+
+['Bool', 'Email', 'Float', 'Int', 'String', 'USD', 'UUID', 'Void', 'args', 'condition', 'estimated_bytes', 'function', 'heap_allocations', 'is_deterministic', 'left', 'max_stack_depth', 'name', 'obj', 'operand', 'right', 'statements', 'total_bytes', 'type_annotation', 'type_name', 'value']

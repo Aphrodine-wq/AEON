@@ -1,0 +1,20 @@
+{
+  "size": 5,
+  "total_examples": 5,
+  "categories": {
+    "pure_function": 1,
+    "mixed": 3,
+    "task_function": 1
+  },
+  "statistics": {
+    "total_examples": 5,
+    "examples_with_errors": 3,
+    "examples_with_contracts": 0,
+    "error_rate": 0.6,
+    "contract_rate": 0.0,
+    "complexity_distribution": {
+      "simple": 2,
+      "medium": 3
+    }
+  }
+}

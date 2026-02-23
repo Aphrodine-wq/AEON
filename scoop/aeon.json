@@ -1,0 +1,30 @@
+{
+    "version": "0.5.0",
+    "description": "AEON — AI-native formal verification for 14+ programming languages with 30+ engines",
+    "homepage": "https://github.com/aeon-lang/aeon",
+    "license": "MIT",
+    "depends": "python",
+    "url": "https://github.com/aeon-lang/aeon/archive/refs/tags/v0.5.0.tar.gz",
+    "hash": "PLACEHOLDER_SHA256",
+    "extract_dir": "aeon-0.5.0",
+    "installer": {
+        "script": [
+            "python -m venv \"$dir\\.venv\"",
+            "& \"$dir\\.venv\\Scripts\\pip.exe\" install --quiet -e \"$dir\"",
+            "& \"$dir\\.venv\\Scripts\\pip.exe\" install --quiet z3-solver llvmlite 2>$null"
+        ]
+    },
+    "bin": [
+        ["aeon.cmd", "aeon"]
+    ],
+    "post_install": [
+        "Set-Content \"$dir\\aeon.cmd\" '@echo off`r`ncall \"%~dp0.venv\\Scripts\\activate.bat\"`r`npython -m aeon.cli %*'"
+    ],
+    "checkver": {
+        "github": "https://github.com/aeon-lang/aeon"
+    },
+    "autoupdate": {
+        "url": "https://github.com/aeon-lang/aeon/archive/refs/tags/v$version.tar.gz",
+        "extract_dir": "aeon-$version"
+    }
+}

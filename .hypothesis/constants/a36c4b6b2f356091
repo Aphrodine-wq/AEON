@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/effects.py
+# hypothesis_version: 6.141.1
+
+['Console.Read', 'Console.Write', 'Database.Read', 'Database.Write', 'File.Read', 'File.Write', 'Network.Read', 'Network.Write', 'System.Execute', 'console.print', 'console.read', 'db.contains', 'db.delete', 'db.find', 'db.insert', 'db.query', 'db.update', 'file.read', 'file.write', 'net.get', 'net.post', 'net.send', 'print']

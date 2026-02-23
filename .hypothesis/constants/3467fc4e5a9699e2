@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/complexity_analysis.py
+# hypothesis_version: 6.141.1
+
+[0.0, 0.001, 1.0, 2.0, '!=', '-', '/', '//', '<', '<=', '<anonymous>', '>', '>=', '>>', 'O(1)', 'O(2^n)', 'O(?)', 'O(log n)', 'O(n log n)', 'O(n!)', 'O(n)', 'O(n^k)', 'O(n²)', 'O(n³)', 'O(√n)', 'Phi = 0', 'body', 'condition', 'constant', 'contracts', 'cubic', 'div', 'exponential', 'expression', 'inf', 'linear', 'location', 'log(n)', 'logarithmic', 'n', 'name', 'o(1)', 'o(log n)', 'o(logn)', 'o(n log n)', 'o(n)', 'o(n^2)', 'o(n^3)', 'o(nlogn)', 'o(n²)', 'o(n³)', 'op', 'polynomial', 'quadratic', 'unknown']

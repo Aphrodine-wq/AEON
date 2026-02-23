@@ -1,0 +1,27 @@
+{
+  "prompt": "Create a data type 'BoundingBox_3' and a function 'clamp_3' that operates on it",
+  "source_code": "data BoundingBox_3 {\n    field_0: Float\n  field_1: Float\n  field_2: USD\n}\n\npure clamp_3(x: BoundingBox_3) -> Int {\n  return x.field_0\n}",
+  "ir_output": null,
+  "llvm_output": null,
+  "errors": [
+    {
+      "kind": "type_error",
+      "message": "Expected type 'Int', got 'Float'",
+      "location": {
+        "file": "<stdin>",
+        "line": 8,
+        "column": 3
+      },
+      "details": {
+        "node_id": "return",
+        "expected_type": "Int",
+        "actual_type": "Float"
+      }
+    }
+  ],
+  "metadata": {
+    "type": "mixed",
+    "complexity": "medium",
+    "declarations": 2
+  }
+}

@@ -1,0 +1,16 @@
+data User {
+  id:    UUID
+  email: Email
+  name:  String
+}
+
+data Account {
+  id:      UUID
+  owner:   User
+  balance: Int
+}
+
+data Receipt {
+  total:   Int
+  account: UUID
+}

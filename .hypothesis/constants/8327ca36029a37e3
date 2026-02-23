@@ -1,0 +1,4 @@
+# file: /Users/jameswalton/Desktop/AEON/aeon/engines/numeric_safety.py
+# hypothesis_version: 6.141.1
+
+[0.0, -1000, 1000, '!=', '%', '*', '+', '-', '/', '//', '<', '<=', '<expr>', '<num>', '==', '>', '>=', 'CGFloat', 'Double', 'Float', 'Int', 'Integer', 'Long', 'Numeric Safety', 'UInt', 'as_i16', 'as_i32', 'as_i8', 'as_u16', 'as_u32', 'as_u8', 'byte', 'ceil', 'conversion', 'conversion_type', 'cos', 'decimal', 'divisor', 'double', 'engine', 'exp', 'f32', 'f64', 'float', 'float-to-int', 'float32', 'float64', 'floor', 'function', 'i16', 'i32', 'i64', 'i8', 'int', 'int16', 'int32', 'int64', 'int8', 'isize', 'location', 'log', 'long', 'narrowing conversion', 'number', 'operation', 'parseInt', 'pow', 'real', 'round', 'short', 'sin', 'size_t', 'sqrt', 'ssize_t', 'tan', 'toInt', 'to_int', 'trunc', 'u16', 'u32', 'u64', 'u8', 'uint', 'uint16', 'uint32', 'uint64', 'uint8', 'unary negation', 'unsigned', 'usize', 'variable']

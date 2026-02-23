@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  aeon-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - AEON_HOST=0.0.0.0
+      - AEON_PORT=8000
+    volumes:
+      - ./examples:/app/examples:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  aeon-cli:
+    build: .
+    entrypoint: ["python", "-m", "aeon.cli"]
+    volumes:
+      - .:/workspace:ro
+    profiles:
+      - cli
