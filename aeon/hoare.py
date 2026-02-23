@@ -2973,16 +2973,20 @@ class VCGenerator:
         self.wp_calc.wp_block(func.body, F_TRUE())
         safety_side_vcs = list(self.wp_calc._side_vcs)
 
+        # Build the precondition from requires clauses for safety VCs
+        safety_pre_formulas = [self.wp_calc._expr_to_formula(r.expr) for r in func.requires]
+        safety_precondition = F_AND(*safety_pre_formulas) if safety_pre_formulas else F_TRUE()
+
         # Register safety VCs in gen.vcs so callers can inspect them
         for label, safety_formula in safety_side_vcs:
             safety_vc = VerificationCondition(
                 name=f"{label}_{func.name}",
-                precondition=F_TRUE(),
+                precondition=safety_precondition,
                 obligation=safety_formula,
                 location=func.location,
                 kind="safety",
                 function_name=func.name,
-                formula=safety_formula,
+                formula=F_IMPLIES(safety_precondition, safety_formula),
             )
             self.vcs.append(safety_vc)
 
@@ -3047,12 +3051,12 @@ class VCGenerator:
         for label, side_formula in self.wp_calc._side_vcs:
             side_vc = VerificationCondition(
                 name=f"{label}_{func.name}",
-                precondition=F_TRUE(),
+                precondition=precondition,
                 obligation=side_formula,
                 location=func.location,
                 kind="total_correctness" if "ranking" in label else "partial_correctness",
                 function_name=func.name,
-                formula=side_formula,
+                formula=F_IMPLIES(precondition, side_formula),
             )
             self.vcs.append(side_vc)
             err, cert = self._discharge_vc(side_vc, func, rule=label)
