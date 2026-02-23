@@ -1,0 +1,102 @@
+// AEON — Traits and Implementations
+//
+// Demonstrates: trait definitions, impl blocks,
+// ad-hoc polymorphism, and method dispatch.
+
+// Equality trait — can be implemented for any type.
+trait Eq {
+    pure eq(self, other: Int) -> Bool {
+        return false
+    }
+}
+
+// Ordering trait.
+trait Ord {
+    pure compare(self, other: Int) -> Int {
+        // Returns: -1 (less), 0 (equal), 1 (greater)
+        return 0
+    }
+}
+
+// Printable trait — types that can be converted to strings.
+trait Show {
+    pure show(self) -> String {
+        return ""
+    }
+}
+
+// Monoid trait — types with an associative binary operation and identity.
+trait Monoid {
+    pure empty() -> Int {
+        return 0
+    }
+    pure combine(self, other: Int) -> Int {
+        return 0
+    }
+}
+
+// --- Data types ---
+
+data Point {
+    x: Int
+    y: Int
+}
+
+data Color {
+    r: Int
+    g: Int
+    b: Int
+}
+
+// --- Implementations ---
+
+impl Point {
+    pure distance(self) -> Int {
+        // Manhattan distance from origin
+        ensures: result >= 0
+        let dx: Int = self.x
+        let dy: Int = self.y
+        if dx < 0 { dx = 0 - dx }
+        if dy < 0 { dy = 0 - dy }
+        return dx + dy
+    }
+
+    pure translate(self, dx: Int, dy: Int) -> Point {
+        return Point { x: self.x + dx, y: self.y + dy }
+    }
+}
+
+impl Color {
+    pure brightness(self) -> Int {
+        ensures: result >= 0
+        ensures: result <= 765
+        return self.r + self.g + self.b
+    }
+
+    pure invert(self) -> Color {
+        return Color {
+            r: 255 - self.r,
+            g: 255 - self.g,
+            b: 255 - self.b,
+        }
+    }
+}
+
+// --- Standalone pure functions using traits ---
+
+pure max(a: Int, b: Int) -> Int {
+    ensures: result >= a
+    ensures: result >= b
+    if a >= b { return a } else { return b }
+}
+
+pure clamp(value: Int, lo: Int, hi: Int) -> Int {
+    requires: lo <= hi
+    ensures: result >= lo
+    ensures: result <= hi
+    if value < lo { return lo }
+    else {
+        if value > hi { return hi }
+        else { return value }
+    }
+}

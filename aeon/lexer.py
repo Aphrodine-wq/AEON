@@ -38,6 +38,22 @@ class TokenType(Enum):
     IN = auto()
     BREAK = auto()
     CONTINUE = auto()
+    ENUM = auto()
+    TRAIT = auto()
+    IMPL = auto()
+    FN = auto()
+    TYPE = auto()
+    WHERE = auto()
+    SELF = auto()
+    PUB = auto()
+    MODULE = auto()
+    USE = auto()
+    AS = auto()
+    SPAWN = auto()
+    AWAIT = auto()
+    HANDLE = auto()
+    WITH = auto()
+    PIPE = auto()       # |>
 
     # Literals
     INT_LIT = auto()
@@ -78,6 +94,9 @@ class TokenType(Enum):
     COMMA = auto()
     SEMICOLON = auto()
 
+    FAT_ARROW = auto()     # =>
+    UNDERSCORE = auto()    # _ (wildcard pattern)
+
     # Special
     EOF = auto()
     NEWLINE = auto()
@@ -107,6 +126,21 @@ KEYWORDS: dict[str, TokenType] = {
     "in": TokenType.IN,
     "break": TokenType.BREAK,
     "continue": TokenType.CONTINUE,
+    "enum": TokenType.ENUM,
+    "trait": TokenType.TRAIT,
+    "impl": TokenType.IMPL,
+    "fn": TokenType.FN,
+    "type": TokenType.TYPE,
+    "where": TokenType.WHERE,
+    "self": TokenType.SELF,
+    "pub": TokenType.PUB,
+    "module": TokenType.MODULE,
+    "use": TokenType.USE,
+    "as": TokenType.AS,
+    "spawn": TokenType.SPAWN,
+    "await": TokenType.AWAIT,
+    "handle": TokenType.HANDLE,
+    "with": TokenType.WITH,
 }
 
 
@@ -211,6 +245,8 @@ class Lexer:
         value = ""
         while self.pos < len(self.source) and (self.source[self.pos].isalnum() or self.source[self.pos] == "_"):
             value += self._advance()
+        if value == "_":
+            return Token(TokenType.UNDERSCORE, value, loc)
         token_type = KEYWORDS.get(value, TokenType.IDENT)
         return Token(token_type, value, loc)
 
@@ -254,6 +290,9 @@ class Lexer:
                 if self._peek() == "=":
                     self._advance()
                     tokens.append(Token(TokenType.EQ, "==", loc))
+                elif self._peek() == ">":
+                    self._advance()
+                    tokens.append(Token(TokenType.FAT_ARROW, "=>", loc))
                 else:
                     tokens.append(Token(TokenType.ASSIGN, "=", loc))
             elif ch == "!":
@@ -289,6 +328,9 @@ class Lexer:
                 if self._peek() == "|":
                     self._advance()
                     tokens.append(Token(TokenType.OR, "||", loc))
+                elif self._peek() == ">":
+                    self._advance()
+                    tokens.append(Token(TokenType.PIPE, "|>", loc))
                 else:
                     raise CompileError(syntax_error(f"Unexpected character '|'", loc))
             elif ch == "{":

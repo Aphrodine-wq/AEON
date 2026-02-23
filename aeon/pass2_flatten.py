@@ -9,12 +9,14 @@ from __future__ import annotations
 from typing import Optional
 
 from aeon.ast_nodes import (
-    Program, Declaration, DataDef, PureFunc, TaskFunc,
+    Program, Declaration, DataDef, EnumDef, PureFunc, TaskFunc,
+    TraitDef, ImplBlock, TypeAlias, UseDecl,
     Statement, ReturnStmt, LetStmt, AssignStmt, ExprStmt,
-    IfStmt, WhileStmt, UnsafeBlock, BreakStmt, ContinueStmt,
+    IfStmt, WhileStmt, ForStmt, UnsafeBlock, BreakStmt, ContinueStmt,
     Expr, IntLiteral, FloatLiteral, StringLiteral, BoolLiteral,
     Identifier, BinaryOp, UnaryOp, FunctionCall, FieldAccess,
     MethodCall, ListLiteral, ConstructExpr, MoveExpr, BorrowExpr,
+    LambdaExpr, MatchExpr, PipeExpr, SpawnExpr, AwaitExpr,
     ContractClause,
 )
 from aeon.ir import IRModule, IRFunction, IRDataType, IRNode, IROpKind
@@ -60,10 +62,26 @@ class Flattener:
         for decl in program.declarations:
             if isinstance(decl, DataDef):
                 module.data_types.append(self._flatten_data(decl))
+            elif isinstance(decl, EnumDef):
+                # Flatten enum as a data type with variant tags
+                for v in decl.variants:
+                    fields = [(f.name, str(f.type_annotation)) for f in v.fields]
+                    module.data_types.append(IRDataType(
+                        name=f"{decl.name}::{v.name}", fields=fields,
+                    ))
             elif isinstance(decl, PureFunc):
                 module.functions.append(self._flatten_func(decl, is_pure=True))
             elif isinstance(decl, TaskFunc):
                 module.functions.append(self._flatten_func(decl, is_pure=False))
+            elif isinstance(decl, TraitDef):
+                for method in decl.methods:
+                    is_pure = isinstance(method, PureFunc)
+                    module.functions.append(self._flatten_func(method, is_pure=is_pure))
+            elif isinstance(decl, ImplBlock):
+                for method in decl.methods:
+                    is_pure = isinstance(method, PureFunc)
+                    module.functions.append(self._flatten_func(method, is_pure=is_pure))
+            # TypeAlias and UseDecl don't produce IR
 
         return module
 
@@ -195,6 +213,15 @@ class Flattener:
             self._emit(IROpKind.BRANCH, inputs=[cond])
             self._emit(IROpKind.BLOCK_END, label="while_header")
 
+        elif isinstance(stmt, ForStmt):
+            self._emit(IROpKind.BLOCK_START, label="for_header")
+            iter_id = self._flatten_expr(stmt.iterable)
+            self._emit(IROpKind.BLOCK_START, label="for_body")
+            for s in stmt.body:
+                self._flatten_statement(s)
+            self._emit(IROpKind.BLOCK_END, label="for_body")
+            self._emit(IROpKind.BLOCK_END, label="for_header")
+
         elif isinstance(stmt, UnsafeBlock):
             self._emit(IROpKind.BLOCK_START, label="unsafe",
                        metadata={"unsafe": True})
@@ -286,6 +313,35 @@ class Flattener:
         if isinstance(expr, ListLiteral):
             elem_ids = [self._flatten_expr(e) for e in expr.elements]
             return self._emit(IROpKind.LIST_NEW, inputs=elem_ids).id
+
+        if isinstance(expr, PipeExpr):
+            left = self._flatten_expr(expr.left)
+            right = self._flatten_expr(expr.right)
+            return self._emit(IROpKind.CALL, inputs=[left], label="pipe").id
+
+        if isinstance(expr, MatchExpr):
+            subj = self._flatten_expr(expr.subject)
+            # Flatten each arm's body
+            for arm in expr.arms:
+                self._emit(IROpKind.BLOCK_START, label="match_arm")
+                for s in arm.body:
+                    self._flatten_statement(s)
+                self._emit(IROpKind.BLOCK_END, label="match_arm")
+            return self._emit(IROpKind.BRANCH, inputs=[subj], label="match").id
+
+        if isinstance(expr, LambdaExpr):
+            body_id = self._flatten_expr(expr.body)
+            return self._emit(IROpKind.CALL, inputs=[body_id], label="lambda").id
+
+        if isinstance(expr, SpawnExpr):
+            call_id = self._flatten_expr(expr.call)
+            return self._emit(IROpKind.CALL, inputs=[call_id],
+                              label="spawn", metadata={"spawn": True}).id
+
+        if isinstance(expr, AwaitExpr):
+            expr_id = self._flatten_expr(expr.expr)
+            return self._emit(IROpKind.CALL, inputs=[expr_id],
+                              label="await", metadata={"await": True}).id
 
         return self._emit(IROpKind.CONST_INT, type_name="Void", value=0).id
 

@@ -1,0 +1,77 @@
+// AEON — Algebraic Data Types and Pattern Matching
+//
+// Demonstrates: enum (sum types), match expressions,
+// exhaustive pattern matching, and recursive data structures.
+
+// A classic Option type — AEON has this built-in,
+// but you can define your own.
+enum Maybe<T> {
+    Just(value: T),
+    Nothing
+}
+
+// A linked list as a recursive algebraic type.
+enum IntList {
+    Cons(head: Int, tail: IntList),
+    Nil
+}
+
+// Binary tree.
+enum Tree<T> {
+    Leaf(value: T),
+    Branch(left: Tree<T>, right: Tree<T>)
+}
+
+// Compiler token example — real use case.
+enum Token {
+    IntLit(value: Int),
+    Ident(name: String),
+    Plus,
+    Minus,
+    LParen,
+    RParen
+}
+
+// --- Pure functions with pattern matching ---
+
+pure sum(xs: IntList) -> Int {
+    ensures: result >= 0
+    match xs {
+        Nil => { return 0 }
+        Cons(h, t) => { return h + sum(t) }
+    }
+}
+
+pure length(xs: IntList) -> Int {
+    ensures: result >= 0
+    match xs {
+        Nil => { return 0 }
+        Cons(_, t) => { return 1 + length(t) }
+    }
+}
+
+pure map(xs: IntList, f: Int) -> IntList {
+    match xs {
+        Nil => { return Nil }
+        Cons(h, t) => { return Cons(h + f, map(t, f)) }
+    }
+}
+
+// Unwrap with a default — safe, no exceptions.
+pure unwrapOr(m: Maybe<Int>, default: Int) -> Int {
+    match m {
+        Just(v) => { return v }
+        Nothing => { return default }
+    }
+}
+
+// Token precedence — shows real compiler use case.
+pure tokenPrecedence(tok: Token) -> Int {
+    match tok {
+        Plus => { return 1 }
+        Minus => { return 1 }
+        IntLit(_) => { return 0 }
+        Ident(_) => { return 0 }
+        _ => { return 0 }
+    }
+}

@@ -1,0 +1,95 @@
+// AEON — Module System and Type Aliases
+//
+// Demonstrates: use declarations, type aliases,
+// generic data types, and module organization.
+
+use std::collections as col
+use std::io
+
+// --- Type aliases for domain modeling ---
+
+type UserId    = Int
+type Amount    = Int
+type Timestamp = Int
+type Email     = String
+
+// --- Generic data structures ---
+
+data Pair<A, B> {
+    first:  A
+    second: B
+}
+
+data Triple<A, B, C> {
+    first:  A
+    second: B
+    third:  C
+}
+
+// --- Domain-specific types ---
+
+enum Currency {
+    USD,
+    EUR,
+    GBP,
+    JPY
+}
+
+data Money {
+    amount:   Amount
+    currency: Int
+}
+
+data Transaction {
+    id:        Int
+    from:      UserId
+    to:        UserId
+    amount:    Money
+    timestamp: Timestamp
+}
+
+enum TransactionResult {
+    Success(tx: Transaction),
+    InsufficientFunds(available: Amount),
+    InvalidAccount(accountId: UserId),
+    NetworkError(message: String)
+}
+
+// --- Functions using domain types ---
+
+pure createMoney(amount: Amount, currency: Int) -> Money {
+    requires: amount >= 0
+    return Money { amount: amount, currency: currency }
+}
+
+pure addMoney(a: Money, b: Money) -> Money {
+    requires: a.currency == b.currency
+    ensures:  result.amount == a.amount + b.amount
+    return Money { amount: a.amount + b.amount, currency: a.currency }
+}
+
+pure isValidTransaction(tx: Transaction) -> Bool {
+    // A transaction is valid if the amount is positive
+    // and sender != receiver
+    return tx.amount.amount > 0 && tx.from != tx.to
+}
+
+// Task function — real-world transaction processing
+task processTransaction(tx: Transaction) -> TransactionResult {
+    requires: isValidTransaction(tx)
+    effects:  [Database.Read, Database.Write, Console.Write]
+
+    let balance: Int = 1000  // simplified: would be db.query(tx.from)
+    if balance < tx.amount.amount {
+        return InsufficientFunds(balance)
+    }
+
+    // Debit sender, credit receiver
+    let success: Bool = db.insert(tx)
+    if success {
+        print("Transaction processed")
+        return Success(tx)
+    } else {
+        return NetworkError("Database write failed")
+    }
+}
