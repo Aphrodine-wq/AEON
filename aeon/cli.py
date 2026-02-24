@@ -22,6 +22,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from aeon import __version__
 from aeon.parser import parse
 from aeon.pass1_prove import prove
 from aeon.pass2_flatten import flatten
@@ -326,19 +327,25 @@ def cmd_scan(args: argparse.Namespace) -> int:
 
     # Output format
     fmt = getattr(args, 'format', 'pretty') or config.format
+    output_path = getattr(args, 'output', '') or ''
+
+    import io
+    output_buf = io.StringIO() if output_path else None
+    _print = (lambda *a, **kw: print(*a, file=output_buf, **kw)) if output_buf else print
+
     if fmt == 'sarif':
         from aeon.sarif import to_sarif
-        print(to_sarif(result))
+        _print(to_sarif(result))
     elif fmt == 'json':
-        print(json.dumps(result.to_dict(), indent=2))
+        _print(json.dumps(result.to_dict(), indent=2))
     elif fmt == 'markdown':
         from aeon.formatters import format_markdown_scan
-        print(format_markdown_scan(result))
+        _print(format_markdown_scan(result))
     elif fmt == 'pretty':
         from aeon.formatters import format_pretty_scan
-        print(format_pretty_scan(result))
+        _print(format_pretty_scan(result))
     else:
-        print(result.summary)
+        _print(result.summary)
         for fr in result.file_results:
             status = "\u2705" if fr.get('verified', False) else "\u274c"
             errors = fr.get('errors', 0)
@@ -348,7 +355,12 @@ def cmd_scan(args: argparse.Namespace) -> int:
                 detail += f" {errors} error(s)"
             if warnings:
                 detail += f" {warnings} warning(s)"
-            print(f"  {status} {fr.get('file', '?')}{detail}")
+            _print(f"  {status} {fr.get('file', '?')}{detail}")
+
+    if output_buf and output_path:
+        with open(output_path, 'w') as f:
+            f.write(output_buf.getvalue())
+        print(f"Results written to: {output_path}")
 
     return 0 if result.total_errors == 0 else 1
 
@@ -693,6 +705,7 @@ def main() -> None:
         prog="aeon",
         description="AEON — AI-Native Programming Language & Compiler",
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # compile
@@ -827,7 +840,11 @@ def main() -> None:
     p_scan.add_argument("--deep-verify", action="store_true", dest="deep_verify", help="Enable ALL analysis engines")
     p_scan.add_argument("--parallel", action="store_true", help="Use multiprocess parallel scanning")
     p_scan.add_argument("--workers", type=int, default=0, help="Number of parallel workers (0=auto)")
+    p_scan.add_argument("--profile", choices=["quick", "daily", "security", "performance", "safety"],
+                        help="Analysis profile (quick|daily|security|performance|safety)")
+    p_scan.add_argument("--analyses", nargs="+", help="Specific analyses to run (e.g. taint info-flow concurrency complexity termination memory)")
     p_scan.add_argument("--format", choices=["text", "json", "sarif", "markdown", "pretty"], default="pretty", help="Output format")
+    p_scan.add_argument("--output", "-o", default="", help="Output file path (default: stdout)")
     p_scan.add_argument("--baseline", default="", help="Baseline file for diff mode")
     p_scan.add_argument("--create-baseline", action="store_true", dest="create_baseline", help="Create a baseline from current results")
     p_scan.set_defaults(func=cmd_scan)
