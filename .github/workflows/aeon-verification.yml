@@ -313,11 +313,12 @@ jobs:
     steps:
     - name: Download verification results
       uses: actions/download-artifact@v4
+      continue-on-error: true
       with:
         name: verification-results-daily
     
     - name: Send notification
-      if: failure()
+      if: needs.verification.result == 'failure' || needs.security-scan.result == 'failure' || needs.performance-analysis.result == 'failure'
       run: |
         echo "❌ AEON verification failed"
         echo "Check the workflow run for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
