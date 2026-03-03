@@ -78,7 +78,7 @@
         "Typecheck passes"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Use pytest.mark.skip or pytest.mark.skipif for tests that require external services (AI APIs) or optional deps (llvmlite). Fix import errors. Fix any broken test assertions."
     },
     {
@@ -94,8 +94,8 @@
         "Typecheck passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": "Read each adapter module in aeon/adapters/. Check if it has real analysis logic or just returns empty results. Test the Python adapter at minimum since that's the primary target."
+      "passes": true,
+      "notes": "All 20 adapter files (21 language targets) are Working. None are scaffolded or partial. Every adapter has real parsing (ast, javalang, or regex), translates to AEON AST, maps types, detects side effects, infers effects, and extracts contracts. ADAPTER_STATUS.md created in project root."
     }
   ]
 }

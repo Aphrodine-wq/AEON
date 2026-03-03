@@ -8,3 +8,5 @@
 [PASS] US-002 — Add MIT LICENSE file
 [PASS] US-003 — Fix setup.py dependency list to match actual imports
 [PASS] US-004 — Fix install.sh broken paths and hardcoded repo URL
+[PASS] US-005 — Fix test suite — conftest markers for optional deps
+[PASS] US-006 — Document working vs scaffolded language adapters
