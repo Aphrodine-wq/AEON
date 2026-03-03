@@ -1,0 +1,101 @@
+{
+  "project": "AEON",
+  "branchName": "ralph/day3-validate-harden",
+  "description": "Validate AEON clean install, fix test failures, harden install script, add missing .env and LICENSE",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add .env to .gitignore",
+      "description": "As a developer, I need .env excluded from version control to prevent leaking secrets.",
+      "acceptanceCriteria": [
+        "Add '.env' and '.env.*' lines to .gitignore",
+        "Existing .gitignore patterns are preserved",
+        "Typecheck passes (python -c 'import aeon' succeeds)"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Add MIT LICENSE file",
+      "description": "As a developer, I need a LICENSE file so the project has clear open-source licensing matching the MIT declared in pyproject.toml.",
+      "acceptanceCriteria": [
+        "LICENSE file exists in project root with MIT license text",
+        "Copyright holder is set to 'James Walton' with year 2026",
+        "License text matches standard MIT template",
+        "Typecheck passes (python -c 'import aeon' succeeds)"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Fix setup.py dependency list to match actual imports",
+      "description": "As a developer, I want pip install -e . to succeed in a fresh venv without missing dependency errors.",
+      "acceptanceCriteria": [
+        "Run pip install -e . in a fresh venv and capture any ImportError or ModuleNotFoundError",
+        "All required runtime dependencies are listed in setup.py install_requires",
+        "Optional heavy dependencies (llvmlite) are moved to extras_require if they fail to install on some platforms",
+        "pip install -e . completes without error",
+        "python -c 'from aeon.cli import main' succeeds after install",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Check all top-level imports across aeon/ modules. Common missing deps: click, rich, pyyaml, requests, toml. z3-solver is required. llvmlite may fail on some platforms — make it optional."
+    },
+    {
+      "id": "US-004",
+      "title": "Fix install.sh broken paths and hardcoded repo URL",
+      "description": "As a user, I want bash install.sh to work when run from a local clone, not just from the GitHub URL.",
+      "acceptanceCriteria": [
+        "install.sh detects if it's already inside the AEON repo and skips git clone",
+        "If run from inside the repo, uses current directory instead of cloning to ~/.aeon",
+        "AEON_REPO URL points to correct GitHub org (Aphrodine-wq, not aeon-lang)",
+        "Wrapper script at ~/.local/bin/aeon uses correct paths",
+        "install.sh runs without error in a temp directory simulation (dry run check)",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "The install.sh references https://github.com/aeon-lang/aeon.git which likely doesn't exist. Fix to use Aphrodine-wq org or make it configurable. Add detection: if setup.py exists in current dir, skip clone."
+    },
+    {
+      "id": "US-005",
+      "title": "Fix test suite — get all test files passing",
+      "description": "As a developer, I want pytest to pass so CI can gate on test results.",
+      "acceptanceCriteria": [
+        "pytest runs from project root without crashing",
+        "test_compiler.py passes or has clear skip markers for unimplemented features",
+        "test_contracts.py passes or has clear skip markers",
+        "test_hoare.py passes or has clear skip markers",
+        "test_ai.py passes or has clear skip markers (may need API key skip)",
+        "test_perf.py passes or has clear skip markers",
+        "test_lattice_laws.py passes or has clear skip markers",
+        "No test file produces an unhandled exception",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Use pytest.mark.skip or pytest.mark.skipif for tests that require external services (AI APIs) or optional deps (llvmlite). Fix import errors. Fix any broken test assertions."
+    },
+    {
+      "id": "US-006",
+      "title": "Document working vs scaffolded language adapters",
+      "description": "As a developer, I want a clear record of which language adapters are functional vs stubs.",
+      "acceptanceCriteria": [
+        "Create ADAPTER_STATUS.md in project root",
+        "Lists all adapters from aeon/adapters/ directory",
+        "Each adapter marked as: Working, Partial, or Scaffolded",
+        "Working adapters have been tested with aeon check on a sample file",
+        "Includes a test command example for each working adapter",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Read each adapter module in aeon/adapters/. Check if it has real analysis logic or just returns empty results. Test the Python adapter at minimum since that's the primary target."
+    }
+  ]
+}

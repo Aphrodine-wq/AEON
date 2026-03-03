@@ -1,0 +1,8 @@
+# AEON Ralph Progress — Day 3 Validate & Harden
+
+## Codebase Patterns
+(to be filled as patterns are discovered)
+
+## Progress Log
+[PASS] US-001 — Add .env to .gitignore
+[PASS] US-002 — Add MIT LICENSE file

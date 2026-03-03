@@ -43,6 +43,10 @@ Thumbs.db
 # Docker
 docker-compose.override.yml
 
+# Environment
+.env
+.env.*
+
 # AEON build artifacts
 *.o
 *.so
