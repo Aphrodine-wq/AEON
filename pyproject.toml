@@ -78,3 +78,13 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow",
+    "requires_z3: marks tests that require the z3-solver package",
+    "requires_llvmlite: marks tests that require llvmlite",
+    "requires_hypothesis: marks tests that require hypothesis",
+    "requires_api_key: marks tests that require an API key",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
