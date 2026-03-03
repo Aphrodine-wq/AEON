@@ -6,3 +6,4 @@
 ## Progress Log
 [PASS] US-001 — Add .env to .gitignore
 [PASS] US-002 — Add MIT LICENSE file
+[PASS] US-003 — Fix setup.py dependency list to match actual imports
