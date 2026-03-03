@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # AEON Universal Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/aeon-lang/aeon/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/Aphrodine-wq/AEON/main/install.sh | bash
 #
 # Supports: macOS, Ubuntu/Debian, Fedora/RHEL, Arch Linux, Alpine
 # Installs: Python 3.11+, AEON, z3-solver, llvmlite
@@ -8,7 +8,7 @@
 set -euo pipefail
 
 AEON_VERSION="${AEON_VERSION:-latest}"
-AEON_REPO="https://github.com/aeon-lang/aeon.git"
+AEON_REPO="https://github.com/Aphrodine-wq/AEON.git"
 AEON_INSTALL_DIR="${AEON_INSTALL_DIR:-$HOME/.aeon}"
 
 # ── Colors ──────────────────────────────────────────
@@ -105,10 +105,18 @@ ensure_git() {
 
 # ── Install AEON ────────────────────────────────────
 install_aeon() {
+    # Detect if we are already inside an AEON repo checkout
+    if [[ -f "./setup.py" || -f "./pyproject.toml" ]] && [[ -d "./.git" ]]; then
+        AEON_INSTALL_DIR="$(pwd)"
+        info "Detected local AEON repo — using $AEON_INSTALL_DIR (skipping clone)"
+    fi
+
     info "Installing AEON to $AEON_INSTALL_DIR..."
 
-    # Clone or update
-    if [[ -d "$AEON_INSTALL_DIR" ]]; then
+    # Clone or update (skipped when using local repo)
+    if [[ "$AEON_INSTALL_DIR" == "$(pwd)" && -d "./.git" ]]; then
+        info "Using current directory as install source"
+    elif [[ -d "$AEON_INSTALL_DIR" ]]; then
         info "Updating existing installation..."
         cd "$AEON_INSTALL_DIR"
         git pull --quiet

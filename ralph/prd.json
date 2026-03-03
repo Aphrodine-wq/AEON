@@ -59,8 +59,8 @@
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": "The install.sh references https://github.com/aeon-lang/aeon.git which likely doesn't exist. Fix to use Aphrodine-wq org or make it configurable. Add detection: if setup.py exists in current dir, skip clone."
+      "passes": true,
+      "notes": "Fixed AEON_REPO URL to Aphrodine-wq/AEON. Added local repo detection: if setup.py/pyproject.toml + .git exist in cwd, sets AEON_INSTALL_DIR to pwd and skips clone. Wrapper script at ~/.local/bin/aeon correctly references AEON_INSTALL_DIR."
     },
     {
       "id": "US-005",
