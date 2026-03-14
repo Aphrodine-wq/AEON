@@ -1,0 +1,15 @@
+// Hello World — first AEON program with runtime I/O.
+//
+// Demonstrates:
+//   - main() entry point (compiled to C main)
+//   - print() stdlib function (maps to C puts)
+//   - String literals in LLVM IR
+//
+// Compile & run:
+//   python -m aeon.cli compile examples/hello_world.aeon -o hello
+//   ./hello
+
+pure main() -> Int {
+  print("Hello, World!")
+  return 0
+}

@@ -57,8 +57,15 @@ class EffectChecker:
         self.errors: list[AeonError] = []
 
     def check_pure_function(self, func: PureFunc) -> list[AeonError]:
-        """Pure functions must have zero effects."""
+        """Pure functions must have zero effects.
+
+        Exception: ``main`` is the program entry point and is inherently
+        effectful — it is allowed to call effectful functions (print, etc.)
+        even when declared ``pure``.
+        """
         self.errors = []
+        if func.name == "main":
+            return self.errors
         detected = self._collect_effects(func.body, [])
         for eff, chain in detected:
             self.errors.append(effect_error(

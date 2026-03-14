@@ -44,6 +44,12 @@ def _get_llvm_type(type_name: str) -> Any:
 class LLVMEmitter:
     """Emits LLVM IR from flat IR."""
 
+    # Stdlib functions that map to C library calls.
+    # Maps AEON name -> (C name, return type, param types)
+    _STDLIB_EXTERNS: dict[str, tuple[str, str, list[str]]] = {
+        "print": ("puts", "Int", ["String"]),
+    }
+
     def __init__(self):
         if not HAS_LLVMLITE:
             raise RuntimeError("llvmlite is required for Pass 3 (Emit). Install with: pip install llvmlite")
@@ -53,11 +59,15 @@ class LLVMEmitter:
         self._func: Optional[Any] = None
         self._values: dict[int, Any] = {}
         self._named_values: dict[str, Any] = {}
+        self._extern_funcs: dict[str, Any] = {}
 
     def emit_module(self, ir_module: IRModule) -> str:
         """Emit LLVM IR for an entire module. Returns LLVM IR string."""
         self.module = llvm_ir.Module(name=ir_module.name)
         self.module.triple = llvm_binding.get_default_triple()
+
+        # Declare external C functions used by the stdlib
+        self._declare_externs()
 
         # Emit struct types for data definitions
         for dt in ir_module.data_types:
@@ -69,6 +79,15 @@ class LLVMEmitter:
 
         return str(self.module)
 
+    def _declare_externs(self) -> None:
+        """Declare external C library functions (puts, printf, etc.)."""
+        for aeon_name, (c_name, ret_type, param_types) in self._STDLIB_EXTERNS.items():
+            llvm_ret = _get_llvm_type(ret_type)
+            llvm_params = [_get_llvm_type(p) for p in param_types]
+            fn_type = llvm_ir.FunctionType(llvm_ret, llvm_params)
+            fn = llvm_ir.Function(self.module, fn_type, name=c_name)
+            self._extern_funcs[aeon_name] = fn
+
     def _emit_struct_type(self, dt) -> None:
         """Emit an LLVM struct type for a data definition."""
         field_types = []
@@ -79,21 +98,25 @@ class LLVMEmitter:
 
     def _emit_function(self, func: IRFunction) -> None:
         """Emit LLVM IR for a single function."""
+        is_main = func.name == "main"
+
         # Build function type
         param_types = []
         for p in func.params:
             param_types.append(_get_llvm_type(p.type_name))
 
-        ret_type = _get_llvm_type(func.return_type)
-        if isinstance(ret_type, llvm_ir.VoidType):
-            fn_type = llvm_ir.FunctionType(ret_type, param_types)
+        if is_main:
+            # C main: always returns i32, no params for simple programs
+            ret_type = llvm_ir.IntType(32)
+            fn_type = llvm_ir.FunctionType(ret_type, [])
         else:
+            ret_type = _get_llvm_type(func.return_type)
             fn_type = llvm_ir.FunctionType(ret_type, param_types)
 
         self._func = llvm_ir.Function(self.module, fn_type, name=func.name)
 
-        # Mark pure functions
-        if func.is_pure:
+        # Mark pure functions (skip main — it calls into libc)
+        if func.is_pure and not is_main:
             self._func.attributes.add("readonly")
 
         # Create entry block
@@ -104,9 +127,14 @@ class LLVMEmitter:
 
         # Map parameters
         for i, param_node in enumerate(func.params):
-            self._func.args[i].name = param_node.label
-            self._values[param_node.id] = self._func.args[i]
-            self._named_values[param_node.label] = self._func.args[i]
+            if i < len(self._func.args):
+                self._func.args[i].name = param_node.label
+                self._values[param_node.id] = self._func.args[i]
+                self._named_values[param_node.label] = self._func.args[i]
+
+        # Track that we are inside main for RETURN coercion
+        self._is_main = is_main
+        self._main_ret_type = ret_type if is_main else None
 
         # Process nodes (skip params, func_start, func_end)
         has_terminator = False
@@ -213,21 +241,20 @@ class LLVMEmitter:
             self._emit_call(node)
 
         elif node.op == IROpKind.RETURN:
+            # For main(), the actual LLVM return type is i32
+            actual_ret = self._main_ret_type if self._is_main else _get_llvm_type(func.return_type)
             if node.inputs and node.inputs[0] in self._values:
                 val = self._values[node.inputs[0]]
-                ret_type = _get_llvm_type(func.return_type)
-                if isinstance(ret_type, llvm_ir.VoidType):
+                if isinstance(actual_ret, llvm_ir.VoidType):
                     self._builder.ret_void()
                 else:
-                    # Cast if needed
-                    val = self._coerce(val, ret_type)
+                    val = self._coerce(val, actual_ret)
                     self._builder.ret(val)
             else:
-                ret_type = _get_llvm_type(func.return_type)
-                if isinstance(ret_type, llvm_ir.VoidType):
+                if isinstance(actual_ret, llvm_ir.VoidType):
                     self._builder.ret_void()
                 else:
-                    self._builder.ret(llvm_ir.Constant(ret_type, 0))
+                    self._builder.ret(llvm_ir.Constant(actual_ret, 0))
 
         elif node.op == IROpKind.FIELD_GET:
             # Simplified field access — would need struct GEP in full impl
@@ -296,6 +323,23 @@ class LLVMEmitter:
         callee_name = node.label
         if not callee_name:
             self._values[node.id] = llvm_ir.Constant(llvm_ir.IntType(64), 0)
+            return
+
+        # Check if this is a stdlib function that maps to a C extern
+        if callee_name in self._extern_funcs:
+            callee = self._extern_funcs[callee_name]
+            args = []
+            for i, inp in enumerate(node.inputs):
+                val = self._get_value(inp)
+                if val:
+                    if i < len(callee.args):
+                        val = self._coerce(val, callee.args[i].type)
+                    args.append(val)
+            if isinstance(callee.return_type, llvm_ir.VoidType):
+                self._builder.call(callee, args)
+                self._values[node.id] = llvm_ir.Constant(llvm_ir.IntType(64), 0)
+            else:
+                self._values[node.id] = self._builder.call(callee, args, name=f"call.{node.id}")
             return
 
         # Look up function in module
