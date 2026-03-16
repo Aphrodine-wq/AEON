@@ -11,6 +11,15 @@ Commands:
   aeon init                          — Project setup wizard
   aeon ir <file.aeon>                — Emit flat IR (JSON)
   aeon test --all | --priority P0 | --category compiler
+  aeon synthesize --spec "..."       — Generate provably correct code from specs
+  aeon seal <file>                   — Generate proof-carrying seal
+  aeon verify-seal <file>            — Verify an existing seal
+  aeon harden <dir>                  — Gradually harden codebase with contracts
+  aeon autopsy <file>                — Analyze incidents, generate contracts
+  aeon formal-diff                   — Show invariant changes between versions
+  aeon ghost <file>                  — Ghost-assertion shadowing (intent violations)
+  aeon mcp-safety                    — Start MCP safety server for AI agents
+  aeon graveyard                     — Analyze famous historical bugs
 """
 
 from __future__ import annotations
@@ -687,6 +696,293 @@ def cmd_proof_trace(args: argparse.Namespace) -> int:
     return 1 if errors else 0
 
 
+def cmd_synthesize(args: argparse.Namespace) -> int:
+    """Synthesize provably correct code from specifications."""
+    from aeon.synthesizer import CodeSynthesizer, format_synthesis_result
+
+    synth = CodeSynthesizer(target_language=getattr(args, 'language', 'python'))
+
+    if getattr(args, 'list_templates', False):
+        templates = synth.list_templates()
+        print(f"\n  AEON Synthesis Templates ({len(templates)} available)\n")
+        for t in templates:
+            print(f"  {t['name']:20s} {t['description']}")
+            if t['requires']:
+                print(f"  {'':20s} Requires: {', '.join(t['requires'])}")
+            if t['ensures']:
+                print(f"  {'':20s} Ensures: {', '.join(t['ensures'])}")
+            print(f"  {'':20s} Languages: {', '.join(t['languages'])}")
+            print()
+        return 0
+
+    if getattr(args, 'spec', None):
+        result = synth.synthesize_from_spec(args.spec)
+    elif getattr(args, 'file', None):
+        source = Path(args.file).read_text()
+        result = synth.synthesize_from_aeon(source)
+    else:
+        print("Error: provide --spec or an .aeon spec file")
+        return 1
+
+    print(format_synthesis_result(result, verbose=getattr(args, 'verbose', False)))
+    return 0
+
+
+def cmd_seal(args: argparse.Namespace) -> int:
+    """Generate a proof-carrying seal for verified code."""
+    from aeon.seal import AeonSealer
+
+    sealer = AeonSealer()
+    filepath = args.file
+
+    if not os.path.exists(filepath):
+        print(json.dumps({"error": f"File not found: {filepath}"}))
+        return 1
+
+    # Run verification first to get results
+    vr = {}
+    try:
+        from aeon.adapters.language_adapter import verify, detect_language
+        lang = detect_language(filepath)
+        if lang:
+            result = verify(Path(filepath).read_text(), lang)
+            vr = {
+                "language": lang,
+                "errors_found": len(result.errors) if hasattr(result, 'errors') else 0,
+                "contracts_verified": getattr(result, 'contracts_verified', 0),
+                "properties_proven": getattr(result, 'properties_proven', []),
+                "engines": getattr(result, 'engines_used', []),
+            }
+    except Exception:
+        pass
+
+    seal_result = sealer.seal(filepath, vr)
+    print(sealer.export_certificate(seal_result.certificate, fmt="text"))
+    print(f"\nSeal written to: {seal_result.seal_file}")
+    print(f"Badge: {seal_result.badge_markdown}")
+
+    if getattr(args, 'embed', False):
+        sealer.embed_seal(filepath, seal_result)
+        print(f"Seal embedded in {filepath}")
+
+    return 0
+
+
+def cmd_verify_seal(args: argparse.Namespace) -> int:
+    """Verify an existing proof seal."""
+    from aeon.seal import AeonSealer
+
+    sealer = AeonSealer()
+    filepath = args.file
+    seal_path = getattr(args, 'seal_file', None)
+
+    if not os.path.exists(filepath):
+        print(json.dumps({"error": f"File not found: {filepath}"}))
+        return 1
+
+    valid = sealer.verify_seal(filepath, seal_path)
+    if valid:
+        print(f"VERIFIED: Seal for {filepath} is valid.")
+        return 0
+    else:
+        print(f"FAILED: Seal for {filepath} is invalid or missing.")
+        return 1
+
+
+def cmd_harden(args: argparse.Namespace) -> int:
+    """Analyze and harden a codebase with contracts."""
+    from aeon.harden import CodeHardener
+
+    hardener = CodeHardener()
+    target = args.target
+
+    if not os.path.exists(target):
+        print(json.dumps({"error": f"Path not found: {target}"}))
+        return 1
+
+    # Single function mode
+    if getattr(args, 'function', None):
+        result = hardener.harden_function(target, args.function)
+        print(f"Hardening: {result.target.name} (risk: {result.target.risk_score:.2f})")
+        if result.contracts_added:
+            print("\nSuggested contracts:")
+            for c in result.contracts_added:
+                print(f"  + {c}")
+        if result.source_patch:
+            print(f"\n{result.source_patch}")
+        return 0
+
+    plan = hardener.analyze(target)
+
+    if getattr(args, 'report', False):
+        print(hardener.generate_report(plan))
+        return 0
+
+    # Summary view
+    print(f"\n  AEON Hardening Analysis")
+    print(f"  {'=' * 50}")
+    print(f"  Total functions:    {plan.total_functions}")
+    print(f"  Already verified:   {plan.already_verified}")
+    print()
+    for phase in ["critical", "high", "medium", "low"]:
+        count = len(plan.phases.get(phase, []))
+        cov = plan.coverage_by_phase.get(phase, 0)
+        print(f"  {phase.upper():10s}  {count:4d} functions  ({cov:.1f}% cumulative coverage)")
+    print()
+
+    # Show top targets
+    if plan.targets:
+        print(f"  Top Risk Targets:")
+        for t in plan.targets[:10]:
+            print(f"    {t.risk_score:.2f}  {t.name:30s}  {t.file}")
+            for rf in t.risk_factors[:2]:
+                print(f"          {rf}")
+    print()
+    return 0
+
+
+def cmd_autopsy(args: argparse.Namespace) -> int:
+    """Analyze incidents and generate protective contracts."""
+    from aeon.autopsy import IncidentAutopsy
+
+    autopsy = IncidentAutopsy()
+
+    if getattr(args, 'stdin', False):
+        import sys as _sys
+        text = _sys.stdin.read()
+        incidents = autopsy.parse_log(text)
+        incident = incidents[0] if incidents else autopsy.parse_stacktrace(text)
+    elif getattr(args, 'file', None):
+        if not os.path.exists(args.file):
+            print(json.dumps({"error": f"File not found: {args.file}"}))
+            return 1
+        result = autopsy.autopsy_from_file(args.file, getattr(args, 'source_root', None))
+        output = getattr(args, 'output', 'report')
+        if output == 'contracts':
+            for gc in result.generated_contracts:
+                print(f"{gc.target_function}: {gc.contract}")
+                print(f"  Reason: {gc.reason}")
+            return 0
+        elif output == 'tests':
+            for gt in result.generated_tests:
+                print(f"# {gt.test_name}")
+                print(gt.test_code)
+            return 0
+        else:
+            print(autopsy.format_report(result))
+            return 0
+    else:
+        print("Error: provide a file or --stdin")
+        return 1
+
+    source_root = getattr(args, 'source_root', None)
+    result = autopsy.analyze(incident, source_root)
+    print(autopsy.format_report(result))
+    return 0
+
+
+def cmd_formal_diff(args: argparse.Namespace) -> int:
+    """Show formal invariant changes between code versions."""
+    from aeon.formal_diff import FormalDiffer
+
+    differ = FormalDiffer()
+    fmt = getattr(args, 'format', 'pretty')
+
+    # Two files mode
+    if getattr(args, 'file_a', None) and getattr(args, 'file_b', None):
+        a_path, b_path = Path(args.file_a), Path(args.file_b)
+        if not a_path.exists() or not b_path.exists():
+            print("Error: one or both files not found")
+            return 1
+        ext = a_path.suffix.lower()
+        from aeon.formal_diff import EXT_TO_LANG
+        lang = EXT_TO_LANG.get(ext, "python")
+        result = differ.diff_files(
+            a_path.read_text(), b_path.read_text(), lang, str(a_path),
+        )
+        print(differ.format_diff(result, fmt))
+        return 0
+
+    # Branch mode
+    if getattr(args, 'branch', None):
+        result = differ.diff_branch(args.branch)
+        print(differ.format_diff(result, fmt))
+        return 0
+
+    # Git commit mode
+    commit_a = getattr(args, 'commit_a', None)
+    commit_b = getattr(args, 'commit_b', None)
+    if commit_a and commit_b:
+        result = differ.diff_git(commit_a, commit_b)
+        print(differ.format_diff(result, fmt))
+        return 0
+
+    # Default: staged changes
+    result = differ.diff_staged()
+    print(differ.format_diff(result, fmt))
+    return 0
+
+
+def cmd_ghost(args: argparse.Namespace) -> int:
+    """Ghost-Assertion Shadowing — AI-inferred intent contracts."""
+    from aeon.ghost import GhostAnalyzer
+
+    analyzer = GhostAnalyzer()
+    filepath = args.file
+
+    if not os.path.exists(filepath):
+        print(json.dumps({"error": f"File not found: {filepath}"}))
+        return 1
+
+    result = analyzer.analyze_file(filepath)
+    fmt = getattr(args, 'format', 'pretty')
+
+    if fmt == 'json':
+        print(json.dumps([a.to_dict() for a in result], indent=2))
+    else:
+        if not result:
+            print(f"No ghost assertions detected in {filepath}")
+            return 0
+        print(f"\n  Ghost Assertions — {filepath}")
+        print(f"  {'=' * 50}")
+        for ghost in result:
+            status = "INTENT MATCH" if ghost.matches_code else "INTENT VIOLATION"
+            print(f"\n  [{status}] {ghost.function}:{ghost.line}")
+            print(f"  Ghost contract: {ghost.assertion}")
+            print(f"  Confidence: {ghost.confidence:.0%}")
+            if ghost.explanation:
+                print(f"  {ghost.explanation}")
+    return 0
+
+
+def cmd_mcp_safety(args: argparse.Namespace) -> int:
+    """Start AEON MCP safety server for AI agent verification."""
+    from aeon.mcp_safety import AeonMCPServer
+
+    server = AeonMCPServer()
+    port = getattr(args, 'port', 8001)
+    print(f"Starting AEON MCP Safety Server on port {port}...")
+    print(f"AI agents can connect to verify tool calls before execution.")
+    server.serve(port=port)
+    return 0
+
+
+def cmd_graveyard(args: argparse.Namespace) -> int:
+    """Run AEON against famous historical bugs."""
+    from aeon.graveyard import BugGraveyard
+
+    graveyard = BugGraveyard()
+    fmt = getattr(args, 'format', 'pretty')
+
+    if getattr(args, 'bug', None):
+        result = graveyard.analyze_bug(args.bug)
+        print(graveyard.format_result(result, fmt))
+    else:
+        results = graveyard.analyze_all()
+        print(graveyard.format_all(results, fmt))
+    return 0
+
+
 def cmd_profiles(args: argparse.Namespace) -> int:
     """List available analysis profiles."""
     from aeon.profiles import list_profiles
@@ -866,6 +1162,74 @@ def main() -> None:
     p_test.add_argument("--priority", choices=["P0", "P1", "P2"], help="Filter by priority")
     p_test.add_argument("--category", choices=["compiler", "perf", "ai"], help="Filter by category")
     p_test.set_defaults(func=cmd_test)
+
+    # synthesize
+    p_synth = subparsers.add_parser("synthesize", help="Generate provably correct code from specifications")
+    p_synth.add_argument("file", nargs="?", help="AEON spec file (.aeon)")
+    p_synth.add_argument("--spec", "-s", help="Natural language specification")
+    p_synth.add_argument("--language", "-l", default="python", help="Target language (default: python)")
+    p_synth.add_argument("--verbose", "-v", action="store_true", help="Show alternative implementations")
+    p_synth.add_argument("--list-templates", action="store_true", dest="list_templates", help="List available synthesis templates")
+    p_synth.set_defaults(func=cmd_synthesize)
+
+    # seal
+    p_seal = subparsers.add_parser("seal", help="Generate proof-carrying seal for verified code")
+    p_seal.add_argument("file", help="Source file to seal")
+    p_seal.add_argument("--embed", action="store_true", help="Embed seal comment in source file")
+    p_seal.set_defaults(func=cmd_seal)
+
+    # verify-seal
+    p_vseal = subparsers.add_parser("verify-seal", help="Verify an existing proof seal")
+    p_vseal.add_argument("file", help="Source file to verify seal for")
+    p_vseal.add_argument("--seal-file", dest="seal_file", help="Path to .aeon-seal file (auto-detected by default)")
+    p_vseal.set_defaults(func=cmd_verify_seal)
+
+    # harden
+    p_harden = subparsers.add_parser("harden", help="Gradually harden codebase with verified contracts")
+    p_harden.add_argument("target", help="File or directory to harden")
+    p_harden.add_argument("--function", "-f", help="Harden a specific function")
+    p_harden.add_argument("--phase", choices=["critical", "high", "medium", "low"], help="Apply specific phase")
+    p_harden.add_argument("--report", action="store_true", help="Generate markdown report")
+    p_harden.add_argument("--apply", action="store_true", help="Apply hardening (add contracts)")
+    p_harden.add_argument("--dry-run", action="store_true", dest="dry_run", help="Show changes without applying")
+    p_harden.set_defaults(func=cmd_harden)
+
+    # autopsy
+    p_autopsy = subparsers.add_parser("autopsy", help="Analyze incidents and generate protective contracts")
+    p_autopsy.add_argument("file", nargs="?", help="Log or stack trace file")
+    p_autopsy.add_argument("--stdin", action="store_true", help="Read from stdin")
+    p_autopsy.add_argument("--source-root", dest="source_root", help="Source root for tracing to code")
+    p_autopsy.add_argument("--output", choices=["report", "contracts", "tests"], default="report",
+                           help="Output type (default: report)")
+    p_autopsy.add_argument("--apply", action="store_true", help="Apply contracts to source files")
+    p_autopsy.set_defaults(func=cmd_autopsy)
+
+    # formal-diff
+    p_fdiff = subparsers.add_parser("formal-diff", help="Show invariant changes between code versions")
+    p_fdiff.add_argument("file_a", nargs="?", help="First file or git commit")
+    p_fdiff.add_argument("file_b", nargs="?", help="Second file or git commit")
+    p_fdiff.add_argument("--branch", "-b", help="Diff against branch (default: main)")
+    p_fdiff.add_argument("--format", choices=["pretty", "json", "markdown"], default="pretty",
+                         help="Output format (default: pretty)")
+    p_fdiff.set_defaults(func=cmd_formal_diff)
+
+    # ghost
+    p_ghost = subparsers.add_parser("ghost", help="Ghost-Assertion Shadowing — detect intent violations")
+    p_ghost.add_argument("file", help="Source file to analyze")
+    p_ghost.add_argument("--format", choices=["pretty", "json"], default="pretty", help="Output format")
+    p_ghost.set_defaults(func=cmd_ghost)
+
+    # mcp-safety
+    p_mcp = subparsers.add_parser("mcp-safety", help="Start AEON MCP safety server for AI agent verification")
+    p_mcp.add_argument("--port", type=int, default=8001, help="Server port (default: 8001)")
+    p_mcp.set_defaults(func=cmd_mcp_safety)
+
+    # graveyard
+    p_grave = subparsers.add_parser("graveyard", help="Analyze famous historical bugs with AEON")
+    p_grave.add_argument("--bug", help="Specific bug to analyze (e.g. heartbleed, log4shell)")
+    p_grave.add_argument("--format", choices=["pretty", "json", "markdown"], default="pretty",
+                         help="Output format")
+    p_grave.set_defaults(func=cmd_graveyard)
 
     args = parser.parse_args()
 
