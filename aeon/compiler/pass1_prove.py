@@ -63,6 +63,9 @@ from aeon.numeric_safety import check_numeric_safety
 from aeon.null_safety import check_null_safety
 from aeon.error_handling import check_error_handling
 from aeon.deadcode import check_deadcode
+from aeon.money_math import check_money_math
+from aeon.framework_rules import check_framework_rules
+from aeon.construction_domain import check_construction_domain
 
 
 def _engine_error(message: str) -> AeonError:
@@ -90,6 +93,8 @@ class TypeChecker:
                  api_contracts: bool = False, numeric_safety: bool = False,
                  null_safety: bool = False, error_handling: bool = False,
                  deadcode: bool = False,
+                 money_math: bool = False,
+                 framework_rules: bool = False,
                  deep_verify: bool = False):
         self.env = TypeEnvironment()
         self.errors: list[AeonError] = []
@@ -127,6 +132,9 @@ class TypeChecker:
         self.null_safety = null_safety or deep_verify
         self.error_handling = error_handling or deep_verify
         self.deadcode = deadcode or deep_verify
+        self.money_math = money_math or deep_verify
+        self.framework_rules = framework_rules
+        self.construction_domain = money_math  # Construction domain runs when money_math is on
         self._current_return_type: Optional[AeonType] = None
         self._function_effects: dict[str, list[str]] = {}
         # Performance caching
@@ -437,6 +445,30 @@ class TypeChecker:
                 self.errors.extend(dc_errors)
             except Exception as e:
                 self.errors.append(_engine_error(f"Dead code detection failed: {str(e)}"))
+
+        # Money Math Analysis (Goldberg 1991, Bloch 2008)
+        if self.money_math:
+            try:
+                mm_errors = check_money_math(program)
+                self.errors.extend(mm_errors)
+            except Exception as e:
+                self.errors.append(_engine_error(f"Money math analysis failed: {str(e)}"))
+
+        # Framework Rules (Next.js, Supabase, React awareness)
+        if self.framework_rules:
+            try:
+                fr_errors = check_framework_rules(program)
+                self.errors.extend(fr_errors)
+            except Exception as e:
+                self.errors.append(_engine_error(f"Framework rules analysis failed: {str(e)}"))
+
+        # Construction Domain (estimation, invoicing, bid management)
+        if self.construction_domain:
+            try:
+                cd_errors = check_construction_domain(program)
+                self.errors.extend(cd_errors)
+            except Exception as e:
+                self.errors.append(_engine_error(f"Construction domain analysis failed: {str(e)}"))
 
         return self.errors
 
@@ -900,6 +932,8 @@ def prove(program: Program, verify_contracts: bool = False, analyze_termination:
           session_types: bool = False, complexity_analysis: bool = False,
           abstract_refinement: bool = False, differential_privacy: bool = False,
           typestate: bool = False, interpolation: bool = False,
+          money_math: bool = False,
+          framework_rules: bool = False,
           deep_verify: bool = False) -> list[AeonError]:
     """Run Pass 1: type checking, ownership, effects, contracts, and advanced analysis.
 
@@ -965,6 +999,8 @@ def prove(program: Program, verify_contracts: bool = False, analyze_termination:
         differential_privacy=differential_privacy,
         typestate=typestate,
         interpolation=interpolation,
+        money_math=money_math,
+        framework_rules=framework_rules,
         deep_verify=deep_verify,
     )
     return checker.check_program(program)

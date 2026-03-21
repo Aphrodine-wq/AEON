@@ -319,6 +319,61 @@ def cmd_scan(args: argparse.Namespace) -> int:
         from aeon.scanner import scan_directory
         result = scan_directory(target, deep_verify=deep)
 
+    # Cross-file analysis (runs on the whole directory, not per-file)
+    try:
+        from aeon.engines.cross_file import analyze_cross_file
+        xfile_result = analyze_cross_file(target)
+        if xfile_result.findings:
+            # Add cross-file findings to a special file result entry
+            xfile_entry = {
+                "file": "<cross-file-analysis>",
+                "language": "typescript",
+                "verified": len([f for f in xfile_result.findings
+                                 if f.details.get("failing_values", {}).get("severity") == "error"]) == 0,
+                "errors": len([f for f in xfile_result.findings
+                               if f.details.get("failing_values", {}).get("severity") == "error"]),
+                "warnings": len([f for f in xfile_result.findings
+                                 if f.details.get("failing_values", {}).get("severity") != "error"]),
+                "functions": 0, "classes": 0,
+                "summary": f"Cross-file analysis: {len(xfile_result.findings)} findings across {xfile_result.files_analyzed} files",
+                "error_details": [f.to_dict() for f in xfile_result.findings
+                                  if f.details.get("failing_values", {}).get("severity") == "error"],
+                "warning_details": [f.to_dict() for f in xfile_result.findings
+                                    if f.details.get("failing_values", {}).get("severity") != "error"],
+            }
+            result.file_results.append(xfile_entry)
+            result.total_errors += xfile_entry["errors"]
+            result.total_warnings += xfile_entry["warnings"]
+    except Exception as e:
+        pass  # Cross-file analysis is optional
+
+    # AI intent analysis (if API key available and --ai flag set)
+    if getattr(args, 'ai_intent', False):
+        try:
+            from aeon.engines.ai_intent import AIIntentEngine, is_available
+            if is_available():
+                ai_engine = AIIntentEngine(max_functions=10)
+                # Analyze the most critical files
+                critical_patterns = ['route.ts', 'api/', 'calculations/', 'engine/']
+                for fr in result.file_results[:50]:
+                    filepath = fr.get("file", "")
+                    if any(p in filepath for p in critical_patterns):
+                        full_path = os.path.join(target, filepath)
+                        if os.path.isfile(full_path):
+                            ai_errors = ai_engine.analyze_file(full_path)
+                            for err in ai_errors:
+                                fr.setdefault("warning_details", []).append(err.to_dict())
+                                fr["warnings"] = fr.get("warnings", 0) + 1
+                                result.total_warnings += 1
+        except Exception:
+            pass  # AI analysis is optional
+
+    # Quality filtering (confidence scoring, dedup, noise suppression)
+    if getattr(args, 'quality', False):
+        from aeon.scanner import apply_quality_filter
+        min_conf = getattr(args, 'min_confidence', 0.3)
+        result = apply_quality_filter(result, min_confidence=min_conf)
+
     # Baseline filtering
     baseline_path = getattr(args, 'baseline', '') or config.baseline
     if baseline_path and os.path.isfile(baseline_path) and not getattr(args, 'create_baseline', False):
@@ -996,6 +1051,44 @@ def cmd_profiles(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_portfolio(args: argparse.Namespace) -> int:
+    """Scan all projects in the portfolio."""
+    from aeon.portfolio import (
+        load_portfolio, scan_portfolio,
+        format_portfolio_pretty, format_portfolio_summary,
+    )
+
+    config_path = getattr(args, 'config', None)
+    project_filter = getattr(args, 'project', None)
+    fmt = getattr(args, 'format', 'pretty')
+
+    config = load_portfolio(config_path)
+    if not config.projects:
+        print("No projects found. Create ~/.aeon-portfolio.yml with your projects.")
+        print("See: aeon portfolio --help")
+        return 1
+
+    if project_filter:
+        aliases = [p.alias for p in config.projects]
+        if project_filter.lower() not in [a.lower() for a in aliases]:
+            print(f"Unknown project '{project_filter}'. Available: {', '.join(aliases)}")
+            return 1
+
+    quality = getattr(args, 'quality', False)
+    min_conf = getattr(args, 'min_confidence', 0.3)
+    result = scan_portfolio(config, project_filter=project_filter,
+                            quality_filter=quality, min_confidence=min_conf)
+
+    if fmt == 'json':
+        print(json.dumps(result.to_dict(), indent=2))
+    elif fmt == 'summary':
+        print(format_portfolio_summary(result))
+    else:
+        print(format_portfolio_pretty(result))
+
+    return 0 if result.total_errors == 0 else 1
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="aeon",
@@ -1034,7 +1127,7 @@ def main() -> None:
     p_check.add_argument("file", help="Source file (.aeon, .py, .java, .js, .ts, .go, .rs, .c, .cpp, .rb, .swift, .kt, .php, .scala, .dart)")
     p_check.add_argument("--language", choices=["aeon", "python", "java", "javascript", "typescript", "go", "rust", "c", "cpp", "ruby", "swift", "kotlin", "php", "scala", "dart"],
                          help="Override auto-detected language")
-    p_check.add_argument("--profile", choices=["quick", "daily", "security", "performance", "safety"],
+    p_check.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "safety"],
                          help="Analysis profile (quick|daily|security|performance|safety)")
     p_check.add_argument("--output-format", dest="output_format", choices=["pretty", "summary", "annotate", "markdown", "json"],
                          default="pretty", help="Output format (default: pretty)")
@@ -1093,7 +1186,7 @@ def main() -> None:
     # init
     p_init = subparsers.add_parser("init", help="Project setup wizard — create .aeonrc.yml and configure AEON")
     p_init.add_argument("directory", nargs="?", default=".", help="Project directory (default: current)")
-    p_init.add_argument("--profile", choices=["quick", "daily", "security", "performance", "safety"],
+    p_init.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "safety"],
                         help="Set analysis profile")
     p_init.add_argument("--ci", action="store_true", help="Generate GitHub Actions workflow")
     p_init.set_defaults(func=cmd_init)
@@ -1136,13 +1229,22 @@ def main() -> None:
     p_scan.add_argument("--deep-verify", action="store_true", dest="deep_verify", help="Enable ALL analysis engines")
     p_scan.add_argument("--parallel", action="store_true", help="Use multiprocess parallel scanning")
     p_scan.add_argument("--workers", type=int, default=0, help="Number of parallel workers (0=auto)")
-    p_scan.add_argument("--profile", choices=["quick", "daily", "security", "performance", "safety"],
-                        help="Analysis profile (quick|daily|security|performance|safety)")
+    p_scan.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "safety"],
+                        help="Analysis profile (quick|daily|security|performance|safety|ui)")
+    p_scan.add_argument("--ui-lint", action="store_true", dest="ui_lint",
+                        help="Enable UI/UX lint engine (design, a11y, UX anti-patterns)")
+    p_scan.add_argument("--ai", action="store_true", dest="ai_intent",
+                        help="Enable AI intent analysis (requires ANTHROPIC_API_KEY)")
+    p_scan.add_argument("--no-cross-file", action="store_true", dest="no_cross_file",
+                        help="Disable cross-file analysis")
     p_scan.add_argument("--analyses", nargs="+", help="Specific analyses to run (e.g. taint info-flow concurrency complexity termination memory)")
     p_scan.add_argument("--format", choices=["text", "json", "sarif", "markdown", "pretty"], default="pretty", help="Output format")
     p_scan.add_argument("--output", "-o", default="", help="Output file path (default: stdout)")
     p_scan.add_argument("--baseline", default="", help="Baseline file for diff mode")
     p_scan.add_argument("--create-baseline", action="store_true", dest="create_baseline", help="Create a baseline from current results")
+    p_scan.add_argument("--quality", action="store_true", help="Enable smart filtering (confidence scoring, dedup, noise suppression)")
+    p_scan.add_argument("--min-confidence", type=float, default=0.3, dest="min_confidence", help="Min confidence threshold (0.0-1.0, default: 0.3)")
+    p_scan.add_argument("--top", type=int, default=0, help="Only show top N findings by impact score")
     p_scan.set_defaults(func=cmd_scan)
 
     # watch
@@ -1230,6 +1332,16 @@ def main() -> None:
     p_grave.add_argument("--format", choices=["pretty", "json", "markdown"], default="pretty",
                          help="Output format")
     p_grave.set_defaults(func=cmd_graveyard)
+
+    # portfolio
+    p_portfolio = subparsers.add_parser("portfolio", help="Scan all projects defined in ~/.aeon-portfolio.yml")
+    p_portfolio.add_argument("--project", "-p", help="Only scan this project alias")
+    p_portfolio.add_argument("--format", choices=["pretty", "summary", "json"], default="pretty",
+                             help="Output format (default: pretty)")
+    p_portfolio.add_argument("--config", help="Path to portfolio config file")
+    p_portfolio.add_argument("--quality", action="store_true", help="Enable smart filtering (suppress noise, score confidence)")
+    p_portfolio.add_argument("--min-confidence", type=float, default=0.3, dest="min_confidence", help="Min confidence (0.0-1.0)")
+    p_portfolio.set_defaults(func=cmd_portfolio)
 
     args = parser.parse_args()
 

@@ -163,20 +163,40 @@ def _categorize_errors(errors: List[AeonError], noise_patterns: List[str],
                        result: VerificationResult) -> None:
     """Categorize AEON errors into result.errors and result.warnings,
     filtering out translation noise."""
+    # Engines whose findings should never be filtered as noise
+    TRUSTED_ENGINES = {
+        "money math", "framework rules", "construction domain",
+        "numeric safety", "null safety", "dead code detection",
+        "api contract verification", "error handling verification",
+        "taint analysis", "information flow",
+    }
+
     for e in errors:
         d = e.to_dict()
         msg = str(d.get("message", "")).lower()
         details = str(d.get("details", "")).lower()
         combined = msg + " " + details
 
-        # Skip translation noise
-        if any(p in combined for p in noise_patterns):
+        # Check if this finding is from a trusted engine
+        fv = d.get("details", {}).get("failing_values", {}) if isinstance(d.get("details"), dict) else {}
+        engine = str(fv.get("engine", "")).lower()
+        from_trusted = engine in TRUSTED_ENGINES
+
+        # Skip translation noise — but never skip trusted engine findings
+        if not from_trusted and any(p in combined for p in noise_patterns):
             continue
 
         if e.kind.value == "ownership_error":
             result.errors.append(d)
         elif e.kind.value == "contract_error":
-            if any(kw in combined for kw in (
+            # UI/UX lint findings — categorize by their severity
+            if "ui/ux:" in msg:
+                ui_severity = d.get("details", {}).get("failing_values", {}).get("severity", "warning")
+                if ui_severity == "error":
+                    result.errors.append(d)
+                else:
+                    result.warnings.append(d)
+            elif any(kw in combined for kw in (
                 "division by zero", "divide by zero",
                 "symbolic execution", "may not terminate",
                 "size-change termination", "missing base case",
@@ -210,7 +230,7 @@ def verify(source: str, language: str, deep_verify: bool = True,
     Returns:
         VerificationResult with errors, warnings, and summary
     """
-    from aeon.pass1_prove import prove
+    from aeon.compiler.pass1_prove import prove
     from aeon.ast_nodes import PureFunc, TaskFunc, DataDef
 
     translator = get_translator(language)
@@ -265,6 +285,11 @@ def verify(source: str, language: str, deep_verify: bool = True,
             "privacy": "differential_privacy",
             "typestate": "typestate",
             "interpolation": "interpolation",
+            "money_math": "money_math",
+            "money": "money_math",
+            "framework": "framework_rules",
+            "framework_rules": "framework_rules",
+            "construction": "money_math",  # construction implies money_math
         }
         for a in analyses:
             key = analysis_map.get(a)
@@ -273,8 +298,23 @@ def verify(source: str, language: str, deep_verify: bool = True,
     else:
         kwargs["deep_verify"] = deep_verify
 
+    # Always enable money_math and framework_rules for web languages when deep_verify
+    if deep_verify and language in ("javascript", "typescript", "jsx", "tsx"):
+        kwargs["money_math"] = True
+        kwargs["framework_rules"] = True
+
     # Step 4: Run AEON verification
     errors = prove(program, **kwargs)
+
+    # Step 4b: Run UI/UX lint on source text (for UI-relevant files)
+    try:
+        from aeon.engines.ui_ux_lint import check_ui_ux, is_ui_file
+        # Run UI lint if language is JS/TS (likely has UI code)
+        if language in ("javascript", "typescript", "jsx", "tsx"):
+            ui_errors = check_ui_ux(source, min_severity="warning")
+            errors.extend(ui_errors)
+    except Exception:
+        pass  # UI lint is optional — don't block verification
 
     # Step 5: Categorize results
     _categorize_errors(errors, translator.noise_patterns, result)

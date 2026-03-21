@@ -57,13 +57,15 @@ _register("daily", "Daily driver — security + correctness + common bugs", {
 })
 
 # -- security: focus on vulnerabilities -----------------------------------
-_register("security", "Security focused — taint, info-flow, symbolic, separation", {
+_register("security", "Security focused — taint, info-flow, symbolic, separation, money", {
     "verify_contracts": True,
     "symbolic_exec": True,
     "taint_analysis": True,
     "information_flow": True,
     "separation_logic": True,
     "concurrency_check": True,
+    "money_math": True,
+    "numeric_safety": True,
 })
 
 # -- performance: focus on efficiency & termination -----------------------
@@ -74,6 +76,18 @@ _register("performance", "Performance — complexity, abstract interp, terminati
     "analyze_termination": True,
     "complexity_analysis": True,
     "algebraic_effects": True,
+})
+
+# -- construction: money math + security for estimation/invoicing ----------
+_register("construction", "Construction & financial — money math, taint, numeric safety", {
+    "verify_contracts": True,
+    "symbolic_exec": True,
+    "taint_analysis": True,
+    "information_flow": True,
+    "numeric_safety": True,
+    "money_math": True,
+    "concurrency_check": True,
+    "framework_rules": True,
 })
 
 # -- safety: everything (mirrors --deep-verify) ---------------------------
