@@ -79,7 +79,7 @@ _register("performance", "Performance — complexity, abstract interp, terminati
 })
 
 # -- construction: money math + security for estimation/invoicing ----------
-_register("construction", "Construction & financial — money math, taint, numeric safety", {
+_register("construction", "Construction & financial — money math, taint, numeric safety, domain rules", {
     "verify_contracts": True,
     "symbolic_exec": True,
     "taint_analysis": True,
@@ -88,6 +88,7 @@ _register("construction", "Construction & financial — money math, taint, numer
     "money_math": True,
     "concurrency_check": True,
     "framework_rules": True,
+    "construction_domain": True,
 })
 
 # -- safety: everything (mirrors --deep-verify) ---------------------------

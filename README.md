@@ -275,28 +275,144 @@ pattern     ::= '_' | INT | STRING | 'true' | 'false'
               | NAME ('(' pattern (',' pattern)* ')')? | name
 ```
 
+## Multi-Language Code Scanner
+
+Beyond the AEON language compiler, AEON includes a full code analysis tool that scans existing codebases in 14+ languages:
+
+```bash
+# Scan a Python project
+aeon scan src/ --profile security --parallel
+
+# Scan TypeScript with custom config
+aeon scan apps/web/src --format sarif --parallel
+
+# Quick check a single file
+aeon check app.py
+
+# Auto-fix detected issues
+aeon fix src/
+
+# AI-powered code review
+aeon review src/api/
+
+# Generate proof-carrying seal
+aeon seal verified_function.py
+```
+
+### Supported Languages
+
+Python, JavaScript/TypeScript, Java, Rust, Go, C, Ruby, Swift, Kotlin, PHP, Scala, Dart, Lua, R, Elixir, Haskell, OCaml, Zig, Julia
+
+### Analysis Profiles
+
+| Profile | Engines | Use Case |
+|---------|---------|----------|
+| `quick` | Symbolic exec, abstract interp, contracts | Fast CI check |
+| `daily` | + taint, concurrency, Hoare logic | Default |
+| `security` | + info flow, separation logic, money_math | API/auth/payment code |
+| `performance` | + size-change, complexity, effects | Optimization |
+| `construction` | + numeric safety, framework rules | Construction domain |
+| `safety` | All 50+ engines | Pre-release audit |
+
+### Configuration (.aeonrc.yml)
+
+```yaml
+profile: security
+engines:
+  symbolic_exec: true
+  taint_analysis: true
+  money_math: true
+severity: warning
+include:
+  - "src/**/*.ts"
+exclude:
+  - "node_modules/**"
+  - "**/*.test.ts"
+custom_taint_sources:
+  - "searchParams"
+  - "request.body"
+custom_taint_sinks:
+  - "supabase.from"
+  - "dangerouslySetInnerHTML"
+parallel: true
+```
+
+### CLI Commands (24+)
+
+| Command | Description |
+|---------|-------------|
+| `aeon compile <file.aeon>` | Compile AEON source to native binary |
+| `aeon check <file>` | Type check + verify (auto-detects language) |
+| `aeon scan <dir>` | Recursive directory scan |
+| `aeon watch <dir>` | File watcher, re-verify on changes |
+| `aeon fix <target>` | Auto-fix detected issues |
+| `aeon review <file\|dir>` | AI-powered code review |
+| `aeon explain <file>` | Plain-English bug explanations |
+| `aeon seal <file>` | Generate proof-carrying seal |
+| `aeon verify-seal <file>` | Verify existing seal |
+| `aeon harden <dir>` | Gradual hardening analysis |
+| `aeon autopsy <file>` | Incident traces -> contracts |
+| `aeon ghost <file>` | Ghost assertions (intent violations) |
+| `aeon formal-diff` | Compare versions, show invariant changes |
+| `aeon synthesize --spec "..."` | Generate code from specs |
+| `aeon graveyard` | Analyze famous historical bugs |
+| `aeon mcp-safety` | Start MCP safety server |
+| `aeon portfolio` | Portfolio scan across projects |
+| `aeon init [--profile X]` | Project setup wizard |
+| `aeon test` | Run test suite |
+| `aeon ir <file>` | Emit flat IR as JSON |
+| `aeon proof-trace <file>` | Show Hoare logic proof obligations |
+| `aeon abstract-trace <file>` | Show abstract domain states |
+| `aeon profiles` | List available profiles |
+
+**Output formats**: JSON, SARIF, Markdown, pretty-print, LaTeX, SMTLIB2
+
 ## Verification Engines
 
-AEON integrates multiple formal analysis passes, each based on peer-reviewed research. All are optional and can be enabled individually or via `--deep-verify`.
+AEON includes 50+ analysis engines, each based on peer-reviewed research. All are optional and can be enabled individually or via `--deep-verify`.
 
-| Engine | Flag | Foundation |
-|--------|------|------------|
-| Contract verification | `--verify` | Z3 SMT solver |
-| Hoare logic | `--hoare` | Dijkstra 1975, Hoare 1969 |
-| Abstract interpretation | `--abstract-interp` | Cousot & Cousot 1977 |
-| Refinement types | `--refinement-types` | Rondon et al. 2008 |
-| Size-change termination | `--size-change` | Lee et al. 2001 |
-| Algebraic effects | `--algebraic-effects` | Plotkin & Pretnar 2009 |
-| Information flow | `--info-flow` | Volpano et al. 1996 |
-| Dependent types | `--dependent-types` | Martin-Lof 1984 |
-| Symbolic execution | `--symbolic` | King 1976 |
-| Separation logic | `--separation-logic` | Reynolds 2002 |
-| Taint analysis | `--taint` | Schwartz et al. 2010 |
-| Concurrency | `--concurrency` | Owicki & Gries 1976 |
-| Shape analysis | `--shape` | Sagiv et al. 2002 |
-| Model checking | `--model-check` | Clarke et al. 1986 |
+**Core Engines (14):**
 
-See `docs/soundness.md` for formal soundness theorems and known approximations for each engine.
+| Engine | Foundation |
+|--------|------------|
+| Contract verification | Z3 SMT solver |
+| Hoare logic | Dijkstra 1975, Hoare 1969 |
+| Abstract interpretation | Cousot & Cousot 1977 |
+| Refinement types | Rondon et al. 2008 |
+| Size-change termination | Lee et al. 2001 |
+| Algebraic effects | Plotkin & Pretnar 2009 |
+| Information flow | Volpano et al. 1996 |
+| Dependent types | Martin-Lof 1984 |
+| Symbolic execution | King 1976 |
+| Separation logic | Reynolds 2002 |
+| Taint analysis | Schwartz et al. 2010 |
+| Concurrency | Owicki & Gries 1976 |
+| Shape analysis | Sagiv et al. 2002 |
+| Model checking | Clarke et al. 1986 |
+
+**Domain-Specific Engines:**
+
+| Engine | Purpose |
+|--------|---------|
+| `money_math` | Financial math verification (decimal precision, rounding) |
+| `construction_domain` | Construction-specific rules |
+| `ui_ux_lint` | UI/UX linting (accessibility, contrast, buttons) |
+| `framework_rules` | Framework-specific patterns (Next.js, React, etc.) |
+| `api_contract` | API contract verification |
+| `sanitizer_aware` | Sanitizer-aware checks |
+| `cross_file` | Cross-file dependency analysis |
+| `ai_intent` | AI intent detection |
+
+**Additional Engines:** null safety, numeric safety, error handling, dead code, ownership types, cryptographic verification, smart contract verification, differential privacy, session types, gradual typing, program synthesis, WASM verification, and more.
+
+50+ total engines. See `docs/soundness.md` for formal soundness theorems.
+
+## VS Code Extension
+
+TypeScript extension at `vscode-extension/`. Verify on save, real-time diagnostics, CodeLens, hover info, auto-fix actions.
+
+- Keybinding: Cmd+Shift+A (macOS) / Ctrl+Shift+A
+- Config: `aeon.verifyOnSave`, `aeon.deepVerify`, `aeon.serverUrl`
 
 ## Project Status
 
