@@ -3,24 +3,27 @@
 ## Quick Commands
 
 ```bash
-# Run from venv
-cd ~/Desktop/WORK/Projects/IN\ House/AEON
+# Run from venv (if not installed globally)
+cd ~/Projects/aeon
 .venv/bin/python -m aeon.cli <command>
 
+# Or use the installed entrypoint after: pip install -e .
+aeon <command>
+
 # Scan a project (most common usage)
-.venv/bin/python -m aeon.cli scan /path/to/src --profile security --format json --parallel
+aeon scan /path/to/src --profile security --format json --parallel
 
 # Quick check a file
-.venv/bin/python -m aeon.cli check app.py
+aeon check app.py
 
 # Compile AEON source
-.venv/bin/python -m aeon.cli compile examples/hello_world.aeon
+aeon compile examples/hello_world.aeon
 
 # Auto-fix issues
-.venv/bin/python -m aeon.cli fix src/
+aeon fix src/
 
 # Run tests
-.venv/bin/python -m aeon.cli test --all
+aeon test --all
 # or: pytest tests/ -v
 ```
 
@@ -28,39 +31,72 @@ cd ~/Desktop/WORK/Projects/IN\ House/AEON
 
 ```
 aeon/
-  cli.py              # 24+ commands (scan, check, compile, fix, review, seal, etc.)
+  cli.py              # 23 commands (scan, check, compile, fix, review, seal, etc.)
   config.py           # .aeonrc.yml/json parsing
   profiles.py         # quick, daily, security, performance, construction, safety
   scanner.py          # Directory scanning
   parallel.py         # Parallel verification
-  adapters/           # 14+ language adapters (Python, JS/TS, Java, Rust, Go, C, Swift, etc.)
+  language_adapter.py # Top-level adapter registry (legacy, mirrors aeon/adapters/)
+  adapters/           # 20 adapter files — 21 language targets
   compiler/           # AEON language 3-pass compiler (prove → flatten → emit LLVM)
-  engines/            # 50+ analysis engines (symbolic exec, Hoare logic, taint, etc.)
-  enterprise/         # Dashboard, FVaaS API
+  engines/            # 50 analysis engines (symbolic exec, Hoare logic, taint, etc.)
+  enterprise/         # Baseline, config, parallel, SARIF, and scanner helpers
+  ai/                 # AI integration and synthetic test helpers
 ```
 
 ## Key Engines
 
-| Engine | File | LOC | Purpose |
-|--------|------|-----|---------|
-| Abstract interpretation | `abstract_interp.py` | 45K | Interval/sign/congruence domains |
-| Refinement types | `refinement_types.py` | 39K | Predicates on types |
-| Hoare logic | `hoare.py` | 32K | Contracts -> Z3 SMT |
-| Symbolic execution | `symbolic_execution.py` | 27K | Path-sensitive analysis |
-| Separation logic | `separation_logic.py` | 25K | Heap reasoning |
-| UI/UX lint | `ui_ux_lint.py` | 54K | Accessibility, contrast, buttons |
-| Money math | `money_math.py` | 20K | Financial precision |
-| Construction domain | `construction_domain.py` | 18K | Construction-specific rules |
-| Taint analysis | `taint_analysis.py` | — | Source/sink tracking |
-| Information flow | `information_flow.py` | 25K | Noninterference |
+| Engine | File | Purpose |
+|--------|------|---------|
+| Abstract interpretation | `engines/abstract_interp.py` | Interval/sign/congruence domains |
+| Refinement types | `engines/refinement_types.py` | Predicates on types |
+| Hoare logic | `engines/hoare.py` | Contracts -> Z3 SMT |
+| Symbolic execution | `engines/symbolic_execution.py` | Path-sensitive analysis |
+| Separation logic | `engines/separation_logic.py` | Heap reasoning |
+| UI/UX lint | `engines/ui_ux_lint.py` | Accessibility, contrast, buttons |
+| Money math | `engines/money_math.py` | Financial precision |
+| Construction domain | `engines/construction_domain.py` | Construction-specific rules |
+| Taint analysis | `engines/taint_analysis.py` | Source/sink tracking |
+| Information flow | `engines/information_flow.py` | Noninterference |
+
+50 engine files total in `aeon/engines/`.
+
+## CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `aeon compile <file.aeon>` | Compile AEON source to native binary |
+| `aeon check <file>` | Type check + verify (auto-detects language) |
+| `aeon scan <dir>` | Recursive directory scan |
+| `aeon watch <dir>` | File watcher, re-verify on changes |
+| `aeon fix <target>` | Auto-fix detected issues |
+| `aeon review [file\|dir]` | AI-powered code review |
+| `aeon explain <file>` | Plain-English bug explanations |
+| `aeon seal <file>` | Generate proof-carrying seal |
+| `aeon verify-seal <file>` | Verify existing seal |
+| `aeon harden <target>` | Gradual hardening analysis |
+| `aeon autopsy [file]` | Incident traces -> contracts |
+| `aeon ghost <file>` | Ghost assertions (intent violations) |
+| `aeon formal-diff [file_a] [file_b]` | Compare versions, invariant changes |
+| `aeon synthesize --spec "..."` | Generate code from specs |
+| `aeon graveyard` | Analyze famous historical bugs |
+| `aeon mcp-safety` | Start MCP safety server |
+| `aeon portfolio` | Portfolio scan across projects |
+| `aeon init [dir]` | Project setup wizard |
+| `aeon test` | Run test suite |
+| `aeon ir <file.aeon>` | Emit flat IR as JSON |
+| `aeon proof-trace <file.aeon>` | Show Hoare logic proof obligations |
+| `aeon abstract-trace <file.aeon>` | Show abstract domain states |
+| `aeon profiles` | List available profiles |
 
 ## Profiles
 
 - `quick` — symbolic exec + abstract interp + contracts (fast CI)
 - `daily` — + taint, concurrency, Hoare logic (default)
 - `security` — + info flow, separation logic, money_math (API/auth/payment code)
+- `performance` — + size-change, complexity, effects
 - `construction` — + numeric safety, framework rules
-- `safety` — all 50+ engines (pre-release audit)
+- `safety` — all 50 engines (pre-release audit)
 
 ## Configuration
 
@@ -79,23 +115,65 @@ parallel: true
 
 ## Language Adapters
 
-14+ adapters in `adapters/`. Each translates source language AST to AEON's internal representation. Python adapter is most mature. JS/TS, Java, Rust, Go are functional. Others are scaffolded.
+20 adapter files in `aeon/adapters/`, covering 21 language targets. Each translates source language AST to AEON's internal representation. Python adapter is most mature. JS/TS, Java, Rust, Go are functional. Others are regex-based and fully functional.
+
+| Adapter File | Language(s) |
+|---|---|
+| `python_adapter.py` | Python |
+| `js_adapter.py` | JavaScript, TypeScript |
+| `java_adapter.py` | Java |
+| `go_adapter.py` | Go |
+| `rust_adapter.py` | Rust |
+| `c_adapter.py` | C, C++ |
+| `ruby_adapter.py` | Ruby |
+| `swift_adapter.py` | Swift |
+| `kotlin_adapter.py` | Kotlin |
+| `scala_adapter.py` | Scala |
+| `php_adapter.py` | PHP |
+| `dart_adapter.py` | Dart |
+| `elixir_adapter.py` | Elixir |
+| `haskell_adapter.py` | Haskell |
+| `ocaml_adapter.py` | OCaml |
+| `lua_adapter.py` | Lua |
+| `r_adapter.py` | R |
+| `julia_adapter.py` | Julia |
+| `zig_adapter.py` | Zig |
+| `language_adapter.py` | Registry / base class |
 
 ## Dependencies
 
 Zero required runtime deps (all stdlib). Optional:
-- `z3-solver` — SMT solving (for symbolic exec, Hoare logic)
-- `llvmlite` — LLVM code generation (for AEON compilation)
+- `z3-solver` — SMT solving (for symbolic exec, Hoare logic, contract verification)
+- `llvmlite` — LLVM code generation (for AEON compilation to native binary)
 - `javalang` — Java parsing
 - `flask` + `plotly` — Dashboard
+- `flask-limiter` + `PyJWT` — FVaaS API
 - `pytest` + `hypothesis` — Testing
+
+Install optional extras:
+
+```bash
+pip install -e ".[z3]"        # Z3 only
+pip install -e ".[llvm]"      # llvmlite only
+pip install -e ".[java]"      # javalang only
+pip install -e ".[full]"      # Everything
+pip install -e ".[dev]"       # Test dependencies
+```
 
 ## Testing
 
 ```bash
 pytest tests/ -v --tb=short
-pytest tests/ -m "requires_z3"     # Only Z3-dependent tests
-.venv/bin/python -m aeon.cli test --priority P0
+pytest tests/ -m "requires_z3"      # Only Z3-dependent tests
+aeon test --priority P0
+aeon test --category compiler
 ```
 
-Tests organized by module: `tests/compiler/`, `tests/hoare/`, `tests/ghost/`, `tests/seal/`, etc.
+Tests are organized by module under `tests/`: `tests/compiler/`, `tests/hoare/`, `tests/ghost/`, `tests/seal/`, `tests/synthesizer/`, `tests/autopsy/`, `tests/formal_diff/`, `tests/graveyard/`, `tests/mcp_safety/`, `tests/perf/`, `tests/ai/`, `tests/properties/`.
+
+## Package Metadata
+
+- **Package name**: `aeon-lang`
+- **Version**: `0.5.0`
+- **Entry point**: `aeon = aeon.cli:main`
+- **Requires Python**: 3.10+

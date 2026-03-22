@@ -208,26 +208,35 @@ Converts flat IR to LLVM IR via llvmlite. LLVM handles all backend optimization 
 ```bash
 # From source
 git clone <repo-url>
-cd AEON_LANG
+cd aeon
 pip install -e .
 
+# With optional dependencies
+pip install -e ".[z3]"       # Z3 SMT solver (required for contract verification)
+pip install -e ".[llvm]"     # llvmlite (required for native binary output)
+pip install -e ".[full]"     # All optional dependencies
+```
+
+After installation the `aeon` command is available directly. You can also invoke via `python -m aeon.cli`.
+
+```bash
 # Verify an AEON file
-python -m aeon.cli check examples/aeon/pure_function.aeon --verify
+aeon check examples/aeon/pure_function.aeon --verify
 
 # Compile to native binary (requires llvmlite)
-python -m aeon.cli compile examples/aeon/pure_function.aeon -o output
+aeon compile examples/aeon/pure_function.aeon -o output
 
 # Run all verification engines
-python -m aeon.cli check examples/aeon/contracts.aeon --deep-verify
+aeon check examples/aeon/contracts.aeon --deep-verify
 
 # Emit flat IR as JSON
-python -m aeon.cli ir examples/aeon/pure_function.aeon
+aeon ir examples/aeon/pure_function.aeon
 
 # View proof trace (Hoare logic VCs and Z3 results)
-python -m aeon.cli proof-trace examples/aeon/contracts.aeon
+aeon proof-trace examples/aeon/contracts.aeon
 
 # View abstract interpretation trace
-python -m aeon.cli abstract-trace examples/aeon/pure_function.aeon
+aeon abstract-trace examples/aeon/pure_function.aeon
 ```
 
 ## Grammar (Informal)
@@ -277,7 +286,7 @@ pattern     ::= '_' | INT | STRING | 'true' | 'false'
 
 ## Multi-Language Code Scanner
 
-Beyond the AEON language compiler, AEON includes a full code analysis tool that scans existing codebases in 14+ languages:
+Beyond the AEON language compiler, AEON includes a full code analysis tool that scans existing codebases in 21 language targets:
 
 ```bash
 # Scan a Python project
@@ -301,7 +310,7 @@ aeon seal verified_function.py
 
 ### Supported Languages
 
-Python, JavaScript/TypeScript, Java, Rust, Go, C, Ruby, Swift, Kotlin, PHP, Scala, Dart, Lua, R, Elixir, Haskell, OCaml, Zig, Julia
+Python, JavaScript/TypeScript, Java, Rust, Go, C/C++, Ruby, Swift, Kotlin, PHP, Scala, Dart, Lua, R, Elixir, Haskell, OCaml, Zig, Julia
 
 ### Analysis Profiles
 
@@ -337,32 +346,32 @@ custom_taint_sinks:
 parallel: true
 ```
 
-### CLI Commands (24+)
+### CLI Commands
 
 | Command | Description |
 |---------|-------------|
 | `aeon compile <file.aeon>` | Compile AEON source to native binary |
-| `aeon check <file>` | Type check + verify (auto-detects language) |
+| `aeon check <file>` | Type check + verify (auto-detects language from extension) |
 | `aeon scan <dir>` | Recursive directory scan |
 | `aeon watch <dir>` | File watcher, re-verify on changes |
 | `aeon fix <target>` | Auto-fix detected issues |
-| `aeon review <file\|dir>` | AI-powered code review |
+| `aeon review [file\|dir]` | AI-powered code review |
 | `aeon explain <file>` | Plain-English bug explanations |
 | `aeon seal <file>` | Generate proof-carrying seal |
 | `aeon verify-seal <file>` | Verify existing seal |
-| `aeon harden <dir>` | Gradual hardening analysis |
-| `aeon autopsy <file>` | Incident traces -> contracts |
+| `aeon harden <target>` | Gradual hardening analysis |
+| `aeon autopsy [file]` | Incident traces -> contracts |
 | `aeon ghost <file>` | Ghost assertions (intent violations) |
-| `aeon formal-diff` | Compare versions, show invariant changes |
+| `aeon formal-diff [file_a] [file_b]` | Compare versions, show invariant changes |
 | `aeon synthesize --spec "..."` | Generate code from specs |
 | `aeon graveyard` | Analyze famous historical bugs |
 | `aeon mcp-safety` | Start MCP safety server |
 | `aeon portfolio` | Portfolio scan across projects |
-| `aeon init [--profile X]` | Project setup wizard |
+| `aeon init [dir]` | Project setup wizard |
 | `aeon test` | Run test suite |
-| `aeon ir <file>` | Emit flat IR as JSON |
-| `aeon proof-trace <file>` | Show Hoare logic proof obligations |
-| `aeon abstract-trace <file>` | Show abstract domain states |
+| `aeon ir <file.aeon>` | Emit flat IR as JSON |
+| `aeon proof-trace <file.aeon>` | Show Hoare logic proof obligations |
+| `aeon abstract-trace <file.aeon>` | Show abstract domain states |
 | `aeon profiles` | List available profiles |
 
 **Output formats**: JSON, SARIF, Markdown, pretty-print, LaTeX, SMTLIB2
@@ -403,9 +412,9 @@ AEON includes 50+ analysis engines, each based on peer-reviewed research. All ar
 | `cross_file` | Cross-file dependency analysis |
 | `ai_intent` | AI intent detection |
 
-**Additional Engines:** null safety, numeric safety, error handling, dead code, ownership types, cryptographic verification, smart contract verification, differential privacy, session types, gradual typing, program synthesis, WASM verification, and more.
+**Additional Engines:** null safety, numeric safety, error handling, dead code, ownership types, cryptographic verification, smart contract verification, differential privacy, session types, gradual typing, program synthesis, WASM verification, coinductive verification, neural deductive, quantum verification, and more.
 
-50+ total engines. See `docs/soundness.md` for formal soundness theorems.
+50 engines total in `aeon/engines/`. See `docs/soundness.md` for formal soundness theorems.
 
 ## VS Code Extension
 

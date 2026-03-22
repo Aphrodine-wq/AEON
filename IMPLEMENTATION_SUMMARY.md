@@ -93,7 +93,7 @@ aeon init --ci --team-dashboard       # Full enterprise setup
 ### Enterprise Features
 | Feature | Status | Impact |
 |---------|--------|---------|
-| Multi-language Support | 14 languages | ✅ Maintained |
+| Multi-language Support | 21 language targets | Maintained |
 | CI/CD Integration | Basic | ✅ Enterprise-grade |
 | Team Analytics | None | ✅ Comprehensive |
 | VS Code Integration | Basic | ✅ Real-time |
