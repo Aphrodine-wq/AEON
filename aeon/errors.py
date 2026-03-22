@@ -22,7 +22,7 @@ class ErrorKind(Enum):
     INTERNAL_ERROR = "internal_error"
 
 
-@dataclass
+@dataclass(frozen=True)
 class SourceLocation:
     line: int
     column: int

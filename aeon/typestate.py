@@ -362,9 +362,9 @@ def _analyze_function_typestate(func, errors: List[AeonError]) -> None:
     def _check_expr(expr: Expr) -> None:
         if isinstance(expr, MethodCall):
             obj_name = ""
-            if hasattr(expr, 'object') and isinstance(expr.object, Identifier):
-                obj_name = expr.object.name
-            method = expr.method if hasattr(expr, 'method') else ""
+            if hasattr(expr, 'obj') and isinstance(expr.obj, Identifier):
+                obj_name = expr.obj.name
+            method = getattr(expr, 'method_name', '') or getattr(expr, 'method', '')
             if not isinstance(method, str):
                 method = str(method)
 
@@ -386,7 +386,7 @@ def _analyze_function_typestate(func, errors: List[AeonError]) -> None:
                         obj.current_state = new_state
 
         elif isinstance(expr, FunctionCall):
-            name = expr.name if isinstance(expr.name, str) else ""
+            name = expr.callee.name if hasattr(expr, 'callee') and hasattr(expr.callee, 'name') else ""
             name_lower = name.lower()
 
             # Check for constructor patterns
@@ -407,7 +407,7 @@ def _analyze_function_typestate(func, errors: List[AeonError]) -> None:
             # Check if we're creating a new typestate-tracked object
             var_name = stmt.name if hasattr(stmt, 'name') else str(stmt)
             if isinstance(stmt.value, FunctionCall):
-                call_name = stmt.value.name if isinstance(stmt.value.name, str) else ""
+                call_name = stmt.value.callee.name if hasattr(stmt.value, 'callee') and hasattr(stmt.value.callee, 'name') else ""
                 proto = _match_protocol(call_name)
                 if proto:
                     tracked[var_name] = TrackedObject(

@@ -296,7 +296,7 @@ def _infer_sensitivity(expr: Expr, env: Dict[str, SensitivityType]) -> Sensitivi
             return SensitivityType.infinite(ls.base_type)
 
     if isinstance(expr, FunctionCall):
-        name = expr.name.lower() if isinstance(expr.name, str) else ""
+        name = expr.callee.name.lower() if hasattr(expr, 'callee') and hasattr(expr.callee, 'name') else ""
         if name in _SENSITIVITY_1_FUNCTIONS:
             return SensitivityType.finite("result", _SENSITIVITY_1_FUNCTIONS[name])
         if name in _DP_MECHANISM_FUNCTIONS:
@@ -346,7 +346,7 @@ def _analyze_function_privacy(func, errors: List[AeonError]) -> None:
             env[var_name] = val_sens
 
             if isinstance(stmt.value, FunctionCall):
-                call_name = stmt.value.name.lower() if isinstance(stmt.value.name, str) else ""
+                call_name = stmt.value.callee.name.lower() if hasattr(stmt.value, 'callee') and hasattr(stmt.value.callee, 'name') else ""
                 if call_name in _DP_MECHANISM_FUNCTIONS:
                     uses_dp_mechanism = True
                     budget.consume(0.1)  # Each mechanism call costs some epsilon
@@ -383,7 +383,7 @@ def _analyze_function_privacy(func, errors: List[AeonError]) -> None:
 
         elif isinstance(stmt, ExprStmt):
             if isinstance(stmt.expr, FunctionCall):
-                name = stmt.expr.name.lower() if isinstance(stmt.expr.name, str) else ""
+                name = stmt.expr.callee.name.lower() if hasattr(stmt.expr, 'callee') and hasattr(stmt.expr.callee, 'name') else ""
                 if name in _DP_MECHANISM_FUNCTIONS:
                     uses_dp_mechanism = True
                     budget.consume(0.1)

@@ -424,7 +424,7 @@ _INFERENCE_FUNCTIONS = {
 def _is_probabilistic_call(expr: Expr) -> Optional[str]:
     """Check if an expression is a probabilistic function call."""
     if isinstance(expr, FunctionCall):
-        name = expr.name.lower() if isinstance(expr.name, str) else ""
+        name = expr.callee.name.lower() if hasattr(expr, 'callee') and hasattr(expr.callee, 'name') else ""
         parts = name.split('.')
         base = parts[-1] if parts else name
         if base in _RANDOM_FUNCTIONS:
@@ -466,7 +466,7 @@ def _analyze_function(func, errors: List[AeonError]) -> None:
         if kind == "random":
             has_random = True
             if isinstance(expr, FunctionCall):
-                name = expr.name.lower() if isinstance(expr.name, str) else ""
+                name = expr.callee.name.lower() if hasattr(expr, 'callee') and hasattr(expr.callee, 'name') else ""
                 if 'uniform' in name:
                     return Distribution.uniform(0.0, 1.0)
                 elif 'normal' in name or 'gauss' in name:

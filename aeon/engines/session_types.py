@@ -402,9 +402,9 @@ def _analyze_channel_usage(func, errors: List[AeonError]) -> List[ChannelUsage]:
     def _check_expr(expr: Expr) -> None:
         if isinstance(expr, MethodCall):
             obj_name = ""
-            if hasattr(expr, 'object') and isinstance(expr.object, Identifier):
-                obj_name = expr.object.name
-            method = expr.method if hasattr(expr, 'method') else ""
+            if hasattr(expr, 'obj') and isinstance(expr.obj, Identifier):
+                obj_name = expr.obj.name
+            method = getattr(expr, 'method_name', '') or getattr(expr, 'method', '')
             if isinstance(method, str):
                 method_lower = method.lower()
                 if obj_name:
@@ -422,7 +422,9 @@ def _analyze_channel_usage(func, errors: List[AeonError]) -> List[ChannelUsage]:
                         ch.opened = True
 
         elif isinstance(expr, FunctionCall):
-            name = expr.name.lower() if isinstance(expr.name, str) else ""
+            name = expr.name.lower() if hasattr(expr, 'name') and isinstance(expr.name, str) else (
+                expr.callee.name.lower() if hasattr(expr, 'callee') and hasattr(expr.callee, 'name') else ""
+            )
             if name in _OPEN_OPS:
                 for arg in expr.args:
                     if isinstance(arg, Identifier):

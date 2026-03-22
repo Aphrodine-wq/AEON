@@ -314,7 +314,7 @@ def _check_determinism(func, errors: List[AeonError]) -> None:
 
         def _has_nondet(expr: Expr) -> bool:
             if isinstance(expr, FunctionCall):
-                name = expr.name.lower() if isinstance(expr.name, str) else ""
+                name = expr.callee.name.lower() if hasattr(expr, 'callee') and hasattr(expr.callee, 'name') else ""
                 if any(nd in name for nd in nondeterministic_ops):
                     return True
             if isinstance(expr, MethodCall):

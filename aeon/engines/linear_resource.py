@@ -438,9 +438,9 @@ def _collect_uses(stmts: List[Statement]) -> Dict[str, int]:
             for arg in expr.args:
                 _visit_expr(arg)
         elif isinstance(expr, FieldAccess):
-            _visit_expr(expr.object)
+            _visit_expr(expr.obj)
         elif isinstance(expr, MethodCall):
-            _visit_expr(expr.object)
+            _visit_expr(expr.obj)
             for arg in expr.args:
                 _visit_expr(arg)
         elif isinstance(expr, MoveExpr):

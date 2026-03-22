@@ -540,9 +540,18 @@ class SymbolicExecutor:
             left = self._eval_expr(expr.left, state, result_val)
             right = self._eval_expr(expr.right, state, result_val)
 
-            # Check for division by zero
+            # Check for division by zero (skip pathlib Path / operations)
             if expr.op == "/":
-                self._check_div_by_zero(right, state, expr.location)
+                # If either operand is a Path-like identifier or method call, skip
+                left_is_path = (
+                    (isinstance(expr.left, Identifier) and "path" in expr.left.name.lower()) or
+                    (isinstance(expr.left, FieldAccess)) or
+                    (isinstance(expr.left, MethodCall)) or
+                    (isinstance(expr.left, FunctionCall))
+                )
+                right_is_str = isinstance(expr.right, StringLiteral)
+                if not (left_is_path and right_is_str):
+                    self._check_div_by_zero(right, state, expr.location)
 
             # Check for integer overflow on multiplication
             if expr.op == "*":
