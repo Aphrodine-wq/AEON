@@ -143,11 +143,13 @@ class TypeChecker:
         self._function_cache: dict[str, FunctionType] = {}  # Cache function types
 
     def _engine_crash(self, engine_name: str, e: Exception) -> None:
-        """Record an engine crash for self-healing telemetry."""
+        """Record an engine crash and attempt self-healing."""
         self.errors.append(_engine_error(f"{engine_name} failed: {e}"))
         try:
-            from aeon.self_heal import record_crash
-            record_crash(engine_name, e, _tb.format_exc())
+            from aeon.self_heal import record_crash, attempt_heal
+            tb_text = _tb.format_exc()
+            record_crash(engine_name, e, tb_text)
+            attempt_heal(engine_name, e, tb_text)
         except Exception:
             pass  # Telemetry must never block verification
 

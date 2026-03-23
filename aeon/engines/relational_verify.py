@@ -348,11 +348,9 @@ def _check_determinism(func, errors: List[AeonError]) -> None:
 
         for stmt in body:
             if _scan_stmt(stmt):
-                errors.append(contract_error(
-                    f"Non-determinism in '{func_name}': task function uses "
+                errors.append(contract_error(f"Non-determinism in '{func_name}': task function uses "
                     f"non-deterministic operations — cannot verify determinism "
-                    f"(Barthe et al. 2011: product program requires deterministic steps)",
-                    location=loc
+                    f"(Barthe et al. 2011: product program requires deterministic steps)", {}, "", location=loc
                 ))
                 break
 
@@ -397,12 +395,10 @@ def _check_monotonicity(func, errors: List[AeonError]) -> None:
     for stmt in body:
         if isinstance(stmt, ReturnStmt) and stmt.value:
             if not _check_expr_monotone(stmt.value):
-                errors.append(contract_error(
-                    f"Potential monotonicity violation in '{func_name}': "
+                errors.append(contract_error(f"Potential monotonicity violation in '{func_name}': "
                     f"return expression uses anti-monotone operations — "
                     f"product program analysis cannot prove x1 <= x2 => f(x1) <= f(x2) "
-                    f"(Sousa & Dillig 2016: Cartesian Hoare Logic)",
-                    location=loc
+                    f"(Sousa & Dillig 2016: Cartesian Hoare Logic)", {}, "", location=loc
                 ))
 
 
@@ -423,12 +419,10 @@ def _check_idempotence(func, errors: List[AeonError]) -> None:
         if isinstance(text, str) and 'idempoten' in text.lower():
             # Check if function modifies mutable state
             if isinstance(func, TaskFunc):
-                errors.append(contract_error(
-                    f"Cannot verify idempotence of '{func_name}': "
+                errors.append(contract_error(f"Cannot verify idempotence of '{func_name}': "
                     f"task functions with side effects may not be idempotent — "
                     f"self-composition f;f may differ from f "
-                    f"(Barthe, D'Argenio, Rezk 2004: self-composition)",
-                    location=loc
+                    f"(Barthe, D'Argenio, Rezk 2004: self-composition)", {}, "", location=loc
                 ))
 
 
@@ -454,12 +448,10 @@ def _check_sensitivity(func, errors: List[AeonError]) -> None:
                 if isinstance(stmt, ReturnStmt) and stmt.value:
                     if isinstance(stmt.value, BinaryOp):
                         if hasattr(stmt.value, 'op') and str(stmt.value.op) in ('**', 'pow'):
-                            errors.append(contract_error(
-                                f"Potential sensitivity violation in '{func_name}': "
+                            errors.append(contract_error(f"Potential sensitivity violation in '{func_name}': "
                                 f"exponentiation can amplify input differences unboundedly — "
                                 f"|f(x1)-f(x2)| may not be bounded by k*|x1-x2| "
-                                f"(Benton 2004: relational correctness)",
-                                location=loc
+                                f"(Benton 2004: relational correctness)", {}, "", location=loc
                             ))
 
 
@@ -499,11 +491,9 @@ def _check_equivalence(funcs: List, errors: List[AeonError]) -> None:
 
         if f_func and not g_func:
             loc = getattr(f_func, 'location', SourceLocation("", 1, 1))
-            errors.append(contract_error(
-                f"Equivalence target '{g_name}' not found for '{f_name}' — "
+            errors.append(contract_error(f"Equivalence target '{g_name}' not found for '{f_name}' — "
                 f"cannot construct product program "
-                f"(Barthe et al. 2011: relational verification)",
-                location=loc
+                f"(Barthe et al. 2011: relational verification)", {}, "", location=loc
             ))
 
 

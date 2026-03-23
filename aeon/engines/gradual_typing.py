@@ -552,10 +552,8 @@ def _check_expr_consistency(expr: Expr, env: Dict[str, GradualType],
         lt = _check_expr_consistency(expr.left, env, errors, loc)
         rt = _check_expr_consistency(expr.right, env, errors, loc)
         if not consistent(lt, rt):
-            errors.append(contract_error(
-                f"Gradual type inconsistency: operator '{expr.op}' applied to "
-                f"inconsistent types {lt} and {rt}",
-                location=getattr(expr, 'location', loc)
+            errors.append(contract_error(f"Gradual type inconsistency: operator '{expr.op}' applied to "
+                f"inconsistent types {lt} and {rt}", {}, "", location=getattr(expr, 'location', loc)
             ))
         if lt.is_dynamic() or rt.is_dynamic():
             return GradualType.dynamic()
@@ -570,10 +568,8 @@ def _check_expr_consistency(expr: Expr, env: Dict[str, GradualType],
                 if i < len(func_type.param_types):
                     expected = func_type.param_types[i]
                     if not consistent(at, expected):
-                        errors.append(contract_error(
-                            f"Gradual typing: argument {i} of '{func_name}' has type "
-                            f"{at}, inconsistent with expected {expected}",
-                            location=getattr(expr, 'location', loc)
+                        errors.append(contract_error(f"Gradual typing: argument {i} of '{func_name}' has type "
+                            f"{at}, inconsistent with expected {expected}", {}, "", location=getattr(expr, 'location', loc)
                         ))
             return func_type.return_type
         return GradualType.dynamic()
@@ -590,10 +586,8 @@ def _check_stmt_gradual(stmt: Statement, env: Dict[str, GradualType],
             stmt.type_annotation if hasattr(stmt, 'type_annotation') else None
         )
         if not declared.is_dynamic() and not consistent(val_type, declared):
-            errors.append(contract_error(
-                f"Gradual typing: let binding '{stmt.name}' declared as {declared} "
-                f"but assigned value of inconsistent type {val_type}",
-                location=getattr(stmt, 'location', loc)
+            errors.append(contract_error(f"Gradual typing: let binding '{stmt.name}' declared as {declared} "
+                f"but assigned value of inconsistent type {val_type}", {}, "", location=getattr(stmt, 'location', loc)
             ))
         env[stmt.name] = precision_meet(val_type, declared) or val_type
 
@@ -604,10 +598,8 @@ def _check_stmt_gradual(stmt: Statement, env: Dict[str, GradualType],
         )
         existing = env.get(target, GradualType.dynamic())
         if not consistent(val_type, existing):
-            errors.append(contract_error(
-                f"Gradual typing: assignment to '{target}' changes type from "
-                f"{existing} to inconsistent type {val_type}",
-                location=getattr(stmt, 'location', loc)
+            errors.append(contract_error(f"Gradual typing: assignment to '{target}' changes type from "
+                f"{existing} to inconsistent type {val_type}", {}, "", location=getattr(stmt, 'location', loc)
             ))
 
     elif isinstance(stmt, ReturnStmt):
@@ -690,18 +682,14 @@ def check_gradual_types(program: Program) -> List[AeonError]:
             if not ptype.is_dynamic():
                 concrete_set = galois.concretize(ptype)
                 if not galois.check_galois_property(ptype, concrete_set):
-                    errors.append(contract_error(
-                        f"Galois connection violation for parameter '{pname}' "
-                        f"in '{func_name}': abstraction is unsound",
-                        location=loc
+                    errors.append(contract_error(f"Galois connection violation for parameter '{pname}' "
+                        f"in '{func_name}': abstraction is unsound", {}, "", location=loc
                     ))
 
     # Check blame safety across all casts
     violations = blame_tracker.check_blame_safety()
     for cast, msg in violations:
-        errors.append(contract_error(
-            f"Blame safety violation: {msg}",
-            location=cast.location
+        errors.append(contract_error(f"Blame safety violation: {msg}", {}, "", location=cast.location
         ))
 
     # Report gradual guarantee violations
