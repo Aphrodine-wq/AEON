@@ -377,6 +377,40 @@ class _BaseJSTranslator(LanguageTranslator):
 
         return stmts
 
+    @staticmethod
+    def _find_op_outside_strings(expr_str: str, op: str) -> int:
+        """Find operator position that is NOT inside a string literal or JSX tag.
+
+        Returns the index of the operator, or -1 if not found outside strings.
+        """
+        i = 0
+        in_string: Optional[str] = None  # tracks quote char: ', ", or `
+        angle_depth = 0  # tracks JSX tag depth
+        while i < len(expr_str):
+            ch = expr_str[i]
+            if in_string:
+                if ch == '\\':
+                    i += 2  # skip escaped character
+                    continue
+                if ch == in_string:
+                    in_string = None
+            elif ch in ('"', "'", '`'):
+                in_string = ch
+            elif ch == '<':
+                angle_depth += 1
+            elif ch == '>' and angle_depth > 0:
+                angle_depth -= 1
+            elif angle_depth == 0 and expr_str[i:i+len(op)] == op:
+                # For single-char ops, avoid matching inside multi-char ops
+                if len(op) == 1 and op in ('=', '!', '<', '>'):
+                    next_ch = expr_str[i+1:i+2]
+                    if next_ch == '=' or (op == '!' and next_ch == '='):
+                        i += 1
+                        continue
+                return i
+            i += 1
+        return -1
+
     def _parse_simple_expr(self, expr_str: str, loc: SourceLocation) -> Expr:
         """Parse a simple expression string to AEON Expr."""
         expr_str = expr_str.strip()
@@ -394,19 +428,29 @@ class _BaseJSTranslator(LanguageTranslator):
            (expr_str.startswith("'") and expr_str.endswith("'")):
             return StringLiteral(value=expr_str[1:-1], location=loc)
 
+        # Template literal
+        if expr_str.startswith('`') and expr_str.endswith('`'):
+            return StringLiteral(value=expr_str[1:-1], location=loc)
+
         # Numeric literal
         if re.match(r'^-?\d+$', expr_str):
             return IntLiteral(value=int(expr_str), location=loc)
         if re.match(r'^-?\d+\.\d+$', expr_str):
             return FloatLiteral(value=float(expr_str), location=loc)
 
-        # Binary operations
+        # JSX/HTML tags — not arithmetic, return as identifier
+        if expr_str.startswith('<') and '>' in expr_str:
+            return Identifier(name="__jsx__", location=loc)
+
+        # Binary operations — only split on operators OUTSIDE string literals and JSX
         for op in ("!==", "===", "!=", "==", ">=", "<=", "&&", "||", ">", "<", "+", "-", "*", "/", "%"):
-            if op in expr_str:
-                parts = expr_str.split(op, 1)
-                if len(parts) == 2 and parts[0].strip() and parts[1].strip():
-                    left = self._parse_simple_expr(parts[0], loc)
-                    right = self._parse_simple_expr(parts[1], loc)
+            pos = self._find_op_outside_strings(expr_str, op)
+            if pos >= 0:
+                left_str = expr_str[:pos].strip()
+                right_str = expr_str[pos+len(op):].strip()
+                if left_str and right_str:
+                    left = self._parse_simple_expr(left_str, loc)
+                    right = self._parse_simple_expr(right_str, loc)
                     aeon_op = {"===": "==", "!==": "!="}.get(op, op)
                     return BinaryOp(op=aeon_op, left=left, right=right, location=loc)
 
