@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Optional
 import logging
+import traceback as _tb
 
 from aeon.ast_nodes import (
     Program, Declaration, DataDef, PureFunc, TaskFunc,
@@ -141,9 +142,23 @@ class TypeChecker:
         self._type_cache: dict[int, AeonType] = {}  # Cache type inference results
         self._function_cache: dict[str, FunctionType] = {}  # Cache function types
 
+    def _engine_crash(self, engine_name: str, e: Exception) -> None:
+        """Record an engine crash for self-healing telemetry."""
+        self.errors.append(_engine_error(f"{engine_name} failed: {e}"))
+        try:
+            from aeon.self_heal import record_crash
+            record_crash(engine_name, e, _tb.format_exc())
+        except Exception:
+            pass  # Telemetry must never block verification
+
     def check_program(self, program: Program) -> list[AeonError]:
         """Type check an entire program. Returns list of errors."""
         self.errors = []
+        try:
+            from aeon.self_heal import record_run
+            record_run()
+        except Exception:
+            pass
 
         # Register built-in runtime objects
         self._register_builtins()
@@ -188,7 +203,7 @@ class TypeChecker:
                 term_errors = terminator.analyze_program(functions)
                 self.errors.extend(term_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Termination analysis failed: {str(e)}"))
+                self._engine_crash("Termination analysis", e)
 
         # P2: Memory tracking with error recovery
         if self.track_memory:
@@ -201,7 +216,7 @@ class TypeChecker:
                 mem_errors = tracker.analyze_program(functions, data_types)
                 self.errors.extend(mem_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Memory tracking failed: {str(e)}"))
+                self._engine_crash("Memory tracking", e)
 
         # --- Advanced Mathematical Analysis Passes ---
 
@@ -211,7 +226,7 @@ class TypeChecker:
                 ref_errors = check_refinements(program)
                 self.errors.extend(ref_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Refinement type analysis failed: {str(e)}"))
+                self._engine_crash("Refinement type analysis", e)
 
         # Abstract Interpretation (Cousot & Cousot 1977)
         if self.abstract_interpretation:
@@ -219,7 +234,7 @@ class TypeChecker:
                 ai_errors = abstract_interpret(program)
                 self.errors.extend(ai_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Abstract interpretation failed: {str(e)}"))
+                self._engine_crash("Abstract interpretation", e)
 
         # Size-Change Termination (Lee/Jones/Ben-Amram 2001)
         if self.size_change:
@@ -227,7 +242,7 @@ class TypeChecker:
                 sct_errors = check_termination_sct(program)
                 self.errors.extend(sct_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Size-change termination analysis failed: {str(e)}"))
+                self._engine_crash("Size-change termination analysis", e)
 
         # Hoare Logic / wp-calculus (Dijkstra 1975, Hoare 1969)
         if self.hoare_logic:
@@ -235,7 +250,7 @@ class TypeChecker:
                 hoare_errors = verify_contracts_hoare(program)
                 self.errors.extend(hoare_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Hoare logic verification failed: {str(e)}"))
+                self._engine_crash("Hoare logic verification", e)
 
         # Algebraic Effects with Row Polymorphism (Plotkin & Pretnar 2009)
         if self.algebraic_effects:
@@ -243,7 +258,7 @@ class TypeChecker:
                 eff_errors = check_effects_algebraic(program)
                 self.errors.extend(eff_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Algebraic effect analysis failed: {str(e)}"))
+                self._engine_crash("Algebraic effect analysis", e)
 
         # Category-Theoretic Semantics (Moggi 1991)
         if self.category_check:
@@ -252,7 +267,7 @@ class TypeChecker:
                 for v in violations:
                     self.errors.append(_engine_error(str(v)))
             except Exception as e:
-                self.errors.append(_engine_error(f"Category semantics check failed: {str(e)}"))
+                self._engine_crash("Category semantics check", e)
 
         # Information Flow / Noninterference (Volpano/Smith/Irvine 1996)
         if self.information_flow:
@@ -260,7 +275,7 @@ class TypeChecker:
                 ifc_errors = check_information_flow(program)
                 self.errors.extend(ifc_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Information flow analysis failed: {str(e)}"))
+                self._engine_crash("Information flow analysis", e)
 
         # Dependent Types / Curry-Howard (Martin-Löf 1984, Coquand & Huet 1988)
         if self.dependent_types:
@@ -268,7 +283,7 @@ class TypeChecker:
                 dt_errors = check_dependent_types(program)
                 self.errors.extend(dt_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Dependent type checking failed: {str(e)}"))
+                self._engine_crash("Dependent type checking", e)
 
         # Certified Compilation (Leroy 2009, CompCert)
         if self.certified_compilation:
@@ -276,7 +291,7 @@ class TypeChecker:
                 cc_errors = check_certified_compilation(program)
                 self.errors.extend(cc_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Certified compilation check failed: {str(e)}"))
+                self._engine_crash("Certified compilation check", e)
 
         # Symbolic Execution (King 1976, KLEE 2008)
         if self.symbolic_exec:
@@ -284,7 +299,7 @@ class TypeChecker:
                 se_errors = symbolic_execute(program)
                 self.errors.extend(se_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Symbolic execution failed: {str(e)}"))
+                self._engine_crash("Symbolic execution", e)
 
         # Separation Logic (Reynolds 2002, O'Hearn 2019)
         if self.separation_logic:
@@ -292,7 +307,7 @@ class TypeChecker:
                 sl_errors = check_separation_logic(program)
                 self.errors.extend(sl_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Separation logic analysis failed: {str(e)}"))
+                self._engine_crash("Separation logic analysis", e)
 
         # Taint Analysis (Schwartz et al. 2010, Tripp et al. 2009)
         if self.taint_analysis:
@@ -300,7 +315,7 @@ class TypeChecker:
                 ta_errors = check_taint(program)
                 self.errors.extend(ta_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Taint analysis failed: {str(e)}"))
+                self._engine_crash("Taint analysis", e)
 
         # Concurrency Verification (Owicki & Gries 1976, Flanagan & Godefroid 2005)
         if self.concurrency_check:
@@ -308,7 +323,7 @@ class TypeChecker:
                 cc_errors = check_concurrency(program)
                 self.errors.extend(cc_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Concurrency verification failed: {str(e)}"))
+                self._engine_crash("Concurrency verification", e)
 
         # Shape Analysis (Sagiv, Reps, Wilhelm 2002)
         if self.shape_analysis:
@@ -316,7 +331,7 @@ class TypeChecker:
                 sa_errors = check_shapes(program)
                 self.errors.extend(sa_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Shape analysis failed: {str(e)}"))
+                self._engine_crash("Shape analysis", e)
 
         # Bounded Model Checking (Clarke et al. 1986, Biere et al. 1999)
         if self.model_checking:
@@ -324,7 +339,7 @@ class TypeChecker:
                 mc_errors = check_model(program)
                 self.errors.extend(mc_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Model checking failed: {str(e)}"))
+                self._engine_crash("Model checking", e)
 
         # Gradual Typing Verification (Siek & Taha 2006, Siek et al. 2015)
         if self.gradual_typing:
@@ -332,7 +347,7 @@ class TypeChecker:
                 gt_errors = check_gradual_types(program)
                 self.errors.extend(gt_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Gradual typing analysis failed: {str(e)}"))
+                self._engine_crash("Gradual typing analysis", e)
 
         # Linear / Affine Resource Analysis (Girard 1987, Hofmann & Jost 2003)
         if self.linear_resource:
@@ -340,7 +355,7 @@ class TypeChecker:
                 lr_errors = check_linear_resources(program)
                 self.errors.extend(lr_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Linear resource analysis failed: {str(e)}"))
+                self._engine_crash("Linear resource analysis", e)
 
         # Probabilistic Program Analysis (Kozen 1981, Gordon et al. 2014)
         if self.probabilistic:
@@ -348,7 +363,7 @@ class TypeChecker:
                 prob_errors = check_probabilistic(program)
                 self.errors.extend(prob_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Probabilistic analysis failed: {str(e)}"))
+                self._engine_crash("Probabilistic analysis", e)
 
         # Relational Verification / 2-Safety (Barthe et al. 2011, Benton 2004)
         if self.relational_verify:
@@ -356,7 +371,7 @@ class TypeChecker:
                 rv_errors = check_relational(program)
                 self.errors.extend(rv_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Relational verification failed: {str(e)}"))
+                self._engine_crash("Relational verification", e)
 
         # Session Types / Multiparty Protocol Verification (Honda et al. 2008, Wadler 2012)
         if self.session_types:
@@ -364,7 +379,7 @@ class TypeChecker:
                 st_errors = check_session_types(program)
                 self.errors.extend(st_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Session type checking failed: {str(e)}"))
+                self._engine_crash("Session type checking", e)
 
         # Automatic Complexity Analysis / RAML (Hoffmann et al. 2012, Gulwani et al. 2009)
         if self.complexity_analysis:
@@ -372,7 +387,7 @@ class TypeChecker:
                 cx_errors = check_complexity(program)
                 self.errors.extend(cx_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Complexity analysis failed: {str(e)}"))
+                self._engine_crash("Complexity analysis", e)
 
         # Abstract Refinement Types (Vazou et al. 2013, Vazou et al. 2014)
         if self.abstract_refinement:
@@ -380,7 +395,7 @@ class TypeChecker:
                 ar_errors = check_abstract_refinements(program)
                 self.errors.extend(ar_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Abstract refinement type checking failed: {str(e)}"))
+                self._engine_crash("Abstract refinement type checking", e)
 
         # Differential Privacy Verification (Reed & Pierce 2010, Gaboardi et al. 2013)
         if self.differential_privacy:
@@ -388,7 +403,7 @@ class TypeChecker:
                 dp_errors = check_differential_privacy(program)
                 self.errors.extend(dp_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Differential privacy verification failed: {str(e)}"))
+                self._engine_crash("Differential privacy verification", e)
 
         # Type-State Analysis (Strom & Yemini 1986, DeLine & Fahndrich 2004)
         if self.typestate:
@@ -396,7 +411,7 @@ class TypeChecker:
                 ts_errors = check_typestate(program)
                 self.errors.extend(ts_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Typestate analysis failed: {str(e)}"))
+                self._engine_crash("Typestate analysis", e)
 
         # Craig Interpolation / CEGAR Refinement (McMillan 2003, Henzinger et al. 2004)
         if self.interpolation:
@@ -404,7 +419,7 @@ class TypeChecker:
                 ip_errors = check_interpolation(program)
                 self.errors.extend(ip_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Interpolation-based refinement failed: {str(e)}"))
+                self._engine_crash("Interpolation-based refinement", e)
 
         # API Contract Verification (Acharya et al. 2007)
         if self.api_contracts:
@@ -412,7 +427,7 @@ class TypeChecker:
                 ac_errors = check_api_contracts(program)
                 self.errors.extend(ac_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"API contract verification failed: {str(e)}"))
+                self._engine_crash("API contract verification", e)
 
         # Numeric Safety Analysis (Miné 2004)
         if self.numeric_safety:
@@ -420,7 +435,7 @@ class TypeChecker:
                 ns_errors = check_numeric_safety(program)
                 self.errors.extend(ns_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Numeric safety analysis failed: {str(e)}"))
+                self._engine_crash("Numeric safety analysis", e)
 
         # Null Safety Analysis (Fähndrich & Leino 2003)
         if self.null_safety:
@@ -428,7 +443,7 @@ class TypeChecker:
                 nl_errors = check_null_safety(program)
                 self.errors.extend(nl_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Null safety analysis failed: {str(e)}"))
+                self._engine_crash("Null safety analysis", e)
 
         # Error Handling Verification (Robillard & Murphy 2000)
         if self.error_handling:
@@ -436,7 +451,7 @@ class TypeChecker:
                 eh_errors = check_error_handling(program)
                 self.errors.extend(eh_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Error handling verification failed: {str(e)}"))
+                self._engine_crash("Error handling verification", e)
 
         # Dead Code Detection (Allen 1970, Knoop et al. 1994)
         if self.deadcode:
@@ -444,7 +459,7 @@ class TypeChecker:
                 dc_errors = check_deadcode(program)
                 self.errors.extend(dc_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Dead code detection failed: {str(e)}"))
+                self._engine_crash("Dead code detection", e)
 
         # Money Math Analysis (Goldberg 1991, Bloch 2008)
         if self.money_math:
@@ -452,7 +467,7 @@ class TypeChecker:
                 mm_errors = check_money_math(program)
                 self.errors.extend(mm_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Money math analysis failed: {str(e)}"))
+                self._engine_crash("Money math analysis", e)
 
         # Framework Rules (Next.js, Supabase, React awareness)
         if self.framework_rules:
@@ -460,7 +475,7 @@ class TypeChecker:
                 fr_errors = check_framework_rules(program)
                 self.errors.extend(fr_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Framework rules analysis failed: {str(e)}"))
+                self._engine_crash("Framework rules analysis", e)
 
         # Construction Domain (estimation, invoicing, bid management)
         if self.construction_domain:
@@ -468,7 +483,7 @@ class TypeChecker:
                 cd_errors = check_construction_domain(program)
                 self.errors.extend(cd_errors)
             except Exception as e:
-                self.errors.append(_engine_error(f"Construction domain analysis failed: {str(e)}"))
+                self._engine_crash("Construction domain analysis", e)
 
         return self.errors
 

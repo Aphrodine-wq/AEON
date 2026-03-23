@@ -1343,6 +1343,10 @@ def main() -> None:
     p_portfolio.add_argument("--min-confidence", type=float, default=0.3, dest="min_confidence", help="Min confidence (0.0-1.0)")
     p_portfolio.set_defaults(func=cmd_portfolio)
 
+    # self-heal health report
+    p_health = subparsers.add_parser("health", help="Show self-healing telemetry and engine crash trends")
+    p_health.set_defaults(func=lambda args: (print(__import__('aeon.self_heal', fromlist=['get_health_report']).get_health_report()), 0)[1])
+
     args = parser.parse_args()
 
     if not args.command:

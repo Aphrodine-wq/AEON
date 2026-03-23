@@ -126,11 +126,21 @@ class FunctionCall(Expr):
     callee: Expr = field(default_factory=Expr)
     args: list[Expr] = field(default_factory=list)
 
+    @property
+    def name(self) -> str:
+        """Compatibility: engines that access .name get callee.name."""
+        return getattr(self.callee, 'name', '')
+
 
 @dataclass
 class FieldAccess(Expr):
     obj: Expr = field(default_factory=Expr)
     field_name: str = ""
+
+    @property
+    def object(self):
+        """Compatibility: engines that access .object get .obj."""
+        return self.obj
 
 
 @dataclass
@@ -138,6 +148,21 @@ class MethodCall(Expr):
     obj: Expr = field(default_factory=Expr)
     method_name: str = ""
     args: list[Expr] = field(default_factory=list)
+
+    @property
+    def name(self) -> str:
+        """Compatibility: engines that access .name get method_name."""
+        return self.method_name
+
+    @property
+    def object(self):
+        """Compatibility: engines that access .object get .obj."""
+        return self.obj
+
+    @property
+    def method(self) -> str:
+        """Compatibility: engines that access .method get method_name."""
+        return self.method_name
 
 
 @dataclass
