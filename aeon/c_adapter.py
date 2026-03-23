@@ -460,6 +460,26 @@ class _BaseCTranslator(LanguageTranslator):
 
         return stmts
 
+    @staticmethod
+    def _find_op_outside_strings(expr_str: str, op: str) -> int:
+        """Find operator position that is NOT inside a string literal."""
+        i = 0
+        in_string = None
+        while i < len(expr_str):
+            ch = expr_str[i]
+            if in_string:
+                if ch == '\\':
+                    i += 2
+                    continue
+                if ch == in_string:
+                    in_string = None
+            elif ch in ('"', "'", '`'):
+                in_string = ch
+            elif expr_str[i:i+len(op)] == op:
+                return i
+            i += 1
+        return -1
+
     def _parse_simple_expr(self, expr_str: str, loc: SourceLocation) -> Expr:
         """Parse a simple expression to AEON Expr."""
         expr_str = expr_str.strip()
@@ -487,13 +507,15 @@ class _BaseCTranslator(LanguageTranslator):
         if re.match(r'^0x[0-9a-fA-F]+$', expr_str):
             return IntLiteral(value=int(expr_str, 16), location=loc)
 
-        # Binary operations
+        # Binary operations — only split on operators OUTSIDE string literals
         for op in ("!=", "==", ">=", "<=", "&&", "||", ">", "<", "+", "-", "*", "/", "%"):
-            if op in expr_str:
-                parts = expr_str.split(op, 1)
-                if len(parts) == 2 and parts[0].strip() and parts[1].strip():
-                    left = self._parse_simple_expr(parts[0], loc)
-                    right = self._parse_simple_expr(parts[1], loc)
+            pos = self._find_op_outside_strings(expr_str, op)
+            if pos >= 0:
+                left_str = expr_str[:pos].strip()
+                right_str = expr_str[pos+len(op):].strip()
+                if left_str and right_str:
+                    left = self._parse_simple_expr(left_str, loc)
+                    right = self._parse_simple_expr(right_str, loc)
                     return BinaryOp(op=op, left=left, right=right, location=loc)
 
         # Function call

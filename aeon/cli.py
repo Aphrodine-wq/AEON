@@ -78,6 +78,30 @@ def cmd_compile(args: argparse.Namespace) -> int:
                     differential_privacy=getattr(args, 'privacy', False),
                     typestate=getattr(args, 'typestate', False),
                     interpolation=getattr(args, 'interpolation', False),
+                    # Cybersecurity engines
+                    secret_detection=getattr(args, 'secret_detection', False),
+                    auth_check=getattr(args, 'auth_check', False),
+                    crypto_misuse=getattr(args, 'crypto_misuse', False),
+                    injection_advanced=getattr(args, 'injection_advanced', False),
+                    api_security=getattr(args, 'api_security', False),
+                    supply_chain=getattr(args, 'supply_chain', False),
+                    session_jwt=getattr(args, 'session_jwt', False),
+                    container_security=getattr(args, 'container_security', False),
+                    ssrf_advanced=getattr(args, 'ssrf_advanced', False),
+                    prototype_pollution=getattr(args, 'prototype_pollution', False),
+                    # Cybersecurity Tier 2
+                    business_logic=getattr(args, 'business_logic', False),
+                    data_exposure=getattr(args, 'data_exposure', False),
+                    security_misconfig=getattr(args, 'security_misconfig', False),
+                    oauth_oidc=getattr(args, 'oauth_oidc', False),
+                    file_upload=getattr(args, 'file_upload', False),
+                    input_validation=getattr(args, 'input_validation', False),
+                    race_condition_security=getattr(args, 'race_condition_security', False),
+                    dependency_audit=getattr(args, 'dependency_audit', False),
+                    email_security=getattr(args, 'email_security', False),
+                    insecure_randomness=getattr(args, 'insecure_randomness', False),
+                    cache_poisoning=getattr(args, 'cache_poisoning', False),
+                    http_smuggling=getattr(args, 'http_smuggling', False),
                     deep_verify=args.deep_verify)
     if errors:
         print(json.dumps([e.to_dict() for e in errors], indent=2))
@@ -186,7 +210,15 @@ def cmd_check(args: argparse.Namespace) -> int:
     # For non-AEON languages, use the multi-language adapter
     if language != 'aeon':
         from aeon.language_adapter import verify as lang_verify
-        result = lang_verify(source, language, deep_verify=args.deep_verify)
+        from aeon.profiles import resolve_profile_to_prove_kwargs
+        # Resolve profile to prove kwargs so cybersecurity engines get activated
+        profile_name = getattr(args, 'profile', None)
+        prove_kwargs = None
+        if profile_name:
+            prove_kwargs = resolve_profile_to_prove_kwargs(profile_name=profile_name, deep_verify=args.deep_verify)
+        elif args.deep_verify:
+            prove_kwargs = resolve_profile_to_prove_kwargs(deep_verify=True)
+        result = lang_verify(source, language, deep_verify=args.deep_verify, prove_kwargs=prove_kwargs)
         result_dict = result.to_dict()
         fmt = getattr(args, 'output_format', 'pretty') or 'pretty'
         if getattr(args, 'explain', False):
@@ -226,6 +258,30 @@ def cmd_check(args: argparse.Namespace) -> int:
                     differential_privacy=getattr(args, 'privacy', False),
                     typestate=getattr(args, 'typestate', False),
                     interpolation=getattr(args, 'interpolation', False),
+                    # Cybersecurity engines
+                    secret_detection=getattr(args, 'secret_detection', False),
+                    auth_check=getattr(args, 'auth_check', False),
+                    crypto_misuse=getattr(args, 'crypto_misuse', False),
+                    injection_advanced=getattr(args, 'injection_advanced', False),
+                    api_security=getattr(args, 'api_security', False),
+                    supply_chain=getattr(args, 'supply_chain', False),
+                    session_jwt=getattr(args, 'session_jwt', False),
+                    container_security=getattr(args, 'container_security', False),
+                    ssrf_advanced=getattr(args, 'ssrf_advanced', False),
+                    prototype_pollution=getattr(args, 'prototype_pollution', False),
+                    # Cybersecurity Tier 2
+                    business_logic=getattr(args, 'business_logic', False),
+                    data_exposure=getattr(args, 'data_exposure', False),
+                    security_misconfig=getattr(args, 'security_misconfig', False),
+                    oauth_oidc=getattr(args, 'oauth_oidc', False),
+                    file_upload=getattr(args, 'file_upload', False),
+                    input_validation=getattr(args, 'input_validation', False),
+                    race_condition_security=getattr(args, 'race_condition_security', False),
+                    dependency_audit=getattr(args, 'dependency_audit', False),
+                    email_security=getattr(args, 'email_security', False),
+                    insecure_randomness=getattr(args, 'insecure_randomness', False),
+                    cache_poisoning=getattr(args, 'cache_poisoning', False),
+                    http_smuggling=getattr(args, 'http_smuggling', False),
                     deep_verify=args.deep_verify)
 
     # --proof-trace: emit Hoare proof obligations after normal check output
@@ -312,12 +368,21 @@ def cmd_scan(args: argparse.Namespace) -> int:
     use_parallel = args.parallel or config.parallel
     workers = getattr(args, 'workers', 0) or config.parallel_workers
 
+    # Resolve profile to prove kwargs for cybersecurity engine activation
+    from aeon.profiles import resolve_profile_to_prove_kwargs
+    profile_name = getattr(args, 'profile', None) or config.profile
+    prove_kwargs = None
+    if profile_name:
+        prove_kwargs = resolve_profile_to_prove_kwargs(profile_name=profile_name, deep_verify=deep)
+    elif deep:
+        prove_kwargs = resolve_profile_to_prove_kwargs(deep_verify=True)
+
     if use_parallel:
         from aeon.parallel import parallel_scan
         result = parallel_scan(target, deep_verify=deep, workers=workers)
     else:
         from aeon.scanner import scan_directory
-        result = scan_directory(target, deep_verify=deep)
+        result = scan_directory(target, deep_verify=deep, prove_kwargs=prove_kwargs)
 
     # Cross-file analysis (runs on the whole directory, not per-file)
     try:
@@ -368,8 +433,8 @@ def cmd_scan(args: argparse.Namespace) -> int:
         except Exception:
             pass  # AI analysis is optional
 
-    # Quality filtering (confidence scoring, dedup, noise suppression)
-    if getattr(args, 'quality', False):
+    # Quality filtering (confidence scoring, dedup, noise suppression) — ON by default
+    if not getattr(args, 'raw', False):
         from aeon.scanner import apply_quality_filter
         min_conf = getattr(args, 'min_confidence', 0.3)
         result = apply_quality_filter(result, min_confidence=min_conf)
@@ -1074,7 +1139,7 @@ def cmd_portfolio(args: argparse.Namespace) -> int:
             print(f"Unknown project '{project_filter}'. Available: {', '.join(aliases)}")
             return 1
 
-    quality = getattr(args, 'quality', False)
+    quality = not getattr(args, 'raw', False)
     min_conf = getattr(args, 'min_confidence', 0.3)
     result = scan_portfolio(config, project_filter=project_filter,
                             quality_filter=quality, min_confidence=min_conf)
@@ -1120,6 +1185,29 @@ def main() -> None:
     p_compile.add_argument("--concurrency", action="store_true", help="Concurrency verification / race detection (Owicki & Gries 1976)")
     p_compile.add_argument("--shape", action="store_true", help="Shape analysis for linked structures (Sagiv et al. 2002)")
     p_compile.add_argument("--model-check", action="store_true", dest="model_check", help="Bounded model checking (Clarke et al. 1986)")
+    # Cybersecurity engines
+    p_compile.add_argument("--secret-detection", action="store_true", dest="secret_detection", help="Hardcoded secret/credential detection (CWE-798)")
+    p_compile.add_argument("--auth-check", action="store_true", dest="auth_check", help="Auth & access control analysis (OWASP A01/A07)")
+    p_compile.add_argument("--crypto-misuse", action="store_true", dest="crypto_misuse", help="Cryptographic misuse detection (CWE-327/330)")
+    p_compile.add_argument("--injection-advanced", action="store_true", dest="injection_advanced", help="Advanced injection: SSTI, ReDoS, XXE, log/header injection")
+    p_compile.add_argument("--api-security", action="store_true", dest="api_security", help="API security: CORS, headers, mass assignment, rate limiting")
+    p_compile.add_argument("--supply-chain", action="store_true", dest="supply_chain", help="Supply chain: dynamic imports, unsafe deser, dependency confusion")
+    p_compile.add_argument("--session-jwt", action="store_true", dest="session_jwt", help="Session & JWT: alg:none, cookie flags, session fixation")
+    p_compile.add_argument("--container-security", action="store_true", dest="container_security", help="Container/IaC: Dockerfile, K8s, privilege escalation")
+    p_compile.add_argument("--ssrf-advanced", action="store_true", dest="ssrf_advanced", help="Advanced SSRF: cloud metadata, DNS rebinding, protocol smuggling")
+    p_compile.add_argument("--prototype-pollution", action="store_true", dest="prototype_pollution", help="Prototype pollution: deep merge, dynamic property assignment")
+    p_compile.add_argument("--business-logic", action="store_true", dest="business_logic", help="Business logic: race conditions, double-spend, price manipulation")
+    p_compile.add_argument("--data-exposure", action="store_true", dest="data_exposure", help="Data exposure: PII in logs, sensitive data in responses")
+    p_compile.add_argument("--security-misconfig", action="store_true", dest="security_misconfig", help="Security misconfig: debug mode, default creds")
+    p_compile.add_argument("--oauth-oidc", action="store_true", dest="oauth_oidc", help="OAuth/OIDC: missing PKCE, state param, token leakage")
+    p_compile.add_argument("--file-upload", action="store_true", dest="file_upload", help="File upload: unrestricted types, path traversal")
+    p_compile.add_argument("--input-validation", action="store_true", dest="input_validation", help="Input validation: length limits, type coercion, Unicode")
+    p_compile.add_argument("--race-condition-security", action="store_true", dest="race_condition_security", help="Race conditions: TOCTOU, double-submit")
+    p_compile.add_argument("--dependency-audit", action="store_true", dest="dependency_audit", help="Dependency audit: vulnerable patterns, deprecated APIs")
+    p_compile.add_argument("--email-security", action="store_true", dest="email_security", help="Email: header injection, SMTP injection")
+    p_compile.add_argument("--insecure-randomness", action="store_true", dest="insecure_randomness", help="Insecure randomness: UUID v1, weak seeds")
+    p_compile.add_argument("--cache-poisoning", action="store_true", dest="cache_poisoning", help="Cache poisoning: unkeyed headers, cache deception")
+    p_compile.add_argument("--http-smuggling", action="store_true", dest="http_smuggling", help="HTTP smuggling: CL/TE, raw HTTP, proxy risks")
     p_compile.set_defaults(func=cmd_compile)
 
     # check
@@ -1127,7 +1215,7 @@ def main() -> None:
     p_check.add_argument("file", help="Source file (.aeon, .py, .java, .js, .ts, .go, .rs, .c, .cpp, .rb, .swift, .kt, .php, .scala, .dart)")
     p_check.add_argument("--language", choices=["aeon", "python", "java", "javascript", "typescript", "go", "rust", "c", "cpp", "ruby", "swift", "kotlin", "php", "scala", "dart"],
                          help="Override auto-detected language")
-    p_check.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "safety"],
+    p_check.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety"],
                          help="Analysis profile (quick|daily|security|performance|safety)")
     p_check.add_argument("--output-format", dest="output_format", choices=["pretty", "summary", "annotate", "markdown", "json"],
                          default="pretty", help="Output format (default: pretty)")
@@ -1151,6 +1239,29 @@ def main() -> None:
     p_check.add_argument("--concurrency", action="store_true", help="Concurrency / race detection")
     p_check.add_argument("--shape", action="store_true", help="Shape analysis for linked structures")
     p_check.add_argument("--model-check", action="store_true", dest="model_check", help="Bounded model checking")
+    # Cybersecurity engines
+    p_check.add_argument("--secret-detection", action="store_true", dest="secret_detection", help="Hardcoded secret/credential detection (CWE-798)")
+    p_check.add_argument("--auth-check", action="store_true", dest="auth_check", help="Auth & access control (OWASP A01/A07)")
+    p_check.add_argument("--crypto-misuse", action="store_true", dest="crypto_misuse", help="Cryptographic misuse (CWE-327/330)")
+    p_check.add_argument("--injection-advanced", action="store_true", dest="injection_advanced", help="Advanced injection: SSTI, ReDoS, XXE")
+    p_check.add_argument("--api-security", action="store_true", dest="api_security", help="API security: CORS, headers, mass assignment")
+    p_check.add_argument("--supply-chain", action="store_true", dest="supply_chain", help="Supply chain: dynamic imports, unsafe deser")
+    p_check.add_argument("--session-jwt", action="store_true", dest="session_jwt", help="Session & JWT security")
+    p_check.add_argument("--container-security", action="store_true", dest="container_security", help="Container/IaC security")
+    p_check.add_argument("--ssrf-advanced", action="store_true", dest="ssrf_advanced", help="Advanced SSRF analysis")
+    p_check.add_argument("--prototype-pollution", action="store_true", dest="prototype_pollution", help="Prototype pollution detection")
+    p_check.add_argument("--business-logic", action="store_true", dest="business_logic", help="Business logic security")
+    p_check.add_argument("--data-exposure", action="store_true", dest="data_exposure", help="Data exposure & privacy")
+    p_check.add_argument("--security-misconfig", action="store_true", dest="security_misconfig", help="Security misconfiguration")
+    p_check.add_argument("--oauth-oidc", action="store_true", dest="oauth_oidc", help="OAuth/OIDC security")
+    p_check.add_argument("--file-upload", action="store_true", dest="file_upload", help="File upload security")
+    p_check.add_argument("--input-validation", action="store_true", dest="input_validation", help="Input validation deep")
+    p_check.add_argument("--race-condition-security", action="store_true", dest="race_condition_security", help="Race condition security")
+    p_check.add_argument("--dependency-audit", action="store_true", dest="dependency_audit", help="Dependency audit")
+    p_check.add_argument("--email-security", action="store_true", dest="email_security", help="Email security")
+    p_check.add_argument("--insecure-randomness", action="store_true", dest="insecure_randomness", help="Insecure randomness deep")
+    p_check.add_argument("--cache-poisoning", action="store_true", dest="cache_poisoning", help="Web cache poisoning")
+    p_check.add_argument("--http-smuggling", action="store_true", dest="http_smuggling", help="HTTP request smuggling")
     p_check.add_argument("--proof-trace", action="store_true", dest="proof_trace",
                          help="Emit proof obligations table (Hoare VCs, solver results)")
     p_check.add_argument("--emit-witnesses", action="store_true", dest="emit_witnesses",
@@ -1186,7 +1297,7 @@ def main() -> None:
     # init
     p_init = subparsers.add_parser("init", help="Project setup wizard — create .aeonrc.yml and configure AEON")
     p_init.add_argument("directory", nargs="?", default=".", help="Project directory (default: current)")
-    p_init.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "safety"],
+    p_init.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety"],
                         help="Set analysis profile")
     p_init.add_argument("--ci", action="store_true", help="Generate GitHub Actions workflow")
     p_init.set_defaults(func=cmd_init)
@@ -1229,7 +1340,7 @@ def main() -> None:
     p_scan.add_argument("--deep-verify", action="store_true", dest="deep_verify", help="Enable ALL analysis engines")
     p_scan.add_argument("--parallel", action="store_true", help="Use multiprocess parallel scanning")
     p_scan.add_argument("--workers", type=int, default=0, help="Number of parallel workers (0=auto)")
-    p_scan.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "safety"],
+    p_scan.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety"],
                         help="Analysis profile (quick|daily|security|performance|safety|ui)")
     p_scan.add_argument("--ui-lint", action="store_true", dest="ui_lint",
                         help="Enable UI/UX lint engine (design, a11y, UX anti-patterns)")
@@ -1242,7 +1353,7 @@ def main() -> None:
     p_scan.add_argument("--output", "-o", default="", help="Output file path (default: stdout)")
     p_scan.add_argument("--baseline", default="", help="Baseline file for diff mode")
     p_scan.add_argument("--create-baseline", action="store_true", dest="create_baseline", help="Create a baseline from current results")
-    p_scan.add_argument("--quality", action="store_true", help="Enable smart filtering (confidence scoring, dedup, noise suppression)")
+    p_scan.add_argument("--raw", action="store_true", help="Disable smart filtering — show all raw findings without confidence scoring or dedup")
     p_scan.add_argument("--min-confidence", type=float, default=0.3, dest="min_confidence", help="Min confidence threshold (0.0-1.0, default: 0.3)")
     p_scan.add_argument("--top", type=int, default=0, help="Only show top N findings by impact score")
     p_scan.set_defaults(func=cmd_scan)
@@ -1339,7 +1450,7 @@ def main() -> None:
     p_portfolio.add_argument("--format", choices=["pretty", "summary", "json"], default="pretty",
                              help="Output format (default: pretty)")
     p_portfolio.add_argument("--config", help="Path to portfolio config file")
-    p_portfolio.add_argument("--quality", action="store_true", help="Enable smart filtering (suppress noise, score confidence)")
+    p_portfolio.add_argument("--raw", action="store_true", help="Disable smart filtering — show all raw findings")
     p_portfolio.add_argument("--min-confidence", type=float, default=0.3, dest="min_confidence", help="Min confidence (0.0-1.0)")
     p_portfolio.set_defaults(func=cmd_portfolio)
 

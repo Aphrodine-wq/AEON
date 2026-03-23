@@ -187,6 +187,13 @@ class DeadCodeAnalyzer:
                     location=def_loc,
                 ))
 
+    # Adapter artifacts that look like parameter names but are really
+    # fragments from regex-based JSX/destructuring parsing
+    _ADAPTER_ARTIFACT_PARAMS: frozenset = frozenset({
+        "{", "}", "...", "=>", "=", "(", ")", ",",
+        "props", "children", "className", "key", "ref", "style",
+    })
+
     def _check_unused_params(self, func: PureFunc | TaskFunc) -> None:
         """Check for function parameters that are never used."""
         if not func.params:
@@ -198,7 +205,15 @@ class DeadCodeAnalyzer:
             self._collect_uses(stmt, used)
 
         for param in func.params:
-            if param.name not in used and not param.name.startswith("_"):
+            # Skip underscore-prefixed (intentionally unused)
+            if param.name.startswith("_"):
+                continue
+            # Skip adapter artifacts from JSX/destructuring parsing
+            if (param.name in self._ADAPTER_ARTIFACT_PARAMS
+                    or any(ch in param.name for ch in (' ', '"', "'", '<', '>', '=', '(', ')', '{', '}'))
+                    or param.name.startswith("...")):
+                continue
+            if param.name not in used:
                 loc = getattr(param, 'location',
                               getattr(func, 'location', SourceLocation("<dead>", 0, 0)))
                 self.errors.append(contract_error(

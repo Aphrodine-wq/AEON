@@ -33,7 +33,7 @@ aeon test --all
 aeon/
   cli.py              # 23 commands (scan, check, compile, fix, review, seal, etc.)
   config.py           # .aeonrc.yml/json parsing
-  profiles.py         # quick, daily, security, performance, construction, safety
+  profiles.py         # quick, daily, security, performance, construction, cybersecurity, safety
   scanner.py          # Directory scanning
   parallel.py         # Parallel verification
   language_adapter.py # Top-level adapter registry (legacy, mirrors aeon/adapters/)
@@ -58,8 +58,18 @@ aeon/
 | Construction domain | `engines/construction_domain.py` | Construction-specific rules |
 | Taint analysis | `engines/taint_analysis.py` | Source/sink tracking |
 | Information flow | `engines/information_flow.py` | Noninterference |
+| Secret detection | `engines/secret_detection.py` | Hardcoded credentials, API keys (CWE-798) |
+| Auth & access control | `engines/auth_access_control.py` | Broken auth, IDOR, CSRF (OWASP A01/A07) |
+| Crypto misuse | `engines/crypto_misuse.py` | Weak algorithms, timing attacks (CWE-327/330) |
+| Injection advanced | `engines/injection_advanced.py` | SSTI, ReDoS, XXE, log injection (CWE-94) |
+| API security | `engines/api_security.py` | CORS, headers, mass assignment (OWASP API) |
+| Supply chain | `engines/supply_chain.py` | Dynamic imports, unsafe deser (CWE-829) |
+| Session & JWT | `engines/session_jwt.py` | JWT misconfig, cookie flags (CWE-347) |
+| Container security | `engines/container_security.py` | Docker/K8s misconfig (CWE-250) |
+| SSRF advanced | `engines/ssrf_advanced.py` | Cloud metadata, DNS rebinding (CWE-918) |
+| Prototype pollution | `engines/prototype_pollution.py` | Deep merge, dynamic props (CWE-1321) |
 
-50 engine files total in `aeon/engines/`.
+60 engine files total in `aeon/engines/`.
 
 ## CLI Commands
 
@@ -93,10 +103,11 @@ aeon/
 
 - `quick` — symbolic exec + abstract interp + contracts (fast CI)
 - `daily` — + taint, concurrency, Hoare logic (default)
-- `security` — + info flow, separation logic, money_math (API/auth/payment code)
+- `security` — + info flow, separation logic, money_math + 6 cybersecurity engines
 - `performance` — + size-change, complexity, effects
 - `construction` — + numeric safety, framework rules
-- `safety` — all 50 engines (pre-release audit)
+- `cybersecurity` — full OWASP Top 10 + all 10 cybersecurity engines (pentest-grade)
+- `safety` — all 60 engines (pre-release audit)
 
 ## Configuration
 

@@ -169,6 +169,18 @@ def _categorize_errors(errors: List[AeonError], noise_patterns: List[str],
         "numeric safety", "null safety", "dead code detection",
         "api contract verification", "error handling verification",
         "taint analysis", "information flow",
+        # Cybersecurity engines
+        "secret detection", "auth access control", "crypto misuse",
+        "injection advanced", "api security", "supply chain",
+        "session jwt", "container security", "ssrf advanced",
+        "prototype pollution",
+        # Tier 2
+        "business logic security", "data exposure & privacy",
+        "security misconfiguration", "oauth & oidc security",
+        "file upload security", "input validation",
+        "race condition security", "dependency audit",
+        "email security", "insecure randomness",
+        "web cache poisoning", "http request smuggling",
     }
 
     for e in errors:
@@ -218,7 +230,8 @@ def _categorize_errors(errors: List[AeonError], noise_patterns: List[str],
 
 
 def verify(source: str, language: str, deep_verify: bool = True,
-           analyses: Optional[List[str]] = None) -> VerificationResult:
+           analyses: Optional[List[str]] = None,
+           prove_kwargs: Optional[Dict[str, bool]] = None) -> VerificationResult:
     """Verify source code in any supported language.
 
     Args:
@@ -226,6 +239,7 @@ def verify(source: str, language: str, deep_verify: bool = True,
         language: Language identifier ('python', 'java', 'javascript', 'typescript', 'go')
         deep_verify: Enable all 10 analysis passes
         analyses: Specific analyses to run (overrides deep_verify)
+        prove_kwargs: Direct keyword arguments for prove() — used by profiles
 
     Returns:
         VerificationResult with errors, warnings, and summary
@@ -258,7 +272,9 @@ def verify(source: str, language: str, deep_verify: bool = True,
 
     # Step 3: Build kwargs for prove()
     kwargs: Dict[str, bool] = {}
-    if analyses:
+    if prove_kwargs:
+        kwargs = dict(prove_kwargs)
+    elif analyses:
         analysis_map = {
             "refinement": "refinement_types",
             "abstract": "abstract_interpretation",
@@ -290,6 +306,68 @@ def verify(source: str, language: str, deep_verify: bool = True,
             "framework": "framework_rules",
             "framework_rules": "framework_rules",
             "construction": "money_math",  # construction implies money_math
+            # Cybersecurity engines
+            "secrets": "secret_detection",
+            "secret_detection": "secret_detection",
+            "auth": "auth_check",
+            "auth_check": "auth_check",
+            "access_control": "auth_check",
+            "crypto": "crypto_misuse",
+            "crypto_misuse": "crypto_misuse",
+            "injection_advanced": "injection_advanced",
+            "ssti": "injection_advanced",
+            "redos": "injection_advanced",
+            "xxe": "injection_advanced",
+            "api_security": "api_security",
+            "cors": "api_security",
+            "headers": "api_security",
+            "supply_chain": "supply_chain",
+            "dependency": "supply_chain",
+            "session_jwt": "session_jwt",
+            "jwt": "session_jwt",
+            "cookie": "session_jwt",
+            "container": "container_security",
+            "container_security": "container_security",
+            "docker": "container_security",
+            "k8s": "container_security",
+            "ssrf": "ssrf_advanced",
+            "ssrf_advanced": "ssrf_advanced",
+            "prototype_pollution": "prototype_pollution",
+            "pollution": "prototype_pollution",
+            "cybersecurity": "secret_detection",  # shorthand enables secrets + profile handles the rest
+            # Tier 2 cybersecurity engines
+            "business_logic": "business_logic",
+            "business": "business_logic",
+            "double_spend": "business_logic",
+            "data_exposure": "data_exposure",
+            "privacy": "data_exposure",
+            "pii": "data_exposure",
+            "security_misconfig": "security_misconfig",
+            "misconfig": "security_misconfig",
+            "debug_mode": "security_misconfig",
+            "oauth": "oauth_oidc",
+            "oauth_oidc": "oauth_oidc",
+            "oidc": "oauth_oidc",
+            "pkce": "oauth_oidc",
+            "file_upload": "file_upload",
+            "upload": "file_upload",
+            "input_validation": "input_validation",
+            "validation": "input_validation",
+            "race_condition": "race_condition_security",
+            "race_condition_security": "race_condition_security",
+            "toctou": "race_condition_security",
+            "dependency_audit": "dependency_audit",
+            "deps": "dependency_audit",
+            "email_security": "email_security",
+            "email": "email_security",
+            "smtp": "email_security",
+            "insecure_randomness": "insecure_randomness",
+            "randomness": "insecure_randomness",
+            "prng": "insecure_randomness",
+            "cache_poisoning": "cache_poisoning",
+            "cache": "cache_poisoning",
+            "http_smuggling": "http_smuggling",
+            "smuggling": "http_smuggling",
         }
         for a in analyses:
             key = analysis_map.get(a)
@@ -341,12 +419,13 @@ def verify(source: str, language: str, deep_verify: bool = True,
 
 
 def verify_file(filepath: str, deep_verify: bool = True,
-                analyses: Optional[List[str]] = None) -> VerificationResult:
+                analyses: Optional[List[str]] = None,
+                prove_kwargs: Optional[Dict[str, bool]] = None) -> VerificationResult:
     """Verify a source file, auto-detecting the language from extension."""
     language = detect_language(filepath)
     with open(filepath, "r") as f:
         source = f.read()
-    return verify(source, language, deep_verify=deep_verify, analyses=analyses)
+    return verify(source, language, deep_verify=deep_verify, analyses=analyses, prove_kwargs=prove_kwargs)
 
 
 # ---------------------------------------------------------------------------

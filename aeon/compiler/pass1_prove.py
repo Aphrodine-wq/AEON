@@ -68,6 +68,32 @@ from aeon.money_math import check_money_math
 from aeon.framework_rules import check_framework_rules
 from aeon.construction_domain import check_construction_domain
 
+# Cybersecurity analysis engines
+from aeon.secret_detection import check_secrets
+from aeon.auth_access_control import check_auth_access
+from aeon.crypto_misuse import check_crypto_misuse
+from aeon.injection_advanced import check_injection_advanced
+from aeon.api_security import check_api_security
+from aeon.supply_chain import check_supply_chain
+from aeon.session_jwt import check_session_jwt
+from aeon.container_security import check_container_security
+from aeon.ssrf_advanced import check_ssrf_advanced
+from aeon.prototype_pollution import check_prototype_pollution
+
+# Cybersecurity Tier 2 engines
+from aeon.business_logic import check_business_logic
+from aeon.data_exposure import check_data_exposure
+from aeon.security_misconfig import check_security_misconfig
+from aeon.oauth_oidc import check_oauth_oidc
+from aeon.file_upload import check_file_upload
+from aeon.input_validation import check_input_validation
+from aeon.race_condition_security import check_race_conditions
+from aeon.dependency_audit import check_dependency_audit
+from aeon.email_security import check_email_security
+from aeon.insecure_randomness import check_insecure_randomness
+from aeon.cache_poisoning import check_cache_poisoning
+from aeon.http_smuggling import check_http_smuggling
+
 
 def _engine_error(message: str) -> AeonError:
     """Create an AeonError for an engine failure (used in except blocks)."""
@@ -96,6 +122,19 @@ class TypeChecker:
                  deadcode: bool = False,
                  money_math: bool = False,
                  framework_rules: bool = False,
+                 # Cybersecurity engines
+                 secret_detection: bool = False, auth_check: bool = False,
+                 crypto_misuse: bool = False, injection_advanced: bool = False,
+                 api_security: bool = False, supply_chain: bool = False,
+                 session_jwt: bool = False, container_security: bool = False,
+                 ssrf_advanced: bool = False, prototype_pollution: bool = False,
+                 # Cybersecurity Tier 2
+                 business_logic: bool = False, data_exposure: bool = False,
+                 security_misconfig: bool = False, oauth_oidc: bool = False,
+                 file_upload: bool = False, input_validation: bool = False,
+                 race_condition_security: bool = False, dependency_audit: bool = False,
+                 email_security: bool = False, insecure_randomness: bool = False,
+                 cache_poisoning: bool = False, http_smuggling: bool = False,
                  deep_verify: bool = False):
         self.env = TypeEnvironment()
         self.errors: list[AeonError] = []
@@ -136,6 +175,30 @@ class TypeChecker:
         self.money_math = money_math or deep_verify
         self.framework_rules = framework_rules
         self.construction_domain = money_math  # Construction domain runs when money_math is on
+        # Cybersecurity engines
+        self.secret_detection = secret_detection or deep_verify
+        self.auth_check = auth_check or deep_verify
+        self.crypto_misuse = crypto_misuse or deep_verify
+        self.injection_advanced = injection_advanced or deep_verify
+        self.api_security = api_security or deep_verify
+        self.supply_chain = supply_chain or deep_verify
+        self.session_jwt = session_jwt or deep_verify
+        self.container_security = container_security or deep_verify
+        self.ssrf_advanced = ssrf_advanced or deep_verify
+        self.prototype_pollution = prototype_pollution or deep_verify
+        # Cybersecurity Tier 2
+        self.business_logic = business_logic or deep_verify
+        self.data_exposure = data_exposure or deep_verify
+        self.security_misconfig = security_misconfig or deep_verify
+        self.oauth_oidc = oauth_oidc or deep_verify
+        self.file_upload = file_upload or deep_verify
+        self.input_validation = input_validation or deep_verify
+        self.race_condition_security = race_condition_security or deep_verify
+        self.dependency_audit = dependency_audit or deep_verify
+        self.email_security = email_security or deep_verify
+        self.insecure_randomness = insecure_randomness or deep_verify
+        self.cache_poisoning = cache_poisoning or deep_verify
+        self.http_smuggling = http_smuggling or deep_verify
         self._current_return_type: Optional[AeonType] = None
         self._function_effects: dict[str, list[str]] = {}
         # Performance caching
@@ -486,6 +549,152 @@ class TypeChecker:
                 self.errors.extend(cd_errors)
             except Exception as e:
                 self._engine_crash("Construction domain analysis", e)
+
+        # --- Cybersecurity Analysis Engines ---
+
+        if self.secret_detection:
+            try:
+                sd_errors = check_secrets(program)
+                self.errors.extend(sd_errors)
+            except Exception as e:
+                self._engine_crash("Secret detection", e)
+
+        if self.auth_check:
+            try:
+                ac_errors = check_auth_access(program)
+                self.errors.extend(ac_errors)
+            except Exception as e:
+                self._engine_crash("Auth/access control analysis", e)
+
+        if self.crypto_misuse:
+            try:
+                cm_errors = check_crypto_misuse(program)
+                self.errors.extend(cm_errors)
+            except Exception as e:
+                self._engine_crash("Cryptographic misuse analysis", e)
+
+        if self.injection_advanced:
+            try:
+                ia_errors = check_injection_advanced(program)
+                self.errors.extend(ia_errors)
+            except Exception as e:
+                self._engine_crash("Advanced injection analysis", e)
+
+        if self.api_security:
+            try:
+                as_errors = check_api_security(program)
+                self.errors.extend(as_errors)
+            except Exception as e:
+                self._engine_crash("API security analysis", e)
+
+        if self.supply_chain:
+            try:
+                sc_errors = check_supply_chain(program)
+                self.errors.extend(sc_errors)
+            except Exception as e:
+                self._engine_crash("Supply chain analysis", e)
+
+        if self.session_jwt:
+            try:
+                sj_errors = check_session_jwt(program)
+                self.errors.extend(sj_errors)
+            except Exception as e:
+                self._engine_crash("Session/JWT analysis", e)
+
+        if self.container_security:
+            try:
+                cs_errors = check_container_security(program)
+                self.errors.extend(cs_errors)
+            except Exception as e:
+                self._engine_crash("Container security analysis", e)
+
+        if self.ssrf_advanced:
+            try:
+                ssrf_errors = check_ssrf_advanced(program)
+                self.errors.extend(ssrf_errors)
+            except Exception as e:
+                self._engine_crash("Advanced SSRF analysis", e)
+
+        if self.prototype_pollution:
+            try:
+                pp_errors = check_prototype_pollution(program)
+                self.errors.extend(pp_errors)
+            except Exception as e:
+                self._engine_crash("Prototype pollution analysis", e)
+
+        # --- Cybersecurity Tier 2 Engines ---
+
+        if self.business_logic:
+            try:
+                self.errors.extend(check_business_logic(program))
+            except Exception as e:
+                self._engine_crash("Business logic analysis", e)
+
+        if self.data_exposure:
+            try:
+                self.errors.extend(check_data_exposure(program))
+            except Exception as e:
+                self._engine_crash("Data exposure analysis", e)
+
+        if self.security_misconfig:
+            try:
+                self.errors.extend(check_security_misconfig(program))
+            except Exception as e:
+                self._engine_crash("Security misconfiguration analysis", e)
+
+        if self.oauth_oidc:
+            try:
+                self.errors.extend(check_oauth_oidc(program))
+            except Exception as e:
+                self._engine_crash("OAuth/OIDC analysis", e)
+
+        if self.file_upload:
+            try:
+                self.errors.extend(check_file_upload(program))
+            except Exception as e:
+                self._engine_crash("File upload analysis", e)
+
+        if self.input_validation:
+            try:
+                self.errors.extend(check_input_validation(program))
+            except Exception as e:
+                self._engine_crash("Input validation analysis", e)
+
+        if self.race_condition_security:
+            try:
+                self.errors.extend(check_race_conditions(program))
+            except Exception as e:
+                self._engine_crash("Race condition security analysis", e)
+
+        if self.dependency_audit:
+            try:
+                self.errors.extend(check_dependency_audit(program))
+            except Exception as e:
+                self._engine_crash("Dependency audit", e)
+
+        if self.email_security:
+            try:
+                self.errors.extend(check_email_security(program))
+            except Exception as e:
+                self._engine_crash("Email security analysis", e)
+
+        if self.insecure_randomness:
+            try:
+                self.errors.extend(check_insecure_randomness(program))
+            except Exception as e:
+                self._engine_crash("Insecure randomness analysis", e)
+
+        if self.cache_poisoning:
+            try:
+                self.errors.extend(check_cache_poisoning(program))
+            except Exception as e:
+                self._engine_crash("Cache poisoning analysis", e)
+
+        if self.http_smuggling:
+            try:
+                self.errors.extend(check_http_smuggling(program))
+            except Exception as e:
+                self._engine_crash("HTTP smuggling analysis", e)
 
         return self.errors
 
@@ -951,42 +1160,21 @@ def prove(program: Program, verify_contracts: bool = False, analyze_termination:
           typestate: bool = False, interpolation: bool = False,
           money_math: bool = False,
           framework_rules: bool = False,
+          # Cybersecurity engines
+          secret_detection: bool = False, auth_check: bool = False,
+          crypto_misuse: bool = False, injection_advanced: bool = False,
+          api_security: bool = False, supply_chain: bool = False,
+          session_jwt: bool = False, container_security: bool = False,
+          ssrf_advanced: bool = False, prototype_pollution: bool = False,
+          # Cybersecurity Tier 2
+          business_logic: bool = False, data_exposure: bool = False,
+          security_misconfig: bool = False, oauth_oidc: bool = False,
+          file_upload: bool = False, input_validation: bool = False,
+          race_condition_security: bool = False, dependency_audit: bool = False,
+          email_security: bool = False, insecure_randomness: bool = False,
+          cache_poisoning: bool = False, http_smuggling: bool = False,
           deep_verify: bool = False) -> list[AeonError]:
-    """Run Pass 1: type checking, ownership, effects, contracts, and advanced analysis.
-
-    Standard passes (always run):
-      - Type checking (bidirectional type inference)
-      - Ownership & borrow checking (Rust-style, linear types)
-      - Effect checking (declared vs actual effects)
-      - Contract verification (requires/ensures via Z3)
-
-    Advanced passes (opt-in via flags or --deep-verify):
-      - Refinement types: Liquid type inference (Rondon et al. 2008)
-      - Abstract interpretation: interval/sign/congruence domains (Cousot & Cousot 1977)
-      - Size-change termination: Ramsey's theorem decision procedure (Lee et al. 2001)
-      - Hoare logic: weakest precondition calculus (Dijkstra 1975)
-      - Algebraic effects: row-polymorphic effect algebra (Plotkin & Pretnar 2009)
-      - Category semantics: CCC functor law verification (Moggi 1991)
-      - Information flow: noninterference type system (Volpano et al. 1996)
-      - Dependent types: Pi types with Curry-Howard (Martin-Löf 1984)
-      - Certified compilation: simulation proofs (Leroy/CompCert 2009)
-      - Symbolic execution: path-sensitive analysis (King 1976)
-      - Separation logic: heap safety via frame rule (Reynolds 2002)
-      - Taint analysis: injection vulnerability detection (Schwartz et al. 2010)
-      - Concurrency: race/deadlock detection (Owicki & Gries 1976)
-      - Shape analysis: linked structure verification (Sagiv et al. 2002)
-      - Model checking: bounded state-space exploration (Clarke et al. 1986)
-      - Gradual typing: blame-correct typed/untyped boundaries (Siek & Taha 2006)
-      - Linear resource: linear/affine resource tracking (Girard 1987)
-      - Probabilistic: measure-theoretic program analysis (Kozen 1981)
-      - Relational verification: 2-safety via product programs (Barthe et al. 2011)
-      - Session types: multiparty protocol verification (Honda et al. 2008)
-      - Complexity analysis: RAML amortized bounds (Hoffmann et al. 2012)
-      - Abstract refinement: higher-order refinement types (Vazou et al. 2013)
-      - Differential privacy: sensitivity typing (Reed & Pierce 2010)
-      - Typestate: object protocol enforcement (Strom & Yemini 1986)
-      - Interpolation: Craig interpolation for CEGAR (McMillan 2003)
-    """
+    """Run Pass 1 — 72 verification engines."""
     checker = TypeChecker(
         verify_contracts=verify_contracts,
         analyze_termination=analyze_termination,
@@ -1018,6 +1206,30 @@ def prove(program: Program, verify_contracts: bool = False, analyze_termination:
         interpolation=interpolation,
         money_math=money_math,
         framework_rules=framework_rules,
+        # Cybersecurity engines
+        secret_detection=secret_detection,
+        auth_check=auth_check,
+        crypto_misuse=crypto_misuse,
+        injection_advanced=injection_advanced,
+        api_security=api_security,
+        supply_chain=supply_chain,
+        session_jwt=session_jwt,
+        container_security=container_security,
+        ssrf_advanced=ssrf_advanced,
+        prototype_pollution=prototype_pollution,
+        # Cybersecurity Tier 2
+        business_logic=business_logic,
+        data_exposure=data_exposure,
+        security_misconfig=security_misconfig,
+        oauth_oidc=oauth_oidc,
+        file_upload=file_upload,
+        input_validation=input_validation,
+        race_condition_security=race_condition_security,
+        dependency_audit=dependency_audit,
+        email_security=email_security,
+        insecure_randomness=insecure_randomness,
+        cache_poisoning=cache_poisoning,
+        http_smuggling=http_smuggling,
         deep_verify=deep_verify,
     )
     return checker.check_program(program)

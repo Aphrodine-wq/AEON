@@ -140,7 +140,8 @@ def discover_files(root: str, extensions: Optional[Set[str]] = None,
 def scan_directory(root: str, deep_verify: bool = True,
                    analyses: Optional[List[str]] = None,
                    extensions: Optional[Set[str]] = None,
-                   ignore_patterns: Optional[List[str]] = None) -> ScanResult:
+                   ignore_patterns: Optional[List[str]] = None,
+                   prove_kwargs: Optional[Dict] = None) -> ScanResult:
     """Scan and verify all source files in a directory.
 
     Args:
@@ -162,7 +163,7 @@ def scan_directory(root: str, deep_verify: bool = True,
             lang = detect_language(filepath)
             result.languages[lang] = result.languages.get(lang, 0) + 1
 
-            vr = verify_file(filepath, deep_verify=deep_verify, analyses=analyses)
+            vr = verify_file(filepath, deep_verify=deep_verify, analyses=analyses, prove_kwargs=prove_kwargs)
 
             file_entry = {
                 "file": os.path.relpath(filepath, root),

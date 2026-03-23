@@ -278,12 +278,27 @@ class NullSafetyAnalyzer:
             for s in stmt.body:
                 self._check_statement(s, func)
 
+    @staticmethod
+    def _is_adapter_artifact(name: str) -> bool:
+        """Check if an identifier is a translation artifact from a language adapter."""
+        return (
+            name in ("__jsx__", "__unknown__", "__call__")
+            or name.startswith("__")
+            or any(ch in name for ch in (' ', '"', "'", '=', '(', ')', '{', '}', '<', '>'))
+        )
+
     def _check_deref(self, expr: Expr, func: PureFunc | TaskFunc,
                      loc: SourceLocation) -> None:
         """Check if an expression dereferences a potentially-null value."""
         expr_loc = getattr(expr, 'location', loc)
 
         if isinstance(expr, FieldAccess):
+            # Skip adapter artifacts — broken tokens from JSX/regex parsing
+            if self._is_adapter_artifact(getattr(expr, 'field_name', '')):
+                return
+            if isinstance(expr.obj, Identifier) and self._is_adapter_artifact(expr.obj.name):
+                return
+
             if isinstance(expr.obj, Identifier):
                 state = self._null_state.get(expr.obj.name, NullState.MAYBE_NULL)
                 if state in (NullState.MAYBE_NULL, NullState.DEFINITELY_NULL):

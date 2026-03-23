@@ -507,17 +507,37 @@ class JavaTranslator(LanguageTranslator):
 
         return requires, ensures
 
+    @staticmethod
+    def _find_op_outside_strings(expr_str: str, op: str) -> int:
+        """Find operator position that is NOT inside a string literal."""
+        i = 0
+        in_string = None
+        while i < len(expr_str):
+            ch = expr_str[i]
+            if in_string:
+                if ch == '\\':
+                    i += 2
+                    continue
+                if ch == in_string:
+                    in_string = None
+            elif ch in ('"', "'", '`'):
+                in_string = ch
+            elif expr_str[i:i+len(op)] == op:
+                return i
+            i += 1
+        return -1
+
     def _parse_contract_expr(self, expr_str: str) -> Optional[Expr]:
         """Parse a simple contract expression into an AEON Expr."""
         expr_str = expr_str.rstrip("*/").strip()
 
         # Handle comparison: x != 0, x > 0, x >= 0, etc.
         for op in ("!=", "==", ">=", "<=", ">", "<"):
-            if op in expr_str:
-                parts = expr_str.split(op, 1)
-                if len(parts) == 2:
-                    left = parts[0].strip()
-                    right = parts[1].strip()
+            pos = self._find_op_outside_strings(expr_str, op)
+            if pos >= 0:
+                left = expr_str[:pos].strip()
+                right = expr_str[pos+len(op):].strip()
+                if left and right:
                     left_expr = Identifier(name=left) if not left.lstrip('-').isdigit() else IntLiteral(value=int(left))
                     right_expr = Identifier(name=right) if not right.lstrip('-').isdigit() else IntLiteral(value=int(right))
                     return BinaryOp(op=op, left=left_expr, right=right_expr)

@@ -57,7 +57,7 @@ _register("daily", "Daily driver — security + correctness + common bugs", {
 })
 
 # -- security: focus on vulnerabilities -----------------------------------
-_register("security", "Security focused — taint, info-flow, symbolic, separation, money", {
+_register("security", "Security focused — taint, info-flow, symbolic, separation, money + cybersecurity engines", {
     "verify_contracts": True,
     "symbolic_exec": True,
     "taint_analysis": True,
@@ -66,6 +66,13 @@ _register("security", "Security focused — taint, info-flow, symbolic, separati
     "concurrency_check": True,
     "money_math": True,
     "numeric_safety": True,
+    # Cybersecurity engines
+    "secret_detection": True,
+    "auth_check": True,
+    "crypto_misuse": True,
+    "injection_advanced": True,
+    "session_jwt": True,
+    "ssrf_advanced": True,
 })
 
 # -- performance: focus on efficiency & termination -----------------------
@@ -89,6 +96,40 @@ _register("construction", "Construction & financial — money math, taint, numer
     "concurrency_check": True,
     "framework_rules": True,
     "construction_domain": True,
+})
+
+# -- cybersecurity: full OWASP + supply chain + infrastructure + advanced ---
+_register("cybersecurity", "Full cybersecurity audit — 22 engines: OWASP Top 10, business logic, supply chain, infrastructure, privacy, advanced attacks", {
+    "verify_contracts": True,
+    "symbolic_exec": True,
+    "taint_analysis": True,
+    "information_flow": True,
+    "separation_logic": True,
+    "concurrency_check": True,
+    # All 22 cybersecurity engines
+    "secret_detection": True,
+    "auth_check": True,
+    "crypto_misuse": True,
+    "injection_advanced": True,
+    "api_security": True,
+    "supply_chain": True,
+    "session_jwt": True,
+    "container_security": True,
+    "ssrf_advanced": True,
+    "prototype_pollution": True,
+    # Tier 2
+    "business_logic": True,
+    "data_exposure": True,
+    "security_misconfig": True,
+    "oauth_oidc": True,
+    "file_upload": True,
+    "input_validation": True,
+    "race_condition_security": True,
+    "dependency_audit": True,
+    "email_security": True,
+    "insecure_randomness": True,
+    "cache_poisoning": True,
+    "http_smuggling": True,
 })
 
 # -- safety: everything (mirrors --deep-verify) ---------------------------

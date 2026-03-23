@@ -109,6 +109,32 @@ JSX_NOISE_PATTERNS: List[str] = [
     r"Null dereference.*accessing '\.' on '\d",  # Numeric noise
     r"Unused parameter.*children",  # React children prop
     r"Unused parameter.*\{$",  # Destructured React props
+    # Broken JSX token fragments from regex parser
+    r"Null dereference.*accessing '\.FormEvent",  # Broken event type tokens
+    r"Null dereference.*accessing '\.ChangeEvent",
+    r"Null dereference.*accessing '\.MouseEvent",
+    r"Null dereference.*accessing '\.value\s*[}\)]",  # Destructure artifacts: .value })
+    r"Null dereference.*accessing '\.target",  # Event target fragments
+    r"Null dereference.*on '[a-z]+\s*\(",  # Broken: "async (" parsed as identifier
+    r"Null dereference.*on '[\"\']",  # Deref on string literal
+    r"accessing '\.com[\"']",  # Email/URL in placeholder strings
+    r"accessing '\.org[\"']",
+    r"accessing '\.net[\"']",
+    # React/JSX structural patterns
+    r"Unused parameter:?\s*'?\{",  # Destructured props: { id, name }
+    r"Unused parameter:?\s*'?\}",  # Closing brace artifact
+    r"Unused parameter:?\s*'?\.\.\.",  # Spread operator
+    r"Unused parameter:?\s*'?props'?$",  # Generic props param in components
+    r"Unused parameter:?\s*'?className'?$",  # Common React prop
+    r"Unused parameter:?\s*'?key'?$",  # React key prop
+    r"Unused parameter:?\s*'?ref'?$",  # React ref prop
+    # Non-determinism in UI components is expected (state, effects, DOM)
+    r"Non-determinism in '.*': task function uses non-deterministic",
+    # __jsx__ and __unknown__ from adapter's JSX handling
+    r"on '__jsx__'",
+    r"on '__unknown__'",
+    r"'__jsx__'",
+    r"'__unknown__'",
 ]
 
 # Division by constant (confidence → 0.05)
@@ -360,6 +386,28 @@ class FindingQualityAnalyzer:
                 return 0.4  # string duplication is minor
             return 0.6  # a11y, focus, etc.
 
+        # Dead Code Detection — many false positives from React/JSX adapter artifacts
+        if engine == "Dead Code Detection":
+            if "Unused parameter" in msg:
+                return 0.2  # Adapter often creates fake params from JSX syntax
+            if "Unreachable code" in msg:
+                return 0.25  # Arrow function returns look unreachable
+            if "Self-assignment" in msg:
+                return 0.8  # Real bug signal
+            if "Redundant condition" in msg:
+                return 0.7  # Real bug signal
+            return 0.35
+
+        # Null Safety — high false positive rate from adapter JSX parsing
+        if engine == "Null Safety":
+            if "Unsafe unwrap" in msg:
+                return 0.7  # Real pattern
+            if "Null returned from non-nullable" in msg:
+                return 0.6  # Likely real
+            if "Null dereference" in msg:
+                return 0.2  # Very noisy from adapter artifacts
+            return 0.3
+
         # Numeric Safety — moderate (lots of false positives)
         if engine == "Numeric Safety":
             # Division by zero without context
@@ -373,6 +421,28 @@ class FindingQualityAnalyzer:
 
         # Taint analysis — moderate-high
         if engine in ("Taint Analysis", "taint"):
+            return 0.7
+
+        # Security engines — generally reliable
+        if engine in ("Secret Detection", "secret_detection"):
+            return 0.85
+        if engine in ("Auth & Access Control", "auth_access_control"):
+            return 0.75
+        if engine in ("Crypto Misuse", "crypto_misuse"):
+            return 0.8
+        if engine in ("Injection Advanced", "injection_advanced"):
+            return 0.85
+        if engine in ("API Security", "api_security"):
+            return 0.7
+        if engine in ("Session & JWT", "session_jwt"):
+            return 0.75
+        if engine in ("SSRF Advanced", "ssrf_advanced"):
+            return 0.8
+        if engine in ("Supply Chain", "supply_chain"):
+            return 0.8
+        if engine in ("Container Security", "container_security"):
+            return 0.6  # Heuristic-based, more false positives
+        if engine in ("Prototype Pollution", "prototype_pollution"):
             return 0.7
 
         # Information flow — moderate
@@ -393,6 +463,12 @@ class FindingQualityAnalyzer:
         if "Contract violation" in msg:
             if "division" in msg.lower():
                 return 0.3
+            # Null deref from adapter-translated code is very noisy
+            if "Null dereference" in msg:
+                return 0.15
+            # Gradual typing mismatches from adapters
+            if "Gradual typing" in msg or "inconsistent type" in msg.lower():
+                return 0.1
             return 0.45
 
         # Abstract interpretation — moderate
