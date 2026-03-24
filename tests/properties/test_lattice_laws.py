@@ -21,13 +21,10 @@ from __future__ import annotations
 
 import pytest
 
-try:
-    from hypothesis import given, settings, assume
-    from hypothesis import strategies as st
-    HAS_HYPOTHESIS = True
-except ImportError:
-    HAS_HYPOTHESIS = False
-    given = settings = assume = st = None  # type: ignore
+hypothesis = pytest.importorskip("hypothesis", reason="hypothesis not installed")
+from hypothesis import given, settings, assume  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
+HAS_HYPOTHESIS = True
 
 from aeon.abstract_interp import (
     Interval, INTERVAL_BOT, INTERVAL_TOP, INF, NEG_INF,
@@ -79,8 +76,6 @@ if HAS_HYPOTHESIS:
         m = draw(st.integers(min_value=2, max_value=20))
         r = draw(st.integers(min_value=0, max_value=m - 1))
         return Congruence(remainder=r, modulus=m)
-else:
-    interval_strategy = sign_strategy = congruence_strategy = None  # type: ignore
 
 
 # ---------------------------------------------------------------------------
@@ -99,7 +94,6 @@ def iv_eq(a: Interval, b: Interval) -> bool:
 # Interval Domain — Lattice Laws
 # ===========================================================================
 
-@pytest.mark.skipif(not HAS_HYPOTHESIS, reason="hypothesis not installed")
 class TestIntervalLattice:
     """Verify Interval forms a valid complete lattice."""
 
@@ -247,7 +241,6 @@ class TestIntervalLattice:
 # Sign Domain — Lattice Laws
 # ===========================================================================
 
-@pytest.mark.skipif(not HAS_HYPOTHESIS, reason="hypothesis not installed")
 class TestSignLattice:
     """Verify Sign forms a valid complete lattice."""
 
@@ -312,7 +305,6 @@ class TestSignLattice:
 # Congruence Domain — Lattice Laws
 # ===========================================================================
 
-@pytest.mark.skipif(not HAS_HYPOTHESIS, reason="hypothesis not installed")
 class TestCongruenceLattice:
     """Verify Congruence forms a valid complete lattice."""
 
@@ -356,7 +348,6 @@ class TestCongruenceLattice:
 # Widening Convergence
 # ===========================================================================
 
-@pytest.mark.skipif(not HAS_HYPOTHESIS, reason="hypothesis not installed")
 class TestWideningConvergence:
     """Verify widening causes ascending chains to stabilize."""
 
@@ -383,7 +374,6 @@ class TestWideningConvergence:
 # Reduced Product Precision
 # ===========================================================================
 
-@pytest.mark.skipif(not HAS_HYPOTHESIS, reason="hypothesis not installed")
 class TestReducedProduct:
     """Verify the reduced product is strictly more precise than individual domains."""
 
