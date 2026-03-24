@@ -24,6 +24,21 @@ from aeon.language_adapter import (
 
 
 # ---------------------------------------------------------------------------
+# Input validation constants
+# ---------------------------------------------------------------------------
+
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB — prevent DoS via huge files
+
+
+def _check_file_size(filepath: str) -> bool:
+    """Return True if file is within the allowed size limit."""
+    try:
+        return os.path.getsize(filepath) <= MAX_FILE_SIZE
+    except OSError:
+        return False
+
+
+# ---------------------------------------------------------------------------
 # Gitignore Parser
 # ---------------------------------------------------------------------------
 
@@ -160,6 +175,15 @@ def scan_directory(root: str, deep_verify: bool = True,
 
     for filepath in files:
         try:
+            # Skip files that exceed the size limit (DoS prevention)
+            if not _check_file_size(filepath):
+                result.file_results.append({
+                    "file": os.path.relpath(filepath, root),
+                    "error": f"File exceeds {MAX_FILE_SIZE // (1024 * 1024)}MB size limit — skipped",
+                    "verified": False,
+                })
+                continue
+
             lang = detect_language(filepath)
             result.languages[lang] = result.languages.get(lang, 0) + 1
 
@@ -194,6 +218,12 @@ def scan_directory(root: str, deep_verify: bool = True,
             result.total_functions += vr.functions_analyzed
             result.total_classes += vr.classes_analyzed
 
+        except UnicodeDecodeError:
+            result.file_results.append({
+                "file": os.path.relpath(filepath, root),
+                "error": "Binary or non-UTF-8 file — skipped",
+                "verified": False,
+            })
         except Exception as e:
             result.file_results.append({
                 "file": os.path.relpath(filepath, root),

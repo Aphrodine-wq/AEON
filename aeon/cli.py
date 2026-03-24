@@ -38,12 +38,55 @@ from aeon.pass2_flatten import flatten
 from aeon.pass3_emit import emit, emit_and_compile, HAS_LLVMLITE
 from aeon.errors import CompileError
 
+# ---------------------------------------------------------------------------
+# Input validation helpers
+# ---------------------------------------------------------------------------
+
+_MAX_SOURCE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+
+def _validate_source_file(path: str) -> str | None:
+    """Return an error message if the file fails validation, else None.
+
+    Checks:
+    - File exists
+    - File size within limit (DoS prevention)
+    """
+    if not os.path.isfile(path):
+        return f"File not found: {path}"
+    try:
+        size = os.path.getsize(path)
+    except OSError as e:
+        return f"Cannot stat file: {e}"
+    if size > _MAX_SOURCE_SIZE:
+        return f"File too large ({size // (1024 * 1024)}MB > 10MB limit): {path}"
+    return None
+
+
+def _validate_output_path(path: str) -> str | None:
+    """Return an error message if the output path is unusable, else None.
+
+    Checks:
+    - Not an existing directory
+    - Parent directory exists (or is creatable)
+    """
+    if not path:
+        return None
+    resolved = os.path.abspath(path)
+    if os.path.isdir(resolved):
+        return f"Output path is a directory: {resolved}"
+    parent = os.path.dirname(resolved) or "."
+    if not os.path.isdir(parent):
+        return f"Output directory does not exist: {parent}"
+    return None
+
 
 def cmd_compile(args: argparse.Namespace) -> int:
     """Compile an AEON source file through all 3 passes."""
     source_path = args.file
-    if not os.path.exists(source_path):
-        print(json.dumps({"error": f"File not found: {source_path}"}))
+    err = _validate_source_file(source_path)
+    if err:
+        print(json.dumps({"error": err}))
         return 1
 
     with open(source_path, "r") as f:
@@ -147,8 +190,9 @@ def cmd_compile(args: argparse.Namespace) -> int:
 def cmd_check(args: argparse.Namespace) -> int:
     """Run Pass 1 only — fast type check. Auto-detects language from extension."""
     source_path = args.file
-    if not os.path.exists(source_path):
-        print(json.dumps({"error": f"File not found: {source_path}"}))
+    err = _validate_source_file(source_path)
+    if err:
+        print(json.dumps({"error": err}))
         return 1
 
     ext = os.path.splitext(source_path)[1].lower()
@@ -360,6 +404,14 @@ def cmd_scan(args: argparse.Namespace) -> int:
     if not os.path.isdir(target):
         print(json.dumps({"error": f"Not a directory: {target}"}))
         return 1
+
+    # Validate output path before doing any work
+    output_path = getattr(args, 'output', '') or ''
+    if output_path:
+        out_err = _validate_output_path(output_path)
+        if out_err:
+            print(json.dumps({"error": out_err}))
+            return 1
 
     from aeon.config import load_config
     config = load_config(start_dir=target)

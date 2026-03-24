@@ -16,7 +16,7 @@ from multiprocessing import Pool, cpu_count
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Set, Tuple, Any
 
-from aeon.scanner import ScanResult, discover_files
+from aeon.scanner import ScanResult, discover_files, MAX_FILE_SIZE, _check_file_size
 from aeon.language_adapter import verify_file, detect_language
 
 
@@ -36,6 +36,18 @@ def _verify_single_file(args: Tuple[str, str, bool, Optional[List[str]]]) -> Dic
     filepath, root, deep_verify, analyses = args
 
     try:
+        # Skip files that exceed the size limit (DoS prevention)
+        if not _check_file_size(filepath):
+            return {
+                "file": os.path.relpath(filepath, root),
+                "error": f"File exceeds {MAX_FILE_SIZE // (1024 * 1024)}MB size limit — skipped",
+                "verified": False,
+                "errors": 0,
+                "warnings": 0,
+                "functions": 0,
+                "classes": 0,
+            }
+
         lang = detect_language(filepath)
         vr = verify_file(filepath, deep_verify=deep_verify, analyses=analyses)
 
@@ -56,6 +68,16 @@ def _verify_single_file(args: Tuple[str, str, bool, Optional[List[str]]]) -> Dic
 
         return result
 
+    except UnicodeDecodeError:
+        return {
+            "file": os.path.relpath(filepath, root),
+            "error": "Binary or non-UTF-8 file — skipped",
+            "verified": False,
+            "errors": 0,
+            "warnings": 0,
+            "functions": 0,
+            "classes": 0,
+        }
     except Exception as e:
         return {
             "file": os.path.relpath(filepath, root),
