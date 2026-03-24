@@ -1,0 +1,51 @@
+# AEON Security Scan — Drop into any project's .github/workflows/
+# Runs cybersecurity scan on push/PR, uploads SARIF to GitHub Security tab
+name: AEON Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly Monday 3 AM UTC
+
+jobs:
+  security-scan:
+    name: AEON Cybersecurity Audit
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install AEON
+        run: pip install aeon-lang[full]
+
+      - name: Run security scan
+        run: |
+          aeon scan . --profile cybersecurity --format sarif --output aeon-results.sarif
+          aeon scan . --profile cybersecurity --format markdown --output aeon-report.md
+          echo "## AEON Security Report" >> $GITHUB_STEP_SUMMARY
+          cat aeon-report.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: aeon-results.sarif
+          category: aeon-security
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aeon-security-report
+          path: aeon-report.md

@@ -154,10 +154,11 @@ def _parse_simple_yaml(content: str) -> Dict[str, Any]:
     except ImportError:
         pass
 
-    # Fallback: simple line-by-line parser
+    # Fallback: indent-aware line-by-line parser (handles up to 3 levels)
     result: Dict[str, Any] = {}
     current_section = None
-    current_list = None
+    current_subsection = None
+    current_subsection_key = None
 
     for line in content.split('\n'):
         stripped = line.strip()
@@ -173,11 +174,11 @@ def _parse_simple_yaml(content: str) -> Dict[str, Any]:
             if value:
                 result[key] = _parse_yaml_value(value)
                 current_section = None
-                current_list = None
             else:
                 result[key] = {}
                 current_section = key
-                current_list = None
+            current_subsection = None
+            current_subsection_key = None
 
         elif indent > 0 and current_section is not None:
             if stripped.startswith('- '):
@@ -185,12 +186,27 @@ def _parse_simple_yaml(content: str) -> Dict[str, Any]:
                 if not isinstance(result[current_section], list):
                     result[current_section] = []
                 result[current_section].append(_parse_yaml_value(item))
+                current_subsection = None
+                current_subsection_key = None
             elif ':' in stripped:
                 key, _, value = stripped.partition(':')
                 key = key.strip()
                 value = value.strip()
                 if isinstance(result[current_section], dict):
-                    result[current_section][key] = _parse_yaml_value(value)
+                    if value:
+                        if current_subsection is not None and indent > 2:
+                            # Level 3: key inside a subsection dict
+                            current_subsection[key] = _parse_yaml_value(value)
+                        else:
+                            # Level 2: flat value in section
+                            result[current_section][key] = _parse_yaml_value(value)
+                            current_subsection = None
+                            current_subsection_key = None
+                    else:
+                        # Level 2: new subsection dict
+                        result[current_section][key] = {}
+                        current_subsection = result[current_section][key]
+                        current_subsection_key = key
 
     return result
 
