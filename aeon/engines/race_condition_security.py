@@ -1576,6 +1576,10 @@ class RaceConditionSecurityEngine:
 
     def analyze(self, program: Program) -> List[RaceSecurityFinding]:
         """Run all race condition security detectors on the program."""
+        # Skip frontend files entirely — UI components are not API endpoints
+        if _is_frontend_file(program):
+            return []
+
         all_findings: List[RaceSecurityFinding] = []
         file = program.filename
 
@@ -1591,6 +1595,10 @@ class RaceConditionSecurityEngine:
         file: str,
     ) -> List[RaceSecurityFinding]:
         """Run all detectors on a single function."""
+        # Skip React/frontend component functions — these are UI, not API endpoints
+        if _function_has_react_patterns(func):
+            return []
+
         findings: List[RaceSecurityFinding] = []
 
         findings.extend(self.authz_toctou.analyze(func, file))

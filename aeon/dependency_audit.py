@@ -88,6 +88,19 @@ from aeon.errors import AeonError, contract_error, SourceLocation
 
 
 # ---------------------------------------------------------------------------
+# Language Detection — avoid cross-language false positives
+# ---------------------------------------------------------------------------
+
+_ELIXIR_EXTENSIONS = frozenset({'.ex', '.exs'})
+
+
+def _is_elixir_file(program) -> bool:
+    """Check if the program's source file is an Elixir file."""
+    fn = getattr(program, 'filename', '') or ''
+    return any(fn.lower().endswith(ext) for ext in _ELIXIR_EXTENSIONS)
+
+
+# ---------------------------------------------------------------------------
 # Severity Levels
 # ---------------------------------------------------------------------------
 
@@ -612,10 +625,12 @@ class DependencyAuditAnalyzer:
         self._has_cors_import: bool = False
         self._has_cors_call: bool = False
         self._has_secure_hash_import: bool = False
+        self._is_elixir: bool = False
 
     def check_program(self, program: Program) -> List[AeonError]:
         """Run dependency audit analysis on the entire program."""
         self.errors = []
+        self._is_elixir = _is_elixir_file(program)
 
         # First pass: collect metadata about the program
         self._collect_program_metadata(program)
@@ -1033,22 +1048,29 @@ class DependencyAuditAnalyzer:
         cname_lower = cname.lower()
 
         # --- Python 2 functions ---
-        if cname_lower in PYTHON2_FUNCTIONS:
-            self._emit(
-                category=FindingCategory.DEPRECATED_RUNTIME,
-                message=(
-                    f"{cname}() is a Python 2 built-in -- Python 2 reached "
-                    "end-of-life on January 1, 2020. No security patches are "
-                    "released. Migrate to Python 3.10+"
-                ),
-                func=func,
-                loc=loc,
-                details={
-                    "runtime": "Python 2",
-                    "pattern": f"{cname} function",
-                    "fix": self._python2_fix(cname_lower),
-                },
-            )
+        # Skip Python 2 detection entirely for Elixir files (.ex/.exs)
+        if not self._is_elixir and cname_lower in PYTHON2_FUNCTIONS:
+            # For 'reduce', only flag bare FunctionCalls (e.g., reduce(fn, seq)),
+            # NOT method calls like Enum.reduce() or List.reduce() which are
+            # valid in other languages.
+            if cname_lower == "reduce" and isinstance(expr, MethodCall):
+                pass  # Skip — this is a method call, not a bare Python 2 reduce()
+            else:
+                self._emit(
+                    category=FindingCategory.DEPRECATED_RUNTIME,
+                    message=(
+                        f"{cname}() is a Python 2 built-in -- Python 2 reached "
+                        "end-of-life on January 1, 2020. No security patches are "
+                        "released. Migrate to Python 3.10+"
+                    ),
+                    func=func,
+                    loc=loc,
+                    details={
+                        "runtime": "Python 2",
+                        "pattern": f"{cname} function",
+                        "fix": self._python2_fix(cname_lower),
+                    },
+                )
 
         # --- Deprecated React lifecycle methods ---
         if isinstance(expr, MethodCall):

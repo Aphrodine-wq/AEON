@@ -52,6 +52,80 @@ from aeon.errors import AeonError, contract_error, SourceLocation
 
 
 # ---------------------------------------------------------------------------
+# Frontend Detection — skip client-side UI components
+# ---------------------------------------------------------------------------
+
+_FRONTEND_EXTENSIONS = frozenset({'.tsx', '.jsx', '.vue', '.svelte'})
+_REACT_PATTERNS = frozenset({
+    'useState', 'useEffect', 'useCallback', 'useMemo', 'useRef', 'useContext',
+    'useRouter', 'useNavigate', 'onClick', 'onChange', 'onSubmit',
+    'setState', 'setOpen', 'setLoading', 'dispatch', 'toast',
+    'className', 'children', 'props', 'createElement',
+})
+
+
+def _is_frontend_file(program):
+    """Check if the program's source file is a frontend file."""
+    fn = getattr(program, 'filename', '') or ''
+    return any(fn.lower().endswith(ext) for ext in _FRONTEND_EXTENSIONS)
+
+
+def _function_has_react_patterns(func):
+    """Check if function body contains React patterns."""
+    names: set = set()
+    for stmt in getattr(func, 'body', []):
+        _collect_names(stmt, names)
+    return bool(names & _REACT_PATTERNS)
+
+
+def _collect_names(node, names: set) -> None:
+    """Recursively collect all identifier and method names from AST nodes."""
+    if isinstance(node, Identifier):
+        names.add(node.name)
+    elif isinstance(node, MethodCall):
+        names.add(node.method_name)
+        _collect_names(node.obj, names)
+        for arg in node.args:
+            _collect_names(arg, names)
+    elif isinstance(node, FunctionCall):
+        _collect_names(node.callee, names)
+        for arg in node.args:
+            _collect_names(arg, names)
+    elif isinstance(node, FieldAccess):
+        names.add(node.field_name)
+        _collect_names(node.obj, names)
+    elif isinstance(node, BinaryOp):
+        _collect_names(node.left, names)
+        _collect_names(node.right, names)
+    elif isinstance(node, UnaryOp):
+        _collect_names(node.operand, names)
+    elif isinstance(node, ExprStmt):
+        _collect_names(node.expr, names)
+    elif isinstance(node, LetStmt):
+        if node.value:
+            _collect_names(node.value, names)
+    elif isinstance(node, AssignStmt):
+        _collect_names(node.value, names)
+    elif isinstance(node, ReturnStmt):
+        if node.value:
+            _collect_names(node.value, names)
+    elif isinstance(node, IfStmt):
+        _collect_names(node.condition, names)
+        for s in node.then_body:
+            _collect_names(s, names)
+        for s in node.else_body:
+            _collect_names(s, names)
+    elif isinstance(node, WhileStmt):
+        _collect_names(node.condition, names)
+        for s in node.body:
+            _collect_names(s, names)
+    elif isinstance(node, ForStmt):
+        _collect_names(node.iterable, names)
+        for s in node.body:
+            _collect_names(s, names)
+
+
+# ---------------------------------------------------------------------------
 # Severity Classification
 # ---------------------------------------------------------------------------
 
@@ -808,6 +882,10 @@ class BusinessLogicAnalyzer:
         """Run business logic analysis on the entire program."""
         self.errors = []
 
+        # Skip frontend files entirely — UI components are not API endpoints
+        if _is_frontend_file(program):
+            return self.errors
+
         for decl in program.declarations:
             if isinstance(decl, (PureFunc, TaskFunc)):
                 self._analyze_function(decl)
@@ -820,6 +898,10 @@ class BusinessLogicAnalyzer:
 
     def _analyze_function(self, func: PureFunc | TaskFunc) -> None:
         """Analyze a single function for all business logic vulnerability categories."""
+        # Skip React/frontend component functions — these are UI, not API endpoints
+        if _function_has_react_patterns(func):
+            return
+
         func_name = func.name
         loc = func.location or SourceLocation(line=0, column=0)
 
