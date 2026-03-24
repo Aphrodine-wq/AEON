@@ -1,0 +1,51 @@
+# AEON Verification Config — AEON itself
+# The verification tool verifies itself. Python codebase with 74 engines,
+# CLI, language adapters, compiler. Handles: file I/O, subprocess, eval,
+# user input paths, JSON parsing
+profile: security
+
+engines:
+  symbolic_exec: true
+  taint_analysis: true
+  information_flow: true
+  cross_file: true
+  error_handling: true
+  injection_advanced: true
+  input_validation: true
+  secret_detection: true
+  dependency_audit: true
+  data_exposure: true
+  security_misconfig: true
+
+severity: warning
+
+include:
+  - "aeon/**/*.py"
+  - "tests/**/*.py"
+
+exclude:
+  - ".venv/**"
+  - "venv/**"
+  - "__pycache__/**"
+  - "**/*.pyc"
+  - "node_modules/**"
+
+custom_taint_sources:
+  - "sys.argv"
+  - "os.environ"
+  - "json.loads"
+  - "yaml.safe_load"
+  - "open"
+  - "ast.parse"
+
+custom_taint_sinks:
+  - "subprocess.run"
+  - "subprocess.Popen"
+  - "os.system"
+  - "eval"
+  - "exec"
+  - "open"
+  - "importlib.import_module"
+
+parallel: true
+baseline: .aeon-baseline.json
