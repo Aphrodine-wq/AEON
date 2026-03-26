@@ -1267,7 +1267,7 @@ def main() -> None:
     p_check.add_argument("file", help="Source file (.aeon, .py, .java, .js, .ts, .go, .rs, .c, .cpp, .rb, .swift, .kt, .php, .scala, .dart)")
     p_check.add_argument("--language", choices=["aeon", "python", "java", "javascript", "typescript", "go", "rust", "c", "cpp", "ruby", "swift", "kotlin", "php", "scala", "dart"],
                          help="Override auto-detected language")
-    p_check.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety"],
+    p_check.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety", "nextjs", "rust", "elixir", "python", "portfolio"],
                          help="Analysis profile (quick|daily|security|performance|safety)")
     p_check.add_argument("--output-format", dest="output_format", choices=["pretty", "summary", "annotate", "markdown", "json"],
                          default="pretty", help="Output format (default: pretty)")
@@ -1349,7 +1349,7 @@ def main() -> None:
     # init
     p_init = subparsers.add_parser("init", help="Project setup wizard — create .aeonrc.yml and configure AEON")
     p_init.add_argument("directory", nargs="?", default=".", help="Project directory (default: current)")
-    p_init.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety"],
+    p_init.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety", "nextjs", "rust", "elixir", "python", "portfolio"],
                         help="Set analysis profile")
     p_init.add_argument("--ci", action="store_true", help="Generate GitHub Actions workflow")
     p_init.set_defaults(func=cmd_init)
@@ -1392,7 +1392,7 @@ def main() -> None:
     p_scan.add_argument("--deep-verify", action="store_true", dest="deep_verify", help="Enable ALL analysis engines")
     p_scan.add_argument("--parallel", action="store_true", help="Use multiprocess parallel scanning")
     p_scan.add_argument("--workers", type=int, default=0, help="Number of parallel workers (0=auto)")
-    p_scan.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety"],
+    p_scan.add_argument("--profile", choices=["quick", "daily", "security", "performance", "construction", "cybersecurity", "safety", "nextjs", "rust", "elixir", "python", "portfolio"],
                         help="Analysis profile (quick|daily|security|performance|safety|ui)")
     p_scan.add_argument("--ui-lint", action="store_true", dest="ui_lint",
                         help="Enable UI/UX lint engine (design, a11y, UX anti-patterns)")

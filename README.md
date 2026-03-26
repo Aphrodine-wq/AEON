@@ -286,7 +286,7 @@ pattern     ::= '_' | INT | STRING | 'true' | 'false'
 
 ## Multi-Language Code Scanner
 
-Beyond the AEON language compiler, AEON includes a full code analysis tool that scans existing codebases in 21 language targets:
+Beyond the AEON language compiler, AEON includes a full code analysis tool that scans existing codebases in 21 language targets. Quality filtering is ON by default -- findings are scored by confidence, deduplicated, and false positives are suppressed. Use `--raw` to see all unfiltered findings.
 
 ```bash
 # Scan a Python project
@@ -308,9 +308,9 @@ aeon review src/api/
 aeon seal verified_function.py
 ```
 
-### Supported Languages
+### Supported Languages (21 targets)
 
-Python, JavaScript/TypeScript, Java, Rust, Go, C/C++, Ruby, Swift, Kotlin, PHP, Scala, Dart, Lua, R, Elixir, Haskell, OCaml, Zig, Julia
+Python, JavaScript, TypeScript, Java, Rust, Go, C, C++, Ruby, Swift, Kotlin, PHP, Scala, Dart, Lua, R, Elixir, Haskell, OCaml, Zig, Julia
 
 ### Analysis Profiles
 
@@ -318,10 +318,11 @@ Python, JavaScript/TypeScript, Java, Rust, Go, C/C++, Ruby, Swift, Kotlin, PHP, 
 |---------|---------|----------|
 | `quick` | Symbolic exec, abstract interp, contracts | Fast CI check |
 | `daily` | + taint, concurrency, Hoare logic | Default |
-| `security` | + info flow, separation logic, money_math | API/auth/payment code |
+| `security` | + info flow, separation logic, money_math + 6 cybersecurity engines | API/auth/payment code |
 | `performance` | + size-change, complexity, effects | Optimization |
-| `construction` | + numeric safety, framework rules | Construction domain |
-| `safety` | All 50+ engines | Pre-release audit |
+| `construction` | + numeric safety, framework rules, construction domain | Construction domain |
+| `cybersecurity` | Full OWASP Top 10 + all 22 cybersecurity engines | Pentest-grade audit |
+| `safety` | All 73 engines (--deep-verify) | Pre-release audit |
 
 ### Configuration (.aeonrc.yml)
 
@@ -346,13 +347,13 @@ custom_taint_sinks:
 parallel: true
 ```
 
-### CLI Commands
+### CLI Commands (24)
 
 | Command | Description |
 |---------|-------------|
 | `aeon compile <file.aeon>` | Compile AEON source to native binary |
 | `aeon check <file>` | Type check + verify (auto-detects language from extension) |
-| `aeon scan <dir>` | Recursive directory scan |
+| `aeon scan <dir>` | Recursive directory scan (quality filter ON, use `--raw` for unfiltered) |
 | `aeon watch <dir>` | File watcher, re-verify on changes |
 | `aeon fix <target>` | Auto-fix detected issues |
 | `aeon review [file\|dir]` | AI-powered code review |
@@ -367,6 +368,7 @@ parallel: true
 | `aeon graveyard` | Analyze famous historical bugs |
 | `aeon mcp-safety` | Start MCP safety server |
 | `aeon portfolio` | Portfolio scan across projects |
+| `aeon health` | Self-healing telemetry and engine crash trends |
 | `aeon init [dir]` | Project setup wizard |
 | `aeon test` | Run test suite |
 | `aeon ir <file.aeon>` | Emit flat IR as JSON |
@@ -378,7 +380,7 @@ parallel: true
 
 ## Verification Engines
 
-AEON includes 50+ analysis engines, each based on peer-reviewed research. All are optional and can be enabled individually or via `--deep-verify`.
+AEON includes 73 engine files (71 analysis engines + quality filter + finding prioritizer), each based on peer-reviewed research. All are optional and can be enabled individually or via `--deep-verify`.
 
 **Core Engines (14):**
 
@@ -412,9 +414,36 @@ AEON includes 50+ analysis engines, each based on peer-reviewed research. All ar
 | `cross_file` | Cross-file dependency analysis |
 | `ai_intent` | AI intent detection |
 
-**Additional Engines:** null safety, numeric safety, error handling, dead code, ownership types, cryptographic verification, smart contract verification, differential privacy, session types, gradual typing, program synthesis, WASM verification, coinductive verification, neural deductive, quantum verification, and more.
+**Cybersecurity Engines (22):**
 
-50 engines total in `aeon/engines/`. See `docs/soundness.md` for formal soundness theorems.
+| Engine | Purpose |
+|--------|---------|
+| `secret_detection` | Hardcoded credentials, API keys (CWE-798) |
+| `auth_access_control` | Broken auth, IDOR, CSRF (OWASP A01/A07) |
+| `crypto_misuse` | Weak algorithms, timing attacks (CWE-327/330) |
+| `injection_advanced` | SSTI, ReDoS, XXE, log injection (CWE-94) |
+| `api_security` | CORS, headers, mass assignment (OWASP API) |
+| `supply_chain` | Dynamic imports, unsafe deserialization (CWE-829) |
+| `session_jwt` | JWT misconfig, cookie flags (CWE-347) |
+| `container_security` | Docker/K8s misconfig (CWE-250) |
+| `ssrf_advanced` | Cloud metadata, DNS rebinding (CWE-918) |
+| `prototype_pollution` | Deep merge, dynamic props (CWE-1321) |
+| `business_logic` | Business rule violations |
+| `data_exposure` | Sensitive data leaks |
+| `security_misconfig` | Configuration vulnerabilities |
+| `oauth_oidc` | OAuth/OpenID Connect flaws |
+| `file_upload` | Upload validation, path traversal |
+| `input_validation` | Input sanitization gaps |
+| `race_condition_security` | TOCTOU, race conditions |
+| `dependency_audit` | Known vulnerabilities in deps |
+| `email_security` | Email injection, spoofing |
+| `insecure_randomness` | Weak RNG usage |
+| `cache_poisoning` | Cache key manipulation |
+| `http_smuggling` | Request smuggling attacks |
+
+**Additional Engines:** null safety, numeric safety, error handling, dead code, ownership types, cryptographic verification, smart contract verification, differential privacy, session types, gradual typing, program synthesis, WASM verification, coinductive verification, neural deductive, quantum verification, memory safety ML, resource logic, type inference HM, typestate, linear resource, effect handlers, and more.
+
+73 engine files total in `aeon/engines/`. See `docs/soundness.md` for formal soundness theorems.
 
 ## VS Code Extension
 

@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "aeon": {
-      "command": "/Users/jameswalton/Desktop/WORK/Projects/IN House/AEON/.venv/bin/python3.12",
-      "args": ["/Users/jameswalton/Desktop/WORK/Projects/IN House/AEON/aeon/mcp_server.py"]
+      "command": "/Users/jameswalton/Projects/aeon/.venv/bin/python3",
+      "args": ["/Users/jameswalton/Projects/aeon/aeon/mcp_server.py"]
     }
   }
 }

@@ -1150,7 +1150,7 @@ class AbstractInterpreter:
                             precondition="division by zero possible",
                             failing_values={"divisor_range": str(right)},
                             function_signature="abstract interpretation",
-                            location=expr.location,
+                            location=getattr(expr, 'location', None),
                         ))
                 return left.div(right)
             # Comparison operators return [0, 1]
@@ -1209,7 +1209,7 @@ class AbstractInterpreter:
                                 "bound_range": str(right_interval),
                             },
                             function_signature=f"{func.name}",
-                            location=ens.location,
+                            location=getattr(ens, 'location', None),
                         ))
 
 

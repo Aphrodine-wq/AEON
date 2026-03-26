@@ -1,4 +1,4 @@
-# AEON — Developer Guide
+# AEON -- Developer Guide
 
 ## Quick Commands
 
@@ -9,6 +9,9 @@ cd ~/Projects/aeon
 
 # Or use the installed entrypoint after: pip install -e .
 aeon <command>
+
+# Or use the ~/bin/aeon wrapper (works from any directory)
+~/bin/aeon <command>
 
 # Scan a project (most common usage)
 aeon scan /path/to/src --profile security --format json --parallel
@@ -29,20 +32,35 @@ aeon test --all
 
 ## Architecture
 
+CRITICAL: AEON has a DUAL FILE STRUCTURE. Many engine files exist BOTH at `aeon/` root level AND inside `aeon/engines/`. The compiler uses the root copies. When fixing bugs, check BOTH locations.
+
 ```
 aeon/
-  cli.py              # 23 commands (scan, check, compile, fix, review, seal, etc.)
+  cli.py              # 24 commands (scan, check, compile, fix, review, seal, health, etc.)
   config.py           # .aeonrc.yml/json parsing
-  profiles.py         # quick, daily, security, performance, construction, cybersecurity, safety
+  profiles.py         # 12 profiles: 7 built-in + 5 stack-tuned (nextjs, rust, elixir, python, portfolio)
   scanner.py          # Directory scanning
   parallel.py         # Parallel verification
-  language_adapter.py # Top-level adapter registry (legacy, mirrors aeon/adapters/)
-  adapters/           # 20 adapter files — 21 language targets
-  compiler/           # AEON language 3-pass compiler (prove → flatten → emit LLVM)
-  engines/            # 50 analysis engines (symbolic exec, Hoare logic, taint, etc.)
+  language_adapter.py # Top-level adapter registry (imports from aeon/*.py adapter files)
+  finding_quality.py  # Quality filter (lives at root, not just engines/)
+  adapters/           # 20 adapter files (19 language adapters + 1 registry) -- 21 language targets
+  compiler/           # AEON language 3-pass compiler (prove -> flatten -> emit LLVM)
+                      # 14 files: ast_nodes, contracts, effects, errors, ir, lexer, memory,
+                      # ownership, parser, pass1_prove, pass2_flatten, pass3_emit, termination, types
+  engines/            # 73 engine files (71 analysis engines + finding_quality.py + prioritize.py)
   enterprise/         # Baseline, config, parallel, SARIF, and scanner helpers
   ai/                 # AI integration and synthetic test helpers
 ```
+
+## Quality Filter System
+
+Quality filter is ON by default for `scan` and `portfolio` commands. It scores findings by confidence (0.0-1.0), deduplicates, and suppresses likely false positives.
+
+- `--raw` flag disables the quality filter and shows all raw findings
+- `--min-confidence 0.3` sets the threshold (default: 0.3)
+- `--top N` limits output to top N findings by impact
+- Inline suppression: `// aeon-ignore` or `# aeon-ignore` in source comments
+- Engine: `engines/finding_quality.py` (also mirrored at `aeon/engines/finding_quality.py`)
 
 ## Key Engines
 
@@ -68,10 +86,22 @@ aeon/
 | Container security | `engines/container_security.py` | Docker/K8s misconfig (CWE-250) |
 | SSRF advanced | `engines/ssrf_advanced.py` | Cloud metadata, DNS rebinding (CWE-918) |
 | Prototype pollution | `engines/prototype_pollution.py` | Deep merge, dynamic props (CWE-1321) |
+| Business logic | `engines/business_logic.py` | Business rule violations |
+| Data exposure | `engines/data_exposure.py` | Sensitive data leaks |
+| Security misconfig | `engines/security_misconfig.py` | Configuration vulnerabilities |
+| OAuth/OIDC | `engines/oauth_oidc.py` | OAuth/OpenID Connect flaws |
+| File upload | `engines/file_upload.py` | Upload validation, path traversal |
+| Input validation | `engines/input_validation.py` | Input sanitization gaps |
+| Race condition | `engines/race_condition_security.py` | TOCTOU, race conditions |
+| Dependency audit | `engines/dependency_audit.py` | Known vulnerabilities in deps |
+| Email security | `engines/email_security.py` | Email injection, spoofing |
+| Insecure randomness | `engines/insecure_randomness.py` | Weak RNG usage |
+| Cache poisoning | `engines/cache_poisoning.py` | Cache key manipulation |
+| HTTP smuggling | `engines/http_smuggling.py` | Request smuggling attacks |
 
-60 engine files total in `aeon/engines/`.
+73 engine files total in `aeon/engines/`. 71 analysis engines + `finding_quality.py` (quality filter) + `prioritize.py` (finding prioritizer).
 
-## CLI Commands
+## CLI Commands (24)
 
 | Command | Description |
 |---------|-------------|
@@ -92,6 +122,7 @@ aeon/
 | `aeon graveyard` | Analyze famous historical bugs |
 | `aeon mcp-safety` | Start MCP safety server |
 | `aeon portfolio` | Portfolio scan across projects |
+| `aeon health` | Self-healing telemetry and engine crash trends |
 | `aeon init [dir]` | Project setup wizard |
 | `aeon test` | Run test suite |
 | `aeon ir <file.aeon>` | Emit flat IR as JSON |
@@ -99,15 +130,23 @@ aeon/
 | `aeon abstract-trace <file.aeon>` | Show abstract domain states |
 | `aeon profiles` | List available profiles |
 
-## Profiles
+## Profiles (12)
 
-- `quick` — symbolic exec + abstract interp + contracts (fast CI)
-- `daily` — + taint, concurrency, Hoare logic (default)
-- `security` — + info flow, separation logic, money_math + 6 cybersecurity engines
-- `performance` — + size-change, complexity, effects
-- `construction` — + numeric safety, framework rules
-- `cybersecurity` — full OWASP Top 10 + all 10 cybersecurity engines (pentest-grade)
-- `safety` — all 60 engines (pre-release audit)
+Built-in:
+- `quick` -- symbolic exec + abstract interp + contracts (fast CI)
+- `daily` -- + taint, concurrency, Hoare logic (default)
+- `security` -- + info flow, separation logic, money_math + 6 cybersecurity engines
+- `performance` -- + size-change, complexity, effects
+- `construction` -- + numeric safety, framework rules, construction domain
+- `cybersecurity` -- full OWASP Top 10 + all 22 cybersecurity engines (pentest-grade)
+- `safety` -- all engines via --deep-verify (pre-release audit)
+
+Stack-tuned:
+- `nextjs` -- XSS, injection, auth, API routes, type safety, full web cyber (FTW, MHP, FairEstimator)
+- `rust` -- ownership, separation logic, concurrency, memory safety, panic paths (WOS, Driftlands)
+- `elixir` -- channel security, session types, race conditions, OTP patterns (ftw-realtime)
+- `python` -- gradual typing, taint, dependency audit, ML pipeline safety (ConstructionAI, AEON, Claude Eyes)
+- `portfolio` -- meta-profile, auto-selects per project for portfolio scans
 
 ## Configuration
 
@@ -122,11 +161,12 @@ exclude: ["node_modules/**", "**/*.test.ts"]
 custom_taint_sources: ["searchParams", "request.body"]
 custom_taint_sinks: ["supabase.from", "dangerouslySetInnerHTML"]
 parallel: true
+baseline: .aeon-baseline.json
 ```
 
 ## Language Adapters
 
-20 adapter files in `aeon/adapters/`, covering 21 language targets. Each translates source language AST to AEON's internal representation. Python adapter is most mature. JS/TS, Java, Rust, Go are functional. Others are regex-based and fully functional.
+19 language adapter files + 1 registry in `aeon/adapters/`, covering 21 language targets. Each translates source language AST to AEON's internal representation. Python adapter is most mature. JS/TS, Java, Rust, Go are functional. Others are regex-based and fully functional.
 
 | Adapter File | Language(s) |
 |---|---|
@@ -151,15 +191,17 @@ parallel: true
 | `zig_adapter.py` | Zig |
 | `language_adapter.py` | Registry / base class |
 
+Note: Adapter files also exist at `aeon/` root level (dual file structure). The root-level `language_adapter.py` imports from the root-level `*_adapter.py` files.
+
 ## Dependencies
 
 Zero required runtime deps (all stdlib). Optional:
-- `z3-solver` — SMT solving (for symbolic exec, Hoare logic, contract verification)
-- `llvmlite` — LLVM code generation (for AEON compilation to native binary)
-- `javalang` — Java parsing
-- `flask` + `plotly` — Dashboard
-- `flask-limiter` + `PyJWT` — FVaaS API
-- `pytest` + `hypothesis` — Testing
+- `z3-solver` -- SMT solving (for symbolic exec, Hoare logic, contract verification)
+- `llvmlite` -- LLVM code generation (for AEON compilation to native binary)
+- `javalang` -- Java parsing
+- `flask` + `plotly` -- Dashboard
+- `flask-limiter` + `PyJWT` -- FVaaS API
+- `pytest` + `hypothesis` -- Testing
 
 Install optional extras:
 
@@ -173,6 +215,8 @@ pip install -e ".[dev]"       # Test dependencies
 
 ## Testing
 
+346 tests across 16 test files.
+
 ```bash
 pytest tests/ -v --tb=short
 pytest tests/ -m "requires_z3"      # Only Z3-dependent tests
@@ -180,7 +224,7 @@ aeon test --priority P0
 aeon test --category compiler
 ```
 
-Tests are organized by module under `tests/`: `tests/compiler/`, `tests/hoare/`, `tests/ghost/`, `tests/seal/`, `tests/synthesizer/`, `tests/autopsy/`, `tests/formal_diff/`, `tests/graveyard/`, `tests/mcp_safety/`, `tests/perf/`, `tests/ai/`, `tests/properties/`.
+Tests are organized by module under `tests/`: `tests/compiler/`, `tests/hoare/`, `tests/ghost/`, `tests/seal/`, `tests/synthesizer/`, `tests/autopsy/`, `tests/formal_diff/`, `tests/graveyard/`, `tests/mcp_safety/`, `tests/perf/`, `tests/ai/`, `tests/properties/`, `tests/adapters/`, `tests/harden/`.
 
 ## Package Metadata
 

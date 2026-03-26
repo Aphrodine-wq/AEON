@@ -120,10 +120,12 @@ def effect_error(
 
 def contract_error(
     precondition: str,
-    failing_values: dict[str, Any],
-    function_signature: str,
+    failing_values: Optional[dict[str, Any]] = None,
+    function_signature: str = "",
     location: Optional[SourceLocation] = None,
 ) -> AeonError:
+    if failing_values is None:
+        failing_values = {}
     return AeonError(
         kind=ErrorKind.CONTRACT_ERROR,
         message=f"Contract violation: {precondition}",

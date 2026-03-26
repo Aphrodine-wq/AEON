@@ -250,13 +250,28 @@ def scan_portfolio(config: Optional[PortfolioConfig] = None,
             deep = local_config.deep_verify
             profile = entry.profile or local_config.profile or "daily"
 
+            # If profile is "portfolio", auto-select the right stack-tuned
+            # profile based on the project alias
+            if profile == "portfolio":
+                from aeon.profiles import get_portfolio_profile
+                profile = get_portfolio_profile(entry.alias)
+                # Update the entry so formatting shows the resolved profile
+                pr.profile = profile
+
             # Resolve profile to deep_verify
             if profile == "safety":
                 deep = True
 
+            # Resolve profile to prove_kwargs for engine activation
+            from aeon.profiles import resolve_profile_to_prove_kwargs
+            prove_kwargs = resolve_profile_to_prove_kwargs(
+                profile_name=profile, deep_verify=deep,
+            )
+
             scan = scan_directory(
                 entry.path,
                 deep_verify=deep,
+                prove_kwargs=prove_kwargs,
             )
 
             # Apply quality filtering if requested
