@@ -3,7 +3,7 @@
 [![Version](https://img.shields.io/visual-studio-marketplace/v/aeon-lang.aeon-verify)](https://marketplace.visualstudio.com/items?itemName=aeon-lang.aeon-verify)
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/aeon-lang.aeon-verify)](https://marketplace.visualstudio.com/items?itemName=aeon-lang.aeon-verify)
 
-Mathematically verify Python code using **10 formal verification engines**, directly in VS Code. Catch division-by-zero, contract violations, termination issues, and more — with red squiggles, quick fixes, and per-function CodeLens.
+Formally verify code using AEON's 73 analysis engines (14 core formal methods + 22 cybersecurity + domain-specific), directly in VS Code. Catch division-by-zero, contract violations, termination issues, security vulnerabilities, and more -- with red squiggles, quick fixes, and per-function CodeLens. Supports 21 programming languages.
 
 <!-- TODO: Add a GIF/screenshot here showing inline diagnostics on a Python file -->
 <!-- ![AEON Verify in action](images/demo.gif) -->
@@ -75,7 +75,7 @@ npm run watch    # recompiles on file changes
 | `aeon.pythonPath` | `python3` | Python interpreter path |
 | `aeon.aeonPath` | `""` | Path to AEON project root (for serverless mode) |
 | `aeon.verifyOnSave` | `false` | Auto-verify on file save (debounced) |
-| `aeon.deepVerify` | `true` | Run all 10 analysis engines |
+| `aeon.deepVerify` | `true` | Run all analysis engines (73 engine files) |
 
 ## Commands
 
@@ -95,7 +95,7 @@ npm run watch    # recompiles on file changes
 - Check the AEON output panel (**AEON: Show Output**) for detailed error logs
 
 **Verification is slow**
-- Set `aeon.deepVerify` to `false` to skip the full 10-engine suite and use basic analysis only
+- Set `aeon.deepVerify` to `false` to skip the full engine suite and use basic analysis only
 - Use the API server instead of direct Python mode for faster response times
 
 **No diagnostics appear**

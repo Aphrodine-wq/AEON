@@ -89,7 +89,7 @@ aeon scan src/ --profile cybersecurity --parallel
 | `performance` | + size-change, complexity, termination | Performance regression CI |
 | `construction` | + money math, numeric safety, domain rules | Financial / construction apps |
 | `cybersecurity` | All 22 cybersecurity engines + core formal methods | Pentest-grade audit |
-| `safety` | All 60 engines | Pre-release / compliance audit |
+| `safety` | All 73 engine files (--deep-verify) | Pre-release / compliance audit |
 
 The `cybersecurity` profile activates all 10 Tier 1 engines and all 12 Tier 2 engines simultaneously, producing pentest-grade coverage in a single pass.
 

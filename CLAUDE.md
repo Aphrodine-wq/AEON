@@ -215,7 +215,7 @@ pip install -e ".[dev]"       # Test dependencies
 
 ## Testing
 
-346 tests across 16 test files.
+346 tests across 15 test files.
 
 ```bash
 pytest tests/ -v --tb=short
